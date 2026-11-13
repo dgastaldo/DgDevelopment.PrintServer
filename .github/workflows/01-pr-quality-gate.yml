@@ -1,10 +1,13 @@
 name: 01 - PR Quality Gate
 
-# Runs on every PR into develop. build-test is the required status check (one per OS: Linux and
+# Runs on every PR into develop. The required status checks are build-test (one per OS: Linux and
 # Windows; macOS runs only after the merge, in 03-develop-quality-gate.yml, because GitHub's macOS
-# runners are often not assigned for a long time and would block merges); snyk and
-# sonar are optional extras that skip themselves when the matching secret is not available (PRs
-# from forks and Dependabot do not receive repository secrets).
+# runners are often not assigned for a long time and would block merges) and dependency-audit.
+# dependency-audit uses only tools that ship with the SDK and with Node (dotnet list package
+# --vulnerable and npm audit), so it needs no account, token or quota. snyk and sonar are optional
+# extras: they skip themselves when their token is not available (PRs from forks and Dependabot do
+# not receive repository secrets), and snyk never fails the PR, so reaching Snyk's free quota does
+# not block a merge. Keep both out of the ruleset's required checks.
 #
 # Optional secrets: SNYK_TOKEN, SONAR_TOKEN. Optional variables: SONAR_ORGANIZATION and
 # SONAR_PROJECT_KEY (defaults to <owner>_<repo>; set it so a repository rename cannot move the
@@ -53,20 +56,53 @@ jobs:
           awk -v rate="$LINE_RATE" -v threshold="$THRESHOLD" 'BEGIN { exit (rate < threshold) }' \
             || { echo "Line coverage $LINE_RATE is below the $THRESHOLD threshold"; exit 1; }
 
-      - name: Fail on vulnerable NuGet packages
-        if: matrix.os == 'ubuntu-latest'
-        run: |
-          dotnet list PrintServer.slnx package --vulnerable --include-transitive 2>&1 | tee vulnerabilities.txt
-          if grep -q "has the following vulnerable packages" vulnerabilities.txt; then exit 1; fi
-
       - name: Check NuGet licenses
         if: matrix.os == 'ubuntu-latest'
         run: |
           dotnet tool install --global nuget-license
           nuget-license --input PrintServer.slnx --allowed-license-types allowed-licenses.json --licenseurl-to-license-mappings license-url-mappings.json --include-transitive
 
+  dependency-audit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          global-json-file: global.json
+
+      - name: Restore
+        run: dotnet restore PrintServer.slnx
+
+      - name: Fail on vulnerable NuGet packages (direct and transitive)
+        shell: bash
+        run: |
+          dotnet list PrintServer.slnx package --vulnerable --include-transitive 2>&1 | tee vulnerabilities.txt
+          if grep -q "has the following vulnerable packages" vulnerabilities.txt; then
+            echo "::error::Vulnerable NuGet packages found, see the log above"
+            exit 1
+          fi
+          if grep -q "NU1900" vulnerabilities.txt; then
+            echo "::error::Could not retrieve NuGet vulnerability data"
+            exit 1
+          fi
+
+      - name: Fail on high or critical npm vulnerabilities
+        shell: bash
+        run: |
+          status=0
+          while IFS= read -r lock; do
+            dir=$(dirname "$lock")
+            echo "::group::npm audit $dir"
+            (cd "$dir" && npm audit --audit-level=high) || status=1
+            echo "::endgroup::"
+          done < <(find . -name package-lock.json -not -path "*/node_modules/*")
+          exit $status
+
   snyk:
     runs-on: ubuntu-latest
+    continue-on-error: true
     env:
       SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
     steps:
