@@ -1,5 +1,22 @@
 # Changelog
 
+## [1.2.0](https://github.com/dgastaldo/DgDevelopment.PrintServer/compare/server-v1.1.0...server-v1.2.0) (2026-11-13)
+
+
+### Features
+
+* add CUPS printer backend ([21e9e1c](https://github.com/dgastaldo/DgDevelopment.PrintServer/commit/21e9e1cbf9f6e006271b759c1ddd46da3ce95c2b))
+* add IPP printer backend ([c59364d](https://github.com/dgastaldo/DgDevelopment.PrintServer/commit/c59364d535e6f91633cde791041fe4660c420d8a))
+* add IPP printer backend ([ccd1f64](https://github.com/dgastaldo/DgDevelopment.PrintServer/commit/ccd1f648cd944e00b5aa7eeed660b21d6ec639f8))
+* add printer backend abstraction and fake backend ([0f1e382](https://github.com/dgastaldo/DgDevelopment.PrintServer/commit/0f1e3820d4b286fd4efaf9a0be9240a9b1e24d60))
+* add printer backend abstraction and fake backend ([4ead002](https://github.com/dgastaldo/DgDevelopment.PrintServer/commit/4ead00283d9daf7f34e08cfeae8648eeda9989fc))
+* add Windows spooler printer backend ([deadac4](https://github.com/dgastaldo/DgDevelopment.PrintServer/commit/deadac45337d5ff9ba16ef0607872bffea421c55))
+
+
+### Bug Fixes
+
+* pin IPP server certificates instead of accepting any certificate ([4f6be05](https://github.com/dgastaldo/DgDevelopment.PrintServer/commit/4f6be051641c7a3a4353f42748082a711d7de212))
+
 ## [1.1.0](https://github.com/dgastaldo/DgDevelopment.PrintServer/compare/server-v1.0.1...server-v1.1.0) (2026-11-13)
 
 
