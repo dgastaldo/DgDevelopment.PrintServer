@@ -1,5 +1,9 @@
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
+using PrintServer.Backends.Cups;
+using PrintServer.Backends.Ipp;
+using PrintServer.Backends.Windows;
 using PrintServer.Backends.Fake;
 using PrintServer.Backends.Selection;
 using PrintServer.Core.Printing;
@@ -81,22 +85,91 @@ public sealed class PrinterBackendSelectionTests
         Assert.Same(provider.GetRequiredService<IPrinterBackend>(), provider.GetRequiredService<IPrinterBackend>());
     }
 
-    [Theory]
-    [InlineData("Cups")]
-    [InlineData("WindowsSpooler")]
-    [InlineData("Ipp")]
-    public void BackendsNotImplementedYetFailClearly(string backend)
+    [Fact]
+    public void CupsBackendIsRegisteredWhenSelected()
     {
-        var ex = Assert.Throws<NotSupportedException>(() => Build(new() { ["Printing:Backend"] = backend }));
+        using var provider = Build(new() { ["Printing:Backend"] = "Cups" });
 
-        Assert.Contains(backend, ex.Message, StringComparison.Ordinal);
+        Assert.IsType<CupsBackend>(provider.GetRequiredService<IPrinterBackend>());
     }
 
     [Fact]
-    public void AutoOnWindowsReportsTheSpoolerBackendAsNotImplemented()
+    public void AutoOnLinuxRegistersTheCupsBackend()
     {
-        var ex = Assert.Throws<NotSupportedException>(() => Build(new() { ["Printing:Backend"] = "Auto" }, HostPlatform.Windows));
+        using var provider = Build(new() { ["Printing:Backend"] = "Auto" }, HostPlatform.Linux);
 
-        Assert.Contains("WindowsSpooler", ex.Message, StringComparison.Ordinal);
+        Assert.IsType<CupsBackend>(provider.GetRequiredService<IPrinterBackend>());
+    }
+
+    [Fact]
+    public void CupsPathsComeFromConfiguration()
+    {
+        using var provider = Build(new()
+        {
+            ["Printing:Backend"] = "Cups",
+            ["Printing:Cups:LpPath"] = "/opt/cups/bin/lp",
+        });
+
+        Assert.Equal("/opt/cups/bin/lp", provider.GetRequiredService<IOptions<CupsOptions>>().Value.LpPath);
+    }
+
+    [Fact]
+    public void IppBackendIsRegisteredWithItsPrintersFromConfiguration()
+    {
+        using var provider = Build(new()
+        {
+            ["Printing:Backend"] = "Ipp",
+            ["Printing:Ipp:Printers:0:Name"] = "Office",
+            ["Printing:Ipp:Printers:0:Uri"] = "ipp://office.local/ipp/print",
+            ["Printing:Ipp:UserName"] = "kiosk",
+        });
+
+        var options = provider.GetRequiredService<IOptions<IppOptions>>().Value;
+
+        Assert.IsType<IppBackend>(provider.GetRequiredService<IPrinterBackend>());
+        var printer = Assert.Single(options.Printers);
+        Assert.Equal("Office", printer.Name);
+        Assert.Equal(new Uri("ipp://office.local/ipp/print"), printer.Uri);
+        Assert.Equal("kiosk", options.UserName);
+    }
+
+    [Fact]
+    public async Task IppBackendWithNoPrintersListsNothing()
+    {
+        using var provider = Build(new() { ["Printing:Backend"] = "Ipp", ["Printing:Ipp:TrustedCertificateThumbprints:0"] = "AB:CD" });
+
+        Assert.Empty(await provider.GetRequiredService<IPrinterBackend>().ListPrintersAsync(CancellationToken.None));
+    }
+
+    [Fact]
+    public void WindowsSpoolerBackendOnlyRegistersOnWindows()
+    {
+        var settings = new Dictionary<string, string?> { ["Printing:Backend"] = "WindowsSpooler" };
+
+        if (OperatingSystem.IsWindows())
+        {
+            using var provider = Build(settings);
+            Assert.IsType<WindowsSpoolerBackend>(provider.GetRequiredService<IPrinterBackend>());
+        }
+        else
+        {
+            Assert.Throws<PlatformNotSupportedException>(() => Build(settings));
+        }
+    }
+
+    [Fact]
+    public void AutoOnWindowsSelectsTheSpoolerBackend()
+    {
+        var settings = new Dictionary<string, string?> { ["Printing:Backend"] = "Auto" };
+
+        if (OperatingSystem.IsWindows())
+        {
+            using var provider = Build(settings, HostPlatform.Windows);
+            Assert.IsType<WindowsSpoolerBackend>(provider.GetRequiredService<IPrinterBackend>());
+        }
+        else
+        {
+            Assert.Throws<PlatformNotSupportedException>(() => Build(settings, HostPlatform.Windows));
+        }
     }
 }
