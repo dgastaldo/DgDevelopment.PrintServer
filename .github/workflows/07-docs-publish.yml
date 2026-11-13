@@ -1,0 +1,74 @@
+name: 07 - Publish docs
+
+# Two triggers on the docs environment:
+#   - a push to the docs branch publishes the docs/ folder (Markdown rendered by Jekyll, including
+#     any OpenAPI JSON in docs/openapi/) to GitHub Pages;
+#   - the docs/vX.Y.Z tag that 05-promote.yml pushes right after (the release-please version)
+#     creates the docs environment's GitHub pre-release.
+# One-time setup: Settings > Pages > Source: GitHub Actions, allow the docs branch in the
+# github-pages Environment's deployment branches, and the docs/v* tag in the docs Environment's.
+
+on:
+  push:
+    branches: [docs]
+    tags: ['docs/v*']
+
+permissions:
+  contents: read
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    if: github.ref_type == 'branch'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pages: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/configure-pages@v5
+
+      - uses: actions/jekyll-build-pages@v1
+        with:
+          source: ./docs
+          destination: ./_site
+
+      - uses: actions/upload-pages-artifact@v3
+
+  deploy:
+    if: github.ref_type == 'branch'
+    runs-on: ubuntu-latest
+    needs: build
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4
+
+  release:
+    if: github.ref_type == 'tag'
+    runs-on: ubuntu-latest
+    environment: docs
+    permissions:
+      contents: write
+    env:
+      TAG: ${{ github.ref_name }}
+      GH_TOKEN: ${{ github.token }}
+      GH_REPO: ${{ github.repository }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Publish pre-release
+        run: |
+          .github/scripts/release-notes.sh "$TAG" docs > notes.md
+          if ! gh release view "$TAG" >/dev/null 2>&1; then
+            gh release create "$TAG" --verify-tag --prerelease --title "$TAG" --notes-file notes.md
+          fi
