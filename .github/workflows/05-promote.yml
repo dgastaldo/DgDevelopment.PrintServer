@@ -1,4 +1,4 @@
-name: 04 - Promote
+name: 05 - Promote
 
 # Fires once a promotion PR merges into personal, docs, integration, or main. Two effects:
 #   1. Auto-creates and pushes that branch's deploy tag (date+run-number scheme - see

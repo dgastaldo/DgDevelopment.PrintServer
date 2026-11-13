@@ -84,7 +84,7 @@ Catena `develop → personal → docs → integration → main`, feature/fix →
 Ogni voce è un ramo `feature/*` → `develop`:
 
 - [x] `repo-bootstrap` (questo documento, template)
-- [x] `ci-pipeline` (workflow 01–07, release-please)
+- [x] `ci-pipeline` (workflow 01–08, release-please)
 - [x] `solution-scaffold` — soluzione .NET 10 (Worker + web)
 - [ ] `printer-backend-abstraction` — `IPrinterBackend` + `FakePrinterBackend`
 - [ ] `folder-watcher` — stabilità file + polling di riserva

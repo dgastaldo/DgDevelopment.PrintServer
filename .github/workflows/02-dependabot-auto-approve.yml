@@ -1,4 +1,4 @@
-name: Dependabot auto-approve
+name: 02 - Dependabot auto-approve
 
 # Approves Dependabot's own patch/minor dependency-bump PRs so they don't get stuck waiting on a
 # human reviewer under this repo's branch ruleset (required_approving_review_count: 1) - a major

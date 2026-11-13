@@ -1,7 +1,7 @@
-name: 03 - release-please
+name: 04 - release-please
 
 # Maintains a standing Release PR from the Conventional Commits merged into develop. Merging it
-# creates the server-vX.Y.Z tag, which fires 06-publish-binaries.yml.
+# creates the server-vX.Y.Z tag, which fires 08-publish-binaries.yml.
 
 on:
   push:

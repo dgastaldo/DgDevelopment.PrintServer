@@ -1,4 +1,4 @@
-name: 02 - Develop Quality Gate
+name: 03 - Develop Quality Gate
 
 # Runs on every merge into develop: build and tests on all three platforms, plus a smoke test of the
 # published self-contained binary (start it, call /health). The sonar job gives SonarCloud a real
