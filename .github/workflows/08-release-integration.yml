@@ -1,0 +1,53 @@
+name: 08 - Release integration
+
+# integration is the cross-platform test environment (real printers, CUPS, Windows spooler,
+# installer candidates). 05-promote.yml pushes an integration/vX.Y.Z tag (the release-please
+# version) when a promotion PR merges into integration; this workflow builds the self-contained
+# binaries for that tag and publishes them as the integration environment's GitHub pre-release.
+
+on:
+  push:
+    tags: ['integration/v*']
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: Existing integration/v* tag to (re)publish
+        required: true
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    uses: ./.github/workflows/_build-binaries.yml
+    with:
+      ref: ${{ inputs.tag || github.ref_name }}
+
+  release:
+    runs-on: ubuntu-latest
+    needs: build
+    environment: integration
+    permissions:
+      contents: write
+    env:
+      TAG: ${{ inputs.tag || github.ref_name }}
+      GH_TOKEN: ${{ github.token }}
+      GH_REPO: ${{ github.repository }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.tag || github.ref_name }}
+
+      - uses: actions/download-artifact@v4
+        with:
+          name: binaries
+          path: dist
+
+      - name: Publish pre-release
+        run: |
+          .github/scripts/release-notes.sh "$TAG" integration > notes.md
+          if gh release view "$TAG" >/dev/null 2>&1; then
+            gh release upload "$TAG" dist/* --clobber
+          else
+            gh release create "$TAG" dist/* --verify-tag --prerelease --title "$TAG" --notes-file notes.md
+          fi

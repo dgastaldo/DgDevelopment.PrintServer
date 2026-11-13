@@ -1,9 +1,12 @@
 name: 05 - Promote
 
 # Fires once a promotion PR merges into personal, docs, integration, or main. Two effects:
-#   1. Auto-creates and pushes that branch's deploy tag (date+run-number scheme - see
-#      BRANCHING.md), which is what actually triggers that
-#      environment's deploy workflow.
+#   1. Auto-creates and pushes that branch's release tag, which is what actually triggers that
+#      environment's release workflow. The tag carries the version release-please keeps in
+#      .release-please-manifest.json at the merged commit: personal/vX.Y.Z, docs/vX.Y.Z,
+#      integration/vX.Y.Z and vX.Y.Z on main. When that tag already exists (a new promotion that
+#      carries no new release-please version) the run number is appended as build metadata,
+#      e.g. personal/vX.Y.Z+42. See BRANCHING.md.
 #   2. If there's a next branch in the chain, opens the promotion PR toward it - the actual merge
 #      of *that* PR is still a deliberate human action (the promotion approval gate).
 #
@@ -32,6 +35,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
+          ref: ${{ github.event.pull_request.merge_commit_sha }}
           fetch-depth: 0
           token: ${{ secrets.PROMOTE_PAT }}
 
@@ -45,11 +49,15 @@ jobs:
             main)        prefix="v";             next="" ;;
             *)           echo "Unsupported base branch ${{ github.base_ref }}" >&2; exit 1 ;;
           esac
-          tag="${prefix}$(date +%Y.%m.%d).${{ github.run_number }}"
+          version="$(jq -r '.["."]' .release-please-manifest.json)"
+          tag="${prefix}${version}"
+          if git rev-parse -q --verify "refs/tags/${tag}" >/dev/null; then
+            tag="${tag}+${{ github.run_number }}"
+          fi
           echo "tag=$tag" >> "$GITHUB_OUTPUT"
           echo "next=$next" >> "$GITHUB_OUTPUT"
 
-      - name: Create and push the deploy tag
+      - name: Create and push the release tag
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"

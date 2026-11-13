@@ -1,0 +1,53 @@
+name: 09 - Publish binaries
+
+# main is production. 05-promote.yml pushes a vX.Y.Z tag (the release-please version) when the
+# promotion PR merges into main; this workflow builds the self-contained binaries for that tag and
+# publishes them as the production GitHub Release, marked as the latest one. Nothing reaches this
+# point from develop: release-please's own server-vX.Y.Z tags only mark versions and never trigger it.
+
+on:
+  push:
+    tags: ['v*']
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: Existing v* tag to (re)publish
+        required: true
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    uses: ./.github/workflows/_build-binaries.yml
+    with:
+      ref: ${{ inputs.tag || github.ref_name }}
+
+  release:
+    runs-on: ubuntu-latest
+    needs: build
+    environment: production
+    permissions:
+      contents: write
+    env:
+      TAG: ${{ inputs.tag || github.ref_name }}
+      GH_TOKEN: ${{ github.token }}
+      GH_REPO: ${{ github.repository }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.tag || github.ref_name }}
+
+      - uses: actions/download-artifact@v4
+        with:
+          name: binaries
+          path: dist
+
+      - name: Publish release
+        run: |
+          .github/scripts/release-notes.sh "$TAG" production > notes.md
+          if gh release view "$TAG" >/dev/null 2>&1; then
+            gh release upload "$TAG" dist/* --clobber
+          else
+            gh release create "$TAG" dist/* --verify-tag --latest --title "$TAG" --notes-file notes.md
+          fi

@@ -1,9 +1,10 @@
 name: 06 - Deploy personal
 
-# personal is the always-on personal environment. 05-promote.yml pushes a personal/vYYYY.MM.DD.N tag
-# when a promotion PR merges into personal; this workflow builds the self-contained binaries for
-# that tag and publishes them as a GitHub pre-release. The machine picks them up on its own with
-# deploy/personal/update.sh or update.ps1 (see deploy/personal/README.md).
+# personal is the always-on personal environment. 05-promote.yml pushes a personal/vX.Y.Z tag (the
+# release-please version) when a promotion PR merges into personal; this workflow builds the
+# self-contained binaries for that tag and publishes them as the personal environment's GitHub
+# pre-release. The machine picks them up on its own with deploy/personal/update.sh or update.ps1
+# (see deploy/personal/README.md).
 
 on:
   push:
@@ -34,6 +35,10 @@ jobs:
       GH_TOKEN: ${{ github.token }}
       GH_REPO: ${{ github.repository }}
     steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.tag || github.ref_name }}
+
       - uses: actions/download-artifact@v4
         with:
           name: binaries
@@ -41,9 +46,9 @@ jobs:
 
       - name: Publish pre-release
         run: |
+          .github/scripts/release-notes.sh "$TAG" personal > notes.md
           if gh release view "$TAG" >/dev/null 2>&1; then
             gh release upload "$TAG" dist/* --clobber
           else
-            gh release create "$TAG" dist/* --verify-tag --prerelease --title "$TAG" \
-              --notes "Personal deployment build for \`$TAG\`."
+            gh release create "$TAG" dist/* --verify-tag --prerelease --title "$TAG" --notes-file notes.md
           fi

@@ -1,7 +1,8 @@
 name: 04 - release-please
 
 # Maintains a standing Release PR from the Conventional Commits merged into develop. Merging it
-# creates the server-vX.Y.Z tag, which fires 08-publish-binaries.yml.
+# creates the server-vX.Y.Z tag. That tag only marks the version: it publishes nothing. Each
+# environment's release is created when a promotion reaches its branch (see 05-promote.yml).
 
 on:
   push:

@@ -1,6 +1,6 @@
 # Branching Strategy — PrintServer
 
-Modello ripreso da DgDevelopment.Identity (stato reale: catena a cinque rami, tag di deploy a data).
+Modello ripreso da DgDevelopment.Identity (stato reale: catena a cinque rami, una release per ambiente con la versione di release-please).
 
 ## Branch Model
 
@@ -51,7 +51,16 @@ feature/*  fix/*
 
 - `develop → personal`: PR aperta e unita a mano.
 - Dal merge in `personal` in poi `05-promote.yml` crea il tag di deploy e apre la PR verso il ramo successivo; ogni salto resta un'approvazione umana.
-- Tag di deploy: `personal/vAAAA.MM.GG.N`, `docs/v…`, `integration/v…`, e `vAAAA.MM.GG.N` su `main` (N = numero di run).
+- Ogni ambiente ha la sua release GitHub, con la versione che release-please tiene in `.release-please-manifest.json` al commit promosso:
+
+  | Ramo | Tag | Release |
+  |---|---|---|
+  | `personal` | `personal/vX.Y.Z` | pre-release con i binari (`06-deploy-personal`) |
+  | `docs` | `docs/vX.Y.Z` | pre-release con le note di versione (`07-docs-publish`) |
+  | `integration` | `integration/vX.Y.Z` | pre-release con i binari (`08-release-integration`) |
+  | `main` | `vX.Y.Z` | release di produzione con i binari (`09-publish-binaries`) |
+
+- Se il tag esiste già (nuova promozione senza una nuova versione di release-please) si aggiunge il numero di run come build metadata: `personal/vX.Y.Z+42`.
 
 ## Hotfix
 
@@ -61,4 +70,4 @@ feature/*  fix/*
 ## Versioning
 
 - Versioni semantiche dei componenti gestite da **release-please** (tag `server-vX.Y.Z`, ...) a partire dai Conventional Commits su `develop`; la Release PR è l'approvazione umana.
-- I tag di deploy (a data) sono marcatori di ambiente, distinti dalle versioni semantiche.
+- Il tag `server-vX.Y.Z` di release-please marca solo la versione su `develop` e non pubblica nulla: la produzione si raggiunge solo con la promozione fino a `main`.
