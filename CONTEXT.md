@@ -90,7 +90,7 @@ Ogni voce è un ramo `feature/*` → `develop`:
 - [ ] `folder-watcher` — stabilità file + polling di riserva
 - [ ] `sqlite-job-queue` — coda SQLite/EF Core, ripresa dopo riavvio
 - [ ] `print-worker` — retry, `processati/`/`errori/`
-- [ ] `ipp-backend`, [x] `cups-backend`, [x] `windows-spooler-backend`
+- [x] `ipp-backend`, [x] `cups-backend`, [x] `windows-spooler-backend`
 - [ ] `status-web-ui` — pagina di stato + SignalR
 - [ ] `service-hosting` — Windows Service / systemd / launchd
 - [ ] `cli`

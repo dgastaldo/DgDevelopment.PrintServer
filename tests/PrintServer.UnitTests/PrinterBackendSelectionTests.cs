@@ -2,6 +2,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using PrintServer.Backends.Cups;
+using PrintServer.Backends.Ipp;
 using PrintServer.Backends.Windows;
 using PrintServer.Backends.Fake;
 using PrintServer.Backends.Selection;
@@ -113,11 +114,31 @@ public sealed class PrinterBackendSelectionTests
     }
 
     [Fact]
-    public void IppBackendNotImplementedYetFailsClearly()
+    public void IppBackendIsRegisteredWithItsPrintersFromConfiguration()
     {
-        var ex = Assert.Throws<NotSupportedException>(() => Build(new() { ["Printing:Backend"] = "Ipp" }));
+        using var provider = Build(new()
+        {
+            ["Printing:Backend"] = "Ipp",
+            ["Printing:Ipp:Printers:0:Name"] = "Office",
+            ["Printing:Ipp:Printers:0:Uri"] = "ipp://office.local/ipp/print",
+            ["Printing:Ipp:UserName"] = "kiosk",
+        });
 
-        Assert.Contains("Ipp", ex.Message, StringComparison.Ordinal);
+        var options = provider.GetRequiredService<IOptions<IppOptions>>().Value;
+
+        Assert.IsType<IppBackend>(provider.GetRequiredService<IPrinterBackend>());
+        var printer = Assert.Single(options.Printers);
+        Assert.Equal("Office", printer.Name);
+        Assert.Equal(new Uri("ipp://office.local/ipp/print"), printer.Uri);
+        Assert.Equal("kiosk", options.UserName);
+    }
+
+    [Fact]
+    public async Task IppBackendWithNoPrintersListsNothing()
+    {
+        using var provider = Build(new() { ["Printing:Backend"] = "Ipp", ["Printing:Ipp:AllowInvalidCertificates"] = "true" });
+
+        Assert.Empty(await provider.GetRequiredService<IPrinterBackend>().ListPrintersAsync(CancellationToken.None));
     }
 
     [Fact]

@@ -1,3 +1,4 @@
+using PrintServer.Backends.Common;
 using PrintServer.Backends.Windows;
 using PrintServer.Core.Printing;
 
@@ -44,9 +45,9 @@ public sealed class SpoolerMappingTests
     [Fact]
     public void JobIdRoundTripsThroughFormatAndParse()
     {
-        var id = SpoolerJobId.Format(42, "Office @ Floor 2");
+        var id = BackendJobId.Format(42, "Office @ Floor 2");
 
-        Assert.True(SpoolerJobId.TryParse(id, out var jobId, out var printer));
+        Assert.True(BackendJobId.TryParse(id, out var jobId, out var printer));
         Assert.Equal(42, jobId);
         Assert.Equal("Office @ Floor 2", printer);
     }
@@ -60,6 +61,6 @@ public sealed class SpoolerMappingTests
     [InlineData("42@")]
     public void MalformedJobIdsAreRejected(string value)
     {
-        Assert.False(SpoolerJobId.TryParse(value, out _, out _));
+        Assert.False(BackendJobId.TryParse(value, out _, out _));
     }
 }

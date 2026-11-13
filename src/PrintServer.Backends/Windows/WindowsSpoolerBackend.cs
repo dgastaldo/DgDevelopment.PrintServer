@@ -1,3 +1,4 @@
+using PrintServer.Backends.Common;
 using PrintServer.Core.Printing;
 
 namespace PrintServer.Backends.Windows;
@@ -46,7 +47,7 @@ public sealed class WindowsSpoolerBackend(ISpoolerApi spooler) : IPrinterBackend
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(backendJobId);
 
-        if (!SpoolerJobId.TryParse(backendJobId, out var jobId, out var printerName))
+        if (!BackendJobId.TryParse(backendJobId, out var jobId, out var printerName))
         {
             throw new ArgumentException($"'{backendJobId}' is not a Windows spooler job id.", nameof(backendJobId));
         }
@@ -66,7 +67,7 @@ public sealed class WindowsSpoolerBackend(ISpoolerApi spooler) : IPrinterBackend
         {
             using var stream = File.OpenRead(fullPath);
             var jobId = spooler.SubmitRawDocument(printerName, documentName, stream, ct);
-            return PrintResult.Success(SpoolerJobId.Format(jobId, printerName));
+            return PrintResult.Success(BackendJobId.Format(jobId, printerName));
         }
         catch (InvalidOperationException ex)
         {

@@ -4,8 +4,12 @@ using Microsoft.Extensions.DependencyInjection.Extensions;
 using PrintServer.Backends.Common;
 using PrintServer.Backends.Cups;
 using PrintServer.Backends.Fake;
+using PrintServer.Backends.Ipp;
+using Microsoft.Extensions.Options;
 using PrintServer.Backends.Windows;
 using PrintServer.Core.Printing;
+using System.Diagnostics.CodeAnalysis;
+using System.Net.Security;
 using System.Runtime.Versioning;
 
 namespace PrintServer.Backends.Selection;
@@ -39,6 +43,14 @@ public static class PrinterBackendServiceCollectionExtensions
                 services.TryAddSingleton<IProcessRunner, SystemProcessRunner>();
                 services.AddSingleton<IPrinterBackend, CupsBackend>();
                 break;
+            case PrinterBackendKind.Ipp:
+                services.Configure<IppOptions>(section.GetSection("Ipp"));
+                services.AddSingleton<IPrinterBackend>(provider =>
+                {
+                    var ippOptions = provider.GetRequiredService<IOptions<IppOptions>>();
+                    return new IppBackend(CreateIppHttpClient(ippOptions.Value), ippOptions, disposeHttpClient: true);
+                });
+                break;
             case PrinterBackendKind.WindowsSpooler:
                 if (!OperatingSystem.IsWindows())
                 {
@@ -59,5 +71,21 @@ public static class PrinterBackendServiceCollectionExtensions
     {
         services.AddSingleton<ISpoolerApi, NativeSpoolerApi>();
         services.AddSingleton<IPrinterBackend, WindowsSpoolerBackend>();
+    }
+
+    [SuppressMessage("Reliability", "CA2000", Justification = "The returned HttpClient owns and disposes the handler.")]
+    [SuppressMessage("Security", "CA5359", Justification = "Accepting any certificate is an explicit opt-in (Printing:Ipp:AllowInvalidCertificates) for printers with self-signed certificates.")]
+    private static HttpClient CreateIppHttpClient(IppOptions options)
+    {
+        var ssl = new SslClientAuthenticationOptions();
+        if (options.AllowInvalidCertificates)
+        {
+            ssl.RemoteCertificateValidationCallback = static (_, _, _, _) => true;
+        }
+
+        return new HttpClient(new SocketsHttpHandler { PooledConnectionLifetime = TimeSpan.FromMinutes(2), SslOptions = ssl })
+        {
+            Timeout = Timeout.InfiniteTimeSpan,
+        };
     }
 }

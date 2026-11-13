@@ -1,8 +1,8 @@
 using System.Globalization;
 
-namespace PrintServer.Backends.Windows;
+namespace PrintServer.Backends.Common;
 
-internal static class SpoolerJobId
+internal static class BackendJobId
 {
     private const char Separator = '@';
 

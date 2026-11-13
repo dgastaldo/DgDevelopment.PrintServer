@@ -4,4 +4,5 @@ Mini print server multipiattaforma (Windows, macOS, Linux): osserva una cartella
 
 - Contesto e architettura: [CONTEXT.md](https://github.com/dgastaldo/DgDevelopment.PrintServer/blob/develop/CONTEXT.md)
 - Strategia dei rami: [BRANCHING.md](https://github.com/dgastaldo/DgDevelopment.PrintServer/blob/develop/BRANCHING.md)
+- Backend di stampa: [configurazione e limiti](backends.html)
 - Licenza: AGPL-3.0
