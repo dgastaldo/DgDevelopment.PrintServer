@@ -17,12 +17,14 @@ permissions:
 
 jobs:
   auto-approve:
-    if: github.actor == 'dependabot[bot]'
+    # github.actor is forgeable (it's whoever triggered this workflow run, not necessarily who
+    # opened the PR); github.event.pull_request.user.login reflects the PR's actual author.
+    if: github.event.pull_request.user.login == 'dependabot[bot]'
     runs-on: ubuntu-latest
     steps:
       - name: Fetch Dependabot metadata
         id: metadata
-        uses: dependabot/fetch-metadata@v2
+        uses: dependabot/fetch-metadata@21025c705c08248db411dc16f3619e6b5f9ea21a # v2.5.0
         with:
           github-token: "${{ secrets.GITHUB_TOKEN }}"
 
