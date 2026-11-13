@@ -2,7 +2,7 @@ name: _build-binaries
 
 # Reusable: builds the self-contained single-file PrintServer.Host binary for every supported
 # platform and uploads one archive per runtime identifier plus a combined SHA256SUMS file as the
-# "binaries" artifact. Called by 05-deploy-personal.yml and 06-publish-binaries.yml.
+# "binaries" artifact. Called by 06-deploy-personal.yml and 08-publish-binaries.yml.
 
 on:
   workflow_call:

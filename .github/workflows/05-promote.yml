@@ -1,4 +1,4 @@
-name: 04 - Promote
+name: 05 - Promote
 
 # Fires once a promotion PR merges into personal, docs, integration, or main. Two effects:
 #   1. Auto-creates and pushes that branch's deploy tag (date+run-number scheme - see
@@ -43,6 +43,7 @@ jobs:
             docs)        prefix="docs/v";        next="integration" ;;
             integration) prefix="integration/v"; next="main" ;;
             main)        prefix="v";             next="" ;;
+            *)           echo "Unsupported base branch ${{ github.base_ref }}" >&2; exit 1 ;;
           esac
           tag="${prefix}$(date +%Y.%m.%d).${{ github.run_number }}"
           echo "tag=$tag" >> "$GITHUB_OUTPUT"

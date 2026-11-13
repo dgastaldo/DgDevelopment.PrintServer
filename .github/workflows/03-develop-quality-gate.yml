@@ -1,4 +1,4 @@
-name: 02 - Develop Quality Gate
+name: 03 - Develop Quality Gate
 
 # Runs on every merge into develop: build and tests on all three platforms, plus a smoke test of the
 # published self-contained binary (start it, call /health). The sonar job gives SonarCloud a real
@@ -94,7 +94,7 @@ jobs:
         if: env.SONAR_TOKEN != ''
         run: >
           dotnet sonarscanner begin
-          /k:"${{ github.repository_owner }}_${{ github.event.repository.name }}"
+          /k:"${{ vars.SONAR_PROJECT_KEY || format('{0}_{1}', github.repository_owner, github.event.repository.name) }}"
           /o:"${{ vars.SONAR_ORGANIZATION }}"
           /d:sonar.token="${{ secrets.SONAR_TOKEN }}"
           /d:sonar.cs.opencover.reportsPaths="TestResults/**/coverage.opencover.xml"

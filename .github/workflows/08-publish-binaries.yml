@@ -1,4 +1,4 @@
-name: 06 - Publish binaries
+name: 08 - Publish binaries
 
 # Fires when release-please's Release PR is merged (that merge creates the server-vX.Y.Z tag and its
 # GitHub Release). Builds the self-contained binaries for every platform and attaches them, with

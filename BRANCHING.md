@@ -50,7 +50,7 @@ feature/*  fix/*
 `develop → personal → docs → integration → main`, sempre tramite PR (merge, non squash, per mantenere i rami allineati).
 
 - `develop → personal`: PR aperta e unita a mano.
-- Dal merge in `personal` in poi `04-promote.yml` crea il tag di deploy e apre la PR verso il ramo successivo; ogni salto resta un'approvazione umana.
+- Dal merge in `personal` in poi `05-promote.yml` crea il tag di deploy e apre la PR verso il ramo successivo; ogni salto resta un'approvazione umana.
 - Tag di deploy: `personal/vAAAA.MM.GG.N`, `docs/v…`, `integration/v…`, e `vAAAA.MM.GG.N` su `main` (N = numero di run).
 
 ## Hotfix

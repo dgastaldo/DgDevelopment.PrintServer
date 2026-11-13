@@ -1,6 +1,6 @@
-name: 05 - Deploy personal
+name: 06 - Deploy personal
 
-# personal is the always-on personal environment. 04-promote.yml pushes a personal/vYYYY.MM.DD.N tag
+# personal is the always-on personal environment. 05-promote.yml pushes a personal/vYYYY.MM.DD.N tag
 # when a promotion PR merges into personal; this workflow builds the self-contained binaries for
 # that tag and publishes them as a GitHub pre-release. The machine picks them up on its own with
 # deploy/personal/update.sh or update.ps1 (see deploy/personal/README.md).
