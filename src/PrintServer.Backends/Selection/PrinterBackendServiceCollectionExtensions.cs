@@ -74,13 +74,14 @@ public static class PrinterBackendServiceCollectionExtensions
     }
 
     [SuppressMessage("Reliability", "CA2000", Justification = "The returned HttpClient owns and disposes the handler.")]
-    [SuppressMessage("Security", "CA5359", Justification = "Accepting any certificate is an explicit opt-in (Printing:Ipp:AllowInvalidCertificates) for printers with self-signed certificates.")]
     private static HttpClient CreateIppHttpClient(IppOptions options)
     {
         var ssl = new SslClientAuthenticationOptions();
-        if (options.AllowInvalidCertificates)
+        var pins = options.TrustedCertificateThumbprints.ToArray();
+        if (pins.Length > 0)
         {
-            ssl.RemoteCertificateValidationCallback = static (_, _, _, _) => true;
+            ssl.RemoteCertificateValidationCallback = (_, certificate, _, errors) =>
+                IppCertificateValidator.IsTrusted(certificate, errors, pins);
         }
 
         return new HttpClient(new SocketsHttpHandler { PooledConnectionLifetime = TimeSpan.FromMinutes(2), SslOptions = ssl })

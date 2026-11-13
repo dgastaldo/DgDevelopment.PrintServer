@@ -136,7 +136,7 @@ public sealed class PrinterBackendSelectionTests
     [Fact]
     public async Task IppBackendWithNoPrintersListsNothing()
     {
-        using var provider = Build(new() { ["Printing:Backend"] = "Ipp", ["Printing:Ipp:AllowInvalidCertificates"] = "true" });
+        using var provider = Build(new() { ["Printing:Backend"] = "Ipp", ["Printing:Ipp:TrustedCertificateThumbprints:0"] = "AB:CD" });
 
         Assert.Empty(await provider.GetRequiredService<IPrinterBackend>().ListPrintersAsync(CancellationToken.None));
     }

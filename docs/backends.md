@@ -41,7 +41,7 @@ IPP, con l'elenco delle stampanti da usare (la prima è quella predefinita):
 }
 ```
 
-Altre opzioni IPP: `DocumentFormat` (se omesso si deduce dall'estensione: PDF, JPEG, PNG, testo, altrimenti `application/octet-stream`) e `AllowInvalidCertificates` (`true` solo per stampanti con certificato autofirmato).
+Altre opzioni IPP: `DocumentFormat` (se omesso si deduce dall'estensione: PDF, JPEG, PNG, testo, altrimenti `application/octet-stream`) e `TrustedCertificateThumbprints`: elenco di impronte SHA-256 (esadecimali, anche con i due punti) di certificati che si accettano pur non essendo validi, per le stampanti con certificato autofirmato. Il certificato deve coincidere con una delle impronte; non esiste un'opzione per accettare qualsiasi certificato.
 
 ## Limiti noti
 

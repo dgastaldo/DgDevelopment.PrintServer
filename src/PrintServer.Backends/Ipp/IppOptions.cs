@@ -15,7 +15,7 @@ public sealed class IppOptions
 
     public string? DocumentFormat { get; set; }
 
-    public bool AllowInvalidCertificates { get; set; }
+    public IList<string> TrustedCertificateThumbprints { get; } = [];
 
     public TimeSpan RequestTimeout { get; set; } = TimeSpan.FromSeconds(30);
 }
