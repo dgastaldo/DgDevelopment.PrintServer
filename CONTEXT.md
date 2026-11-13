@@ -86,7 +86,7 @@ Ogni voce è un ramo `feature/*` → `develop`:
 - [x] `repo-bootstrap` (questo documento, template)
 - [x] `ci-pipeline` (workflow 01–09, release-please, una release per ambiente)
 - [x] `solution-scaffold` — soluzione .NET 10 (Worker + web)
-- [ ] `printer-backend-abstraction` — `IPrinterBackend` + `FakePrinterBackend`
+- [x] `printer-backend-abstraction` — `IPrinterBackend` + `FakePrinterBackend`
 - [ ] `folder-watcher` — stabilità file + polling di riserva
 - [ ] `sqlite-job-queue` — coda SQLite/EF Core, ripresa dopo riavvio
 - [ ] `print-worker` — retry, `processati/`/`errori/`
