@@ -426,3 +426,13 @@ FodyWeavers.xsd
 
 # Official VS Code C# Dev Kit Extension exclusion
 #*.lscache
+
+## PrintServer runtime data
+*.db
+*.db-shm
+*.db-wal
+inbox/
+processati/
+errori/
+logs/
+appsettings.Local.json
