@@ -1,0 +1,10 @@
+[Unit]
+Description=Update PrintServer from the latest personal pre-release
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+Environment=INSTALL_DIR=/opt/printserver
+Environment=SERVICE_NAME=printserver
+ExecStart=/opt/printserver/update.sh

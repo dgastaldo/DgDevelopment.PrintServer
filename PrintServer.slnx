@@ -1,0 +1,10 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/PrintServer.Backends/PrintServer.Backends.csproj" />
+    <Project Path="src/PrintServer.Core/PrintServer.Core.csproj" />
+    <Project Path="src/PrintServer.Host/PrintServer.Host.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/PrintServer.UnitTests/PrintServer.UnitTests.csproj" />
+  </Folder>
+</Solution>
