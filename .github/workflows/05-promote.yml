@@ -1,6 +1,12 @@
 name: 05 - Promote
 
-# Fires once a promotion PR merges into personal, docs, integration, or main. Two effects:
+# Fires when a PR is merged into develop, personal, docs, integration, or main.
+#
+# develop: opens (or reuses, when one is already open) the promotion PR develop -> personal. No tag
+# is created on develop: its versions are marked by release-please's server-vX.Y.Z tags. Merging
+# that PR is still a deliberate human action.
+#
+# personal, docs, integration, main: two effects:
 #   1. Auto-creates and pushes that branch's release tag, which is what actually triggers that
 #      environment's release workflow. The tag carries the version release-please keeps in
 #      .release-please-manifest.json at the merged commit: personal/vX.Y.Z, docs/vX.Y.Z,
@@ -9,9 +15,6 @@ name: 05 - Promote
 #      e.g. personal/vX.Y.Z+42. See BRANCHING.md.
 #   2. If there's a next branch in the chain, opens the promotion PR toward it - the actual merge
 #      of *that* PR is still a deliberate human action (the promotion approval gate).
-#
-# develop -> personal is NOT covered here - you open and merge that first PR yourself, with no
-# automation. This workflow only takes over from personal onward.
 #
 # IMPORTANT: tags/PRs created with the default GITHUB_TOKEN do not themselves trigger other
 # workflows (GitHub's anti-recursion safeguard), so the tag-push step below needs a real PAT
@@ -43,21 +46,26 @@ jobs:
         id: vars
         run: |
           case "${{ github.base_ref }}" in
+            develop)     prefix="";              next="personal" ;;
             personal)    prefix="personal/v";    next="docs" ;;
             docs)        prefix="docs/v";        next="integration" ;;
             integration) prefix="integration/v"; next="main" ;;
             main)        prefix="v";             next="" ;;
             *)           echo "Unsupported base branch ${{ github.base_ref }}" >&2; exit 1 ;;
           esac
-          version="$(jq -r '.["."]' .release-please-manifest.json)"
-          tag="${prefix}${version}"
-          if git rev-parse -q --verify "refs/tags/${tag}" >/dev/null; then
-            tag="${tag}+${{ github.run_number }}"
+          tag=""
+          if [[ -n "${prefix}" ]]; then
+            version="$(jq -r '.["."]' .release-please-manifest.json)"
+            tag="${prefix}${version}"
+            if git rev-parse -q --verify "refs/tags/${tag}" >/dev/null; then
+              tag="${tag}+${{ github.run_number }}"
+            fi
           fi
           echo "tag=$tag" >> "$GITHUB_OUTPUT"
           echo "next=$next" >> "$GITHUB_OUTPUT"
 
       - name: Create and push the release tag
+        if: steps.vars.outputs.tag != ''
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
@@ -68,9 +76,18 @@ jobs:
         if: steps.vars.outputs.next != ''
         env:
           GH_TOKEN: ${{ secrets.PROMOTE_PAT }}
+          BASE: ${{ github.base_ref }}
+          NEXT: ${{ steps.vars.outputs.next }}
+          TAG: ${{ steps.vars.outputs.tag }}
+          MERGED_PR: ${{ github.event.pull_request.number }}
         run: |
-          gh pr create \
-            --base "${{ steps.vars.outputs.next }}" \
-            --head "${{ github.base_ref }}" \
-            --title "Promote ${{ github.base_ref }} → ${{ steps.vars.outputs.next }}" \
-            --body "Automated promotion PR, opened after \`${{ github.base_ref }}\` was tagged \`${{ steps.vars.outputs.tag }}\`."
+          if [[ "$(gh pr list --base "$NEXT" --head "$BASE" --state open --json number --jq length)" != "0" ]]; then
+            echo "A promotion PR $BASE -> $NEXT is already open."
+            exit 0
+          fi
+          if [[ -n "$TAG" ]]; then
+            body="Automated promotion PR, opened after \`$BASE\` was tagged \`$TAG\`."
+          else
+            body="Automated promotion PR, opened after #$MERGED_PR was merged into \`$BASE\`. Merge it with a merge commit, not a squash."
+          fi
+          gh pr create --base "$NEXT" --head "$BASE" --title "Promote $BASE → $NEXT" --body "$body"
