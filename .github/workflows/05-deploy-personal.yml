@@ -1,0 +1,49 @@
+name: 05 - Deploy personal
+
+# personal is the always-on personal environment. 04-promote.yml pushes a personal/vYYYY.MM.DD.N tag
+# when a promotion PR merges into personal; this workflow builds the self-contained binaries for
+# that tag and publishes them as a GitHub pre-release. The machine picks them up on its own with
+# deploy/personal/update.sh or update.ps1 (see deploy/personal/README.md).
+
+on:
+  push:
+    tags: ['personal/v*']
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: Existing personal/v* tag to (re)publish
+        required: true
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    uses: ./.github/workflows/_build-binaries.yml
+    with:
+      ref: ${{ inputs.tag || github.ref_name }}
+
+  release:
+    runs-on: ubuntu-latest
+    needs: build
+    environment: personal
+    permissions:
+      contents: write
+    env:
+      TAG: ${{ inputs.tag || github.ref_name }}
+      GH_TOKEN: ${{ github.token }}
+      GH_REPO: ${{ github.repository }}
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: binaries
+          path: dist
+
+      - name: Publish pre-release
+        run: |
+          if gh release view "$TAG" >/dev/null 2>&1; then
+            gh release upload "$TAG" dist/* --clobber
+          else
+            gh release create "$TAG" dist/* --verify-tag --prerelease --title "$TAG" \
+              --notes "Personal deployment build for \`$TAG\`."
+          fi

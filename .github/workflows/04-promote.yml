@@ -1,0 +1,67 @@
+name: 04 - Promote
+
+# Fires once a promotion PR merges into personal, docs, integration, or main. Two effects:
+#   1. Auto-creates and pushes that branch's deploy tag (date+run-number scheme - see
+#      BRANCHING.md), which is what actually triggers that
+#      environment's deploy workflow.
+#   2. If there's a next branch in the chain, opens the promotion PR toward it - the actual merge
+#      of *that* PR is still a deliberate human action (the promotion approval gate).
+#
+# develop -> personal is NOT covered here - you open and merge that first PR yourself, with no
+# automation. This workflow only takes over from personal onward.
+#
+# IMPORTANT: tags/PRs created with the default GITHUB_TOKEN do not themselves trigger other
+# workflows (GitHub's anti-recursion safeguard), so the tag-push step below needs a real PAT
+# (repository secret PROMOTE_PAT, minimally scoped to Contents: write + Pull requests: write on
+# this repo) instead of secrets.GITHUB_TOKEN - otherwise pushing e.g. a personal/v* tag would
+# never actually fire deploy-personal.yml.
+
+on:
+  pull_request:
+    types: [closed]
+    branches: [personal, docs, integration, main]
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  promote:
+    if: github.event.pull_request.merged == true
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.PROMOTE_PAT }}
+
+      - name: Compute this branch's tag prefix and the next branch in the chain
+        id: vars
+        run: |
+          case "${{ github.base_ref }}" in
+            personal)    prefix="personal/v";    next="docs" ;;
+            docs)        prefix="docs/v";        next="integration" ;;
+            integration) prefix="integration/v"; next="main" ;;
+            main)        prefix="v";             next="" ;;
+          esac
+          tag="${prefix}$(date +%Y.%m.%d).${{ github.run_number }}"
+          echo "tag=$tag" >> "$GITHUB_OUTPUT"
+          echo "next=$next" >> "$GITHUB_OUTPUT"
+
+      - name: Create and push the deploy tag
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git tag "${{ steps.vars.outputs.tag }}"
+          git push origin "${{ steps.vars.outputs.tag }}"
+
+      - name: Open the next promotion PR
+        if: steps.vars.outputs.next != ''
+        env:
+          GH_TOKEN: ${{ secrets.PROMOTE_PAT }}
+        run: |
+          gh pr create \
+            --base "${{ steps.vars.outputs.next }}" \
+            --head "${{ github.base_ref }}" \
+            --title "Promote ${{ github.base_ref }} → ${{ steps.vars.outputs.next }}" \
+            --body "Automated promotion PR, opened after \`${{ github.base_ref }}\` was tagged \`${{ steps.vars.outputs.tag }}\`."

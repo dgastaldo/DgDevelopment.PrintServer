@@ -1,0 +1,136 @@
+name: 01 - PR Quality Gate
+
+# Runs on every PR into develop. build-test is the required status check (one per OS); snyk and
+# sonar are optional extras that skip themselves when the matching secret is not available (PRs
+# from forks and Dependabot do not receive repository secrets).
+#
+# Optional secrets: SNYK_TOKEN, SONAR_TOKEN. Optional variable: SONAR_ORGANIZATION.
+
+on:
+  pull_request:
+    branches: [develop]
+
+permissions:
+  contents: read
+
+jobs:
+  build-test:
+    name: build-test (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          global-json-file: global.json
+
+      - name: Restore
+        run: dotnet restore PrintServer.slnx
+
+      - name: Build
+        run: dotnet build PrintServer.slnx --no-restore -warnaserror
+
+      - name: Test with coverage
+        run: dotnet test PrintServer.slnx --no-build --collect:"XPlat Code Coverage" --results-directory TestResults
+
+      - name: Enforce coverage threshold
+        if: matrix.os == 'ubuntu-latest'
+        shell: bash
+        env:
+          THRESHOLD: '0.80'
+        run: |
+          COVERAGE_FILE=$(find TestResults -name coverage.cobertura.xml | head -1)
+          LINE_RATE=$(grep -oP '(?<=line-rate=")[^"]+' "$COVERAGE_FILE" | head -1)
+          awk -v rate="$LINE_RATE" -v threshold="$THRESHOLD" 'BEGIN { exit (rate < threshold) }' \
+            || { echo "Line coverage $LINE_RATE is below the $THRESHOLD threshold"; exit 1; }
+
+      - name: Fail on vulnerable NuGet packages
+        if: matrix.os == 'ubuntu-latest'
+        run: |
+          dotnet list PrintServer.slnx package --vulnerable --include-transitive 2>&1 | tee vulnerabilities.txt
+          if grep -q "has the following vulnerable packages" vulnerabilities.txt; then exit 1; fi
+
+      - name: Check NuGet licenses
+        if: matrix.os == 'ubuntu-latest'
+        run: |
+          dotnet tool install --global nuget-license
+          nuget-license --input PrintServer.slnx --allowed-license-types allowed-licenses.json --licenseurl-to-license-mappings license-url-mappings.json --include-transitive
+
+  snyk:
+    runs-on: ubuntu-latest
+    env:
+      SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+    steps:
+      - uses: actions/checkout@v4
+        if: env.SNYK_TOKEN != ''
+
+      - name: Setup .NET
+        if: env.SNYK_TOKEN != ''
+        uses: actions/setup-dotnet@v4
+        with:
+          global-json-file: global.json
+
+      - name: Install Snyk CLI
+        if: env.SNYK_TOKEN != ''
+        uses: snyk/actions/setup@9adf32b1121593767fc3c057af55b55db032dc04 # v1
+
+      - name: Restore packages
+        if: env.SNYK_TOKEN != ''
+        run: dotnet restore PrintServer.slnx
+
+      - name: Run Snyk
+        if: env.SNYK_TOKEN != ''
+        run: snyk test --all-projects
+
+  sonar:
+    runs-on: ubuntu-latest
+    env:
+      SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+    steps:
+      - uses: actions/checkout@v4
+        if: env.SONAR_TOKEN != ''
+        with:
+          fetch-depth: 0
+
+      - name: Setup .NET
+        if: env.SONAR_TOKEN != ''
+        uses: actions/setup-dotnet@v4
+        with:
+          global-json-file: global.json
+
+      - name: Setup Java
+        if: env.SONAR_TOKEN != ''
+        uses: actions/setup-java@v4
+        with:
+          distribution: zulu
+          java-version: '21'
+
+      - name: Install SonarScanner for .NET
+        if: env.SONAR_TOKEN != ''
+        run: dotnet tool install --global dotnet-sonarscanner
+
+      - name: Begin SonarCloud analysis
+        if: env.SONAR_TOKEN != ''
+        run: >
+          dotnet sonarscanner begin
+          /k:"${{ github.repository_owner }}_${{ github.event.repository.name }}"
+          /o:"${{ vars.SONAR_ORGANIZATION }}"
+          /d:sonar.token="${{ secrets.SONAR_TOKEN }}"
+          /d:sonar.cs.opencover.reportsPaths="TestResults/**/coverage.opencover.xml"
+          /d:sonar.exclusions="**/bin/**,**/obj/**,**/Migrations/**"
+          /d:sonar.coverage.exclusions="src/PrintServer.Host/Program.cs"
+
+      - name: Build and test
+        if: env.SONAR_TOKEN != ''
+        run: |
+          dotnet build PrintServer.slnx
+          dotnet test PrintServer.slnx --no-build --collect:"XPlat Code Coverage" --results-directory TestResults -- DataCollectionRunSettings.DataCollectors.DataCollector.Configuration.Format=opencover
+
+      - name: End SonarCloud analysis
+        if: env.SONAR_TOKEN != ''
+        run: dotnet sonarscanner end /d:sonar.token="${{ secrets.SONAR_TOKEN }}"

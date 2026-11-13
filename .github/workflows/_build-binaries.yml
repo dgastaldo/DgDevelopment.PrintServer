@@ -1,0 +1,73 @@
+name: _build-binaries
+
+# Reusable: builds the self-contained single-file PrintServer.Host binary for every supported
+# platform and uploads one archive per runtime identifier plus a combined SHA256SUMS file as the
+# "binaries" artifact. Called by 05-deploy-personal.yml and 06-publish-binaries.yml.
+
+on:
+  workflow_call:
+    inputs:
+      ref:
+        description: Git ref (tag or branch) to build
+        type: string
+        required: true
+
+permissions:
+  contents: read
+
+jobs:
+  publish:
+    name: publish (${{ matrix.rid }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: true
+      matrix:
+        rid: [win-x64, osx-arm64, osx-x64, linux-x64, linux-arm64]
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.ref }}
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          global-json-file: global.json
+
+      - name: Publish
+        run: >
+          dotnet publish src/PrintServer.Host/PrintServer.Host.csproj
+          -c Release -r ${{ matrix.rid }} --self-contained
+          -p:PublishSingleFile=true -p:DebugType=none
+          -o out/printserver-${{ matrix.rid }}
+
+      - name: Archive
+        run: |
+          mkdir -p dist
+          if [ "${{ matrix.rid }}" = "win-x64" ]; then
+            (cd out && zip -qr "../dist/printserver-${{ matrix.rid }}.zip" "printserver-${{ matrix.rid }}")
+          else
+            tar -czf "dist/printserver-${{ matrix.rid }}.tar.gz" -C out "printserver-${{ matrix.rid }}"
+          fi
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: binary-${{ matrix.rid }}
+          path: dist/*
+
+  checksums:
+    runs-on: ubuntu-latest
+    needs: publish
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: binary-*
+          path: dist
+          merge-multiple: true
+
+      - name: Compute SHA256SUMS
+        run: cd dist && sha256sum printserver-* > SHA256SUMS
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: binaries
+          path: dist/*
