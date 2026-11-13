@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.1.0](https://github.com/dgastaldo/DgDevelopment.PrintServer/compare/server-v1.0.1...server-v1.1.0) (2026-11-13)
+
+
+### Features
+
+* one release per environment using the release-please version ([0b77fd2](https://github.com/dgastaldo/DgDevelopment.PrintServer/commit/0b77fd2f11d1716653a558bfbe22b0a46c0a17e8))
+* one release per environment using the release-please version ([444de6c](https://github.com/dgastaldo/DgDevelopment.PrintServer/commit/444de6ca4d2fc98795d7d7022ba814fcf44c7ac9))
+
 ## [1.0.1](https://github.com/dgastaldo/DgDevelopment.PrintServer/compare/server-v1.0.0...server-v1.0.1) (2026-11-13)
 
 
