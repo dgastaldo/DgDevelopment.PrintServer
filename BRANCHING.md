@@ -40,7 +40,7 @@ feature/*  fix/*
 
 ## Pull Request Policy
 
-- Ogni merge in `develop` passa da una **Pull Request** con **1 approvazione** e con i controlli `build-test (ubuntu-latest)`, `build-test (windows-latest)` e `dependency-audit` verdi. Il controllo su macOS gira solo dopo il merge (`03-develop-quality-gate`).
+- Ogni merge in `develop` passa da una **Pull Request** con **1 approvazione** e con i controlli `build-test (ubuntu-latest)`, `build-test (windows-latest)` e `dependency-audit` verdi; Snyk e Sonar sono facoltativi e non vanno tra i controlli obbligatori. Il controllo su macOS gira solo dopo il merge (`03-develop-quality-gate`).
 - Solo **squash merge**, ramo eliminato dopo il merge.
 - PR aperta subito (Draft se il lavoro è in corso); a lavoro finito `gh pr ready`.
 - PR "stacked": se una feature dipende da un'altra in corso, il ramo parte dal padre e la PR punta al ramo padre.

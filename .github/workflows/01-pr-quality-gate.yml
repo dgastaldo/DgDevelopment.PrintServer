@@ -4,13 +4,14 @@ name: 01 - PR Quality Gate
 # Windows; macOS runs only after the merge, in 03-develop-quality-gate.yml, because GitHub's macOS
 # runners are often not assigned for a long time and would block merges) and dependency-audit.
 # dependency-audit uses only tools that ship with the SDK and with Node (dotnet list package
-# --vulnerable and npm audit), so it needs no account, token or quota. sonar is an optional extra
-# that skips itself when SONAR_TOKEN is not available (PRs from forks and Dependabot do not
-# receive repository secrets).
+# --vulnerable and npm audit), so it needs no account, token or quota. snyk and sonar are optional
+# extras: they skip themselves when their token is not available (PRs from forks and Dependabot do
+# not receive repository secrets), and snyk never fails the PR, so reaching Snyk's free quota does
+# not block a merge. Keep both out of the ruleset's required checks.
 #
-# Optional secret: SONAR_TOKEN. Optional variables: SONAR_ORGANIZATION and SONAR_PROJECT_KEY
-# (defaults to <owner>_<repo>; set it so a repository rename cannot move the analysis to a
-# different SonarCloud project).
+# Optional secrets: SNYK_TOKEN, SONAR_TOKEN. Optional variables: SONAR_ORGANIZATION and
+# SONAR_PROJECT_KEY (defaults to <owner>_<repo>; set it so a repository rename cannot move the
+# analysis to a different SonarCloud project).
 
 on:
   pull_request:
@@ -98,6 +99,33 @@ jobs:
             echo "::endgroup::"
           done < <(find . -name package-lock.json -not -path "*/node_modules/*")
           exit $status
+
+  snyk:
+    runs-on: ubuntu-latest
+    continue-on-error: true
+    env:
+      SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+    steps:
+      - uses: actions/checkout@v4
+        if: env.SNYK_TOKEN != ''
+
+      - name: Setup .NET
+        if: env.SNYK_TOKEN != ''
+        uses: actions/setup-dotnet@v4
+        with:
+          global-json-file: global.json
+
+      - name: Install Snyk CLI
+        if: env.SNYK_TOKEN != ''
+        uses: snyk/actions/setup@9adf32b1121593767fc3c057af55b55db032dc04 # v1
+
+      - name: Restore packages
+        if: env.SNYK_TOKEN != ''
+        run: dotnet restore PrintServer.slnx
+
+      - name: Run Snyk
+        if: env.SNYK_TOKEN != ''
+        run: snyk test --all-projects
 
   sonar:
     runs-on: ubuntu-latest
