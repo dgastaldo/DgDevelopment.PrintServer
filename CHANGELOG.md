@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.2.1](https://github.com/dgastaldo/DgDevelopment.PrintServer/compare/server-v1.2.0...server-v1.2.1) (2026-11-13)
+
+
+### Bug Fixes
+
+* open the develop to personal promotion PR instead of failing ([697ad40](https://github.com/dgastaldo/DgDevelopment.PrintServer/commit/697ad401d5132e02594b6fa6eb8e1f4b1df6e126))
+* open the develop to personal promotion PR instead of failing ([1e1c594](https://github.com/dgastaldo/DgDevelopment.PrintServer/commit/1e1c594e9995ac743edeb41ea90eabc60577e815))
+
 ## [1.2.0](https://github.com/dgastaldo/DgDevelopment.PrintServer/compare/server-v1.1.0...server-v1.2.0) (2026-11-13)
 
 
