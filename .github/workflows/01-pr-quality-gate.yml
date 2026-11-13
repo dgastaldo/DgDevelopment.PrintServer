@@ -1,6 +1,8 @@
 name: 01 - PR Quality Gate
 
-# Runs on every PR into develop. build-test is the required status check (one per OS); snyk and
+# Runs on every PR into develop. build-test is the required status check (one per OS: Linux and
+# Windows; macOS runs only after the merge, in 03-develop-quality-gate.yml, because GitHub's macOS
+# runners are often not assigned for a long time and would block merges); snyk and
 # sonar are optional extras that skip themselves when the matching secret is not available (PRs
 # from forks and Dependabot do not receive repository secrets).
 #
@@ -22,7 +24,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-latest, windows-latest, macos-latest]
+        os: [ubuntu-latest, windows-latest]
     steps:
       - uses: actions/checkout@v4
 
