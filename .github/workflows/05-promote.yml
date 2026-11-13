@@ -22,7 +22,7 @@ name: 05 - Promote
 on:
   pull_request:
     types: [closed]
-    branches: [personal, docs, integration, main]
+    branches: [develop, personal, docs, integration, main]
 
 permissions:
   contents: write
