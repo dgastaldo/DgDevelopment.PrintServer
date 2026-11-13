@@ -15,7 +15,7 @@ Un **mini print server** che inoltra lavori di stampa e gestisce le code.
 - **Multipiattaforma**: Windows, macOS, Ubuntu (Linux).
 - **C#** con **ASP.NET Core 10** (`net10.0`).
 - **Repository GitHub pubblico**, riutilizzabile da terzi.
-- **Licenza**: AGPL-3.0 + licenza commerciale a pagamento (doppia licenza).
+- **Licenza**: AGPL-3.0.
 
 ## Architettura
 
@@ -71,13 +71,9 @@ Gli stati dei backend sono normalizzati in un `JobStatus` comune (in coda, in st
 
 ## Licenza
 
-Codice pubblico e riutilizzabile, ma chi lo usa commercialmente deve pagare. Nessuna licenza OSI può imporre un pagamento, quindi:
+Codice pubblico sotto **AGPL-3.0** (`LICENSE`), che copre anche l'uso via rete (quindi l'interfaccia web).
 
-- **AGPL-3.0** (`LICENSE`) + **licenza commerciale** (`COMMERCIAL.md`) per chi non vuole rispettarne gli obblighi.
-- Alternativa valutata: PolyForm Noncommercial / Small Business.
-- Essere unico titolare del copyright; **CLA** (`CLA.md`) per i contributi esterni.
 - Verificare la licenza di ogni dipendenza (`THIRD-PARTY-NOTICES.md`); attenzione a librerie PDF commerciali e a strumenti GPL come SumatraPDF.
-- Far rivedere la licenza da un legale prima di basarci un'attività commerciale.
 
 ## Branch Strategy
 
@@ -87,7 +83,7 @@ Catena `develop → personal → docs → integration → main`, feature/fix →
 
 Ogni voce è un ramo `feature/*` → `develop`:
 
-- [ ] `repo-bootstrap` (questo documento, licenze, template)
+- [ ] `repo-bootstrap` (questo documento, template)
 - [ ] `ci-pipeline` (workflow 01–07, release-please)
 - [ ] `solution-scaffold` — soluzione .NET 10 (Worker + web)
 - [ ] `printer-backend-abstraction` — `IPrinterBackend` + `FakePrinterBackend`
@@ -104,7 +100,7 @@ Ogni voce è un ramo `feature/*` → `develop`:
 
 - Non aggiungere commenti nel codice se non richiesto.
 - Seguire le convenzioni esistenti.
-- Non introdurre dipendenze senza verificarne prima la licenza (doppia licenza del progetto).
+- Non introdurre dipendenze senza verificarne prima la licenza (compatibilità con AGPL-3.0).
 - I `.csproj` devono usare `TargetFramework` `net10.0`.
 - Mai committare configurazioni sensibili (connection string, chiavi).
 - Nomi di file e percorsi sono input non fidato: mai concatenarli in comandi di shell.

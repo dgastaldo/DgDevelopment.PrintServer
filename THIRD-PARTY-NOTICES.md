@@ -1,6 +1,6 @@
 # Dipendenze di terze parti
 
-Inventario delle licenze delle dipendenze, da aggiornare a ogni nuova dipendenza. Compatibilità con la doppia licenza AGPL + commerciale da verificare prima dell'aggiunta.
+Inventario delle licenze delle dipendenze, da aggiornare a ogni nuova dipendenza. Compatibilità con la licenza AGPL-3.0 da verificare prima dell'aggiunta.
 
 | Componente | Versione | Licenza | Verificata |
 |---|---|---|---|

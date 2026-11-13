@@ -6,11 +6,8 @@ Mini print server multipiattaforma (Windows, macOS, Linux) in C# / ASP.NET Core 
 
 ## Licenza
 
-Doppia licenza:
-
-- **AGPL-3.0** (`LICENSE`): uso libero rispettandone gli obblighi, inclusa la pubblicazione del codice anche per l'uso via rete.
-- **Licenza commerciale a pagamento** per chi non può o non vuole rispettare l'AGPL: vedi [`COMMERCIAL.md`](COMMERCIAL.md).
+Distribuito con licenza **GNU AGPL-3.0** (`LICENSE`), che include l'obbligo di pubblicare il codice anche per l'uso via rete.
 
 ## Contribuire
 
-Le pull request richiedono la firma del [CLA](CLA.md). Branch e commit seguono `BRANCHING.md`.
+Branch e commit seguono `BRANCHING.md`.

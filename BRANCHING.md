@@ -44,7 +44,6 @@ feature/*  fix/*
 - Solo **squash merge**, ramo eliminato dopo il merge.
 - PR aperta subito (Draft se il lavoro è in corso); a lavoro finito `gh pr ready`.
 - PR "stacked": se una feature dipende da un'altra in corso, il ramo parte dal padre e la PR punta al ramo padre.
-- Le PR esterne richiedono la firma del CLA (vedi `CLA.md`).
 
 ## Promozione
 
