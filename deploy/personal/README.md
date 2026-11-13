@@ -1,6 +1,6 @@
 # Deploy personale con aggiornamento automatico
 
-Il ramo `personal` rappresenta l'istanza sempre attiva sulla tua macchina. Quando una PR di promozione viene unita in `personal`, `05-promote.yml` crea il tag `personal/vAAAA.MM.GG.N` e `06-deploy-personal.yml` pubblica una **pre-release GitHub** con i binari self-contained e `SHA256SUMS`. Gli script di questa cartella scaricano l'ultima pre-release `personal/v*`, verificano il checksum, sostituiscono il binario e riavviano il servizio.
+Il ramo `personal` rappresenta l'istanza sempre attiva sulla tua macchina. Quando una PR di promozione viene unita in `personal`, `05-promote.yml` crea il tag `personal/vX.Y.Z` (X.Y.Z è la versione di release-please) e `06-deploy-personal.yml` pubblica una **pre-release GitHub** con i binari self-contained e `SHA256SUMS`. Gli script di questa cartella scaricano l'ultima pre-release `personal/v*`, verificano il checksum, sostituiscono il binario e riavviano il servizio.
 
 Il repository è pubblico: il download è anonimo e non servono token.
 
