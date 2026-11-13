@@ -1,6 +1,8 @@
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
+using PrintServer.Backends.Common;
+using PrintServer.Backends.Cups;
 using PrintServer.Backends.Fake;
 using PrintServer.Core.Printing;
 
@@ -29,6 +31,11 @@ public static class PrinterBackendServiceCollectionExtensions
             case PrinterBackendKind.Fake:
                 services.Configure<FakePrinterOptions>(section.GetSection("Fake"));
                 services.AddSingleton<IPrinterBackend, FakePrinterBackend>();
+                break;
+            case PrinterBackendKind.Cups:
+                services.Configure<CupsOptions>(section.GetSection("Cups"));
+                services.TryAddSingleton<IProcessRunner, SystemProcessRunner>();
+                services.AddSingleton<IPrinterBackend, CupsBackend>();
                 break;
             default:
                 throw new NotSupportedException($"The {kind} printer backend is not implemented yet.");

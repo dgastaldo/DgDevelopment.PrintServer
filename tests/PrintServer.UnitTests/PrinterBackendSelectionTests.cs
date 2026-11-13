@@ -1,5 +1,7 @@
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
+using PrintServer.Backends.Cups;
 using PrintServer.Backends.Fake;
 using PrintServer.Backends.Selection;
 using PrintServer.Core.Printing;
@@ -81,8 +83,35 @@ public sealed class PrinterBackendSelectionTests
         Assert.Same(provider.GetRequiredService<IPrinterBackend>(), provider.GetRequiredService<IPrinterBackend>());
     }
 
+    [Fact]
+    public void CupsBackendIsRegisteredWhenSelected()
+    {
+        using var provider = Build(new() { ["Printing:Backend"] = "Cups" });
+
+        Assert.IsType<CupsBackend>(provider.GetRequiredService<IPrinterBackend>());
+    }
+
+    [Fact]
+    public void AutoOnLinuxRegistersTheCupsBackend()
+    {
+        using var provider = Build(new() { ["Printing:Backend"] = "Auto" }, HostPlatform.Linux);
+
+        Assert.IsType<CupsBackend>(provider.GetRequiredService<IPrinterBackend>());
+    }
+
+    [Fact]
+    public void CupsPathsComeFromConfiguration()
+    {
+        using var provider = Build(new()
+        {
+            ["Printing:Backend"] = "Cups",
+            ["Printing:Cups:LpPath"] = "/opt/cups/bin/lp",
+        });
+
+        Assert.Equal("/opt/cups/bin/lp", provider.GetRequiredService<IOptions<CupsOptions>>().Value.LpPath);
+    }
+
     [Theory]
-    [InlineData("Cups")]
     [InlineData("WindowsSpooler")]
     [InlineData("Ipp")]
     public void BackendsNotImplementedYetFailClearly(string backend)
