@@ -1,0 +1,13 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <NoWarn>$(NoWarn);CA1515</NoWarn>
+    <Version>1.2.1</Version>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\PrintServer.Core\PrintServer.Core.csproj"/>
+    <ProjectReference Include="..\PrintServer.Backends\PrintServer.Backends.csproj"/>
+  </ItemGroup>
+
+</Project>
