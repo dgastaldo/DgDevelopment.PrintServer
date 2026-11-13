@@ -83,9 +83,9 @@ Catena `develop → personal → docs → integration → main`, feature/fix →
 
 Ogni voce è un ramo `feature/*` → `develop`:
 
-- [ ] `repo-bootstrap` (questo documento, template)
+- [x] `repo-bootstrap` (questo documento, template)
 - [ ] `ci-pipeline` (workflow 01–07, release-please)
-- [ ] `solution-scaffold` — soluzione .NET 10 (Worker + web)
+- [x] `solution-scaffold` — soluzione .NET 10 (Worker + web)
 - [ ] `printer-backend-abstraction` — `IPrinterBackend` + `FakePrinterBackend`
 - [ ] `folder-watcher` — stabilità file + polling di riserva
 - [ ] `sqlite-job-queue` — coda SQLite/EF Core, ripresa dopo riavvio
