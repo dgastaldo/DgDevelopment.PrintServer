@@ -4,7 +4,9 @@ name: 01 - PR Quality Gate
 # sonar are optional extras that skip themselves when the matching secret is not available (PRs
 # from forks and Dependabot do not receive repository secrets).
 #
-# Optional secrets: SNYK_TOKEN, SONAR_TOKEN. Optional variable: SONAR_ORGANIZATION.
+# Optional secrets: SNYK_TOKEN, SONAR_TOKEN. Optional variables: SONAR_ORGANIZATION and
+# SONAR_PROJECT_KEY (defaults to <owner>_<repo>; set it so a repository rename cannot move the
+# analysis to a different SonarCloud project).
 
 on:
   pull_request:
@@ -118,7 +120,7 @@ jobs:
         if: env.SONAR_TOKEN != ''
         run: >
           dotnet sonarscanner begin
-          /k:"${{ github.repository_owner }}_${{ github.event.repository.name }}"
+          /k:"${{ vars.SONAR_PROJECT_KEY || format('{0}_{1}', github.repository_owner, github.event.repository.name) }}"
           /o:"${{ vars.SONAR_ORGANIZATION }}"
           /d:sonar.token="${{ secrets.SONAR_TOKEN }}"
           /d:sonar.cs.opencover.reportsPaths="TestResults/**/coverage.opencover.xml"

@@ -94,7 +94,7 @@ jobs:
         if: env.SONAR_TOKEN != ''
         run: >
           dotnet sonarscanner begin
-          /k:"${{ github.repository_owner }}_${{ github.event.repository.name }}"
+          /k:"${{ vars.SONAR_PROJECT_KEY || format('{0}_{1}', github.repository_owner, github.event.repository.name) }}"
           /o:"${{ vars.SONAR_ORGANIZATION }}"
           /d:sonar.token="${{ secrets.SONAR_TOKEN }}"
           /d:sonar.cs.opencover.reportsPaths="TestResults/**/coverage.opencover.xml"

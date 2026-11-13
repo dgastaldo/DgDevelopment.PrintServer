@@ -43,6 +43,7 @@ jobs:
             docs)        prefix="docs/v";        next="integration" ;;
             integration) prefix="integration/v"; next="main" ;;
             main)        prefix="v";             next="" ;;
+            *)           echo "Unsupported base branch ${{ github.base_ref }}" >&2; exit 1 ;;
           esac
           tag="${prefix}$(date +%Y.%m.%d).${{ github.run_number }}"
           echo "tag=$tag" >> "$GITHUB_OUTPUT"
