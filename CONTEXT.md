@@ -43,7 +43,7 @@ else if (OperatingSystem.IsMacOS() || OperatingSystem.IsLinux())
 |---|---|---|
 | `CupsBackend` | macOS, Ubuntu | `lp`/`lpstat` via `Process` con `ArgumentList` (mai stringhe concatenate: i nomi file sono input non fidato). |
 | `WindowsSpoolerBackend` | Windows | `[SupportedOSPlatform("windows")]`; `winspool.drv` o `System.Printing`. Evitare `ShellExecute` con verbo "print". |
-| `IppBackend` | Tutte | Libreria IPP (es. SharpIpp, da verificare); stampanti di rete e ripiego. Selezionabile da `appsettings.json`. |
+| `IppBackend` | Tutte | Implementazione propria del protocollo IPP, senza librerie esterne; stampanti di rete e ripiego. Selezionabile da `appsettings.json`. |
 | `FakePrinterBackend` | Test | Testa coda, tentativi e stati senza stampante. |
 
 Gli stati dei backend sono normalizzati in un `JobStatus` comune (in coda, in stampa, completato, errore).

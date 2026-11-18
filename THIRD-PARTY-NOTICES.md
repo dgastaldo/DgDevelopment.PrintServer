@@ -5,4 +5,3 @@ Inventario delle licenze delle dipendenze, da aggiornare a ogni nuova dipendenza
 | Componente | Versione | Licenza | Verificata |
 |---|---|---|---|
 | .NET / ASP.NET Core | 10 | MIT | sì |
-| SharpIpp (candidato) | — | da verificare | no |
