@@ -8,6 +8,4 @@ var app = builder.Build();
 
 app.MapGet("/health", () => Results.Ok(new { status = "ok" }));
 
-app.Run();
-
-public partial class Program;
+await app.RunAsync().ConfigureAwait(false);

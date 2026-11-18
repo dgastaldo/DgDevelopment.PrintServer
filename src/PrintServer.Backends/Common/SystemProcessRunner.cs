@@ -60,6 +60,7 @@ public sealed class SystemProcessRunner : IProcessRunner
         }
         catch (InvalidOperationException)
         {
+            // The process has already exited, so there is nothing left to kill.
         }
     }
 }
