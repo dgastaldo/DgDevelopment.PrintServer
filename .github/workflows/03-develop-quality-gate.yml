@@ -3,6 +3,10 @@ name: 03 - Develop Quality Gate
 # Runs on every merge into develop: build and tests on all three platforms, plus a smoke test of the
 # published self-contained binary (start it, call /health). The sonar job gives SonarCloud a real
 # branch analysis for develop and authenticates via secretless OIDC (no SONAR_TOKEN to manage).
+#
+# macOS is optional: it is its own job (build-test-macos), not part of the build-test matrix, so that
+# smoke-test (which needs build-test) never waits for it. GitHub's macOS runners are often not
+# assigned for a long time; when that happens, or when the job fails, nothing else is blocked.
 
 on:
   push:
@@ -18,7 +22,28 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-latest, windows-latest, macos-latest]
+        os: [ubuntu-latest, windows-latest]
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          global-json-file: global.json
+
+      - name: Restore
+        run: dotnet restore PrintServer.slnx
+
+      - name: Build
+        run: dotnet build PrintServer.slnx --no-restore -warnaserror
+
+      - name: Test
+        run: dotnet test PrintServer.slnx --no-build
+
+  build-test-macos:
+    name: build-test (macos-latest)
+    runs-on: macos-latest
+    continue-on-error: true # optional - never blocks smoke-test, the promotion or the workflow result
     steps:
       - uses: actions/checkout@v4
 
