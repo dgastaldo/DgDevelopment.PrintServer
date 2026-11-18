@@ -1,5 +1,15 @@
 # Changelog
 
+## [1.2.2](https://github.com/dgastaldo/DgDevelopment.PrintServer/compare/server-v1.2.1...server-v1.2.2) (2026-11-18)
+
+
+### Bug Fixes
+
+* address the remaining SonarCloud findings ([b7133a4](https://github.com/dgastaldo/DgDevelopment.PrintServer/commit/b7133a41fa0ef4f919df3b23959d224e9e68ad5f))
+* address the remaining SonarCloud findings ([66cbaaa](https://github.com/dgastaldo/DgDevelopment.PrintServer/commit/66cbaaaec34ebd6d2314847014273229b9836280))
+* configure the awaited RunAsync call to satisfy CA2007 ([31fa05a](https://github.com/dgastaldo/DgDevelopment.PrintServer/commit/31fa05a8d42468eb78f2d6b3e092e6299c44ff98))
+* keep Kill void and document the swallowed exception instead of returning an unused bool ([b9e51d4](https://github.com/dgastaldo/DgDevelopment.PrintServer/commit/b9e51d4652558a567a0d7f8355e81c5c821b5f29))
+
 ## [1.2.1](https://github.com/dgastaldo/DgDevelopment.PrintServer/compare/server-v1.2.0...server-v1.2.1) (2026-11-13)
 
 
