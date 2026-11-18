@@ -4,14 +4,16 @@ name: 01 - PR Quality Gate
 # Windows; macOS runs only after the merge, in 03-develop-quality-gate.yml, because GitHub's macOS
 # runners are often not assigned for a long time and would block merges) and dependency-audit.
 # dependency-audit uses only tools that ship with the SDK and with Node (dotnet list package
-# --vulnerable and npm audit), so it needs no account, token or quota. snyk and sonar are optional
-# extras: they skip themselves when their token is not available (PRs from forks and Dependabot do
-# not receive repository secrets), and snyk never fails the PR, so reaching Snyk's free quota does
-# not block a merge. Keep both out of the ruleset's required checks.
+# --vulnerable and npm audit), so it needs no account, token or quota - this is the repo's one and
+# only vulnerability gate now. Snyk was dropped entirely (not just made optional): its free tier
+# caps at 200 tests/month, which a required-adjacent job burns through fast for no benefit over
+# dependency-audit's own CVE coverage against the same NuGet/npm advisory databases. sonar is a
+# separate, still-optional extra (code quality/coverage, not vulnerabilities) that never blocks
+# the PR and authenticates to SonarQube Cloud via secretless OIDC - no token to manage.
 #
-# Optional secrets: SNYK_TOKEN, SONAR_TOKEN. Optional variables: SONAR_ORGANIZATION and
-# SONAR_PROJECT_KEY (defaults to <owner>_<repo>; set it so a repository rename cannot move the
-# analysis to a different SonarCloud project).
+# Optional variables: SONAR_PROJECT_KEY (defaults to <owner>_<repo>; set it so a repository rename
+# cannot move the analysis to a different SonarCloud project). Requires an org admin to enable
+# "Secretless analysis for GitHub Actions" once in SonarQube Cloud's organization settings.
 
 on:
   pull_request:
@@ -100,77 +102,51 @@ jobs:
           done < <(find . -name package-lock.json -not -path "*/node_modules/*")
           exit $status
 
-  snyk:
-    runs-on: ubuntu-latest
-    continue-on-error: true
-    env:
-      SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
-    steps:
-      - uses: actions/checkout@v4
-        if: env.SNYK_TOKEN != ''
-
-      - name: Setup .NET
-        if: env.SNYK_TOKEN != ''
-        uses: actions/setup-dotnet@v4
-        with:
-          global-json-file: global.json
-
-      - name: Install Snyk CLI
-        if: env.SNYK_TOKEN != ''
-        uses: snyk/actions/setup@9adf32b1121593767fc3c057af55b55db032dc04 # v1
-
-      - name: Restore packages
-        if: env.SNYK_TOKEN != ''
-        run: dotnet restore PrintServer.slnx
-
-      - name: Run Snyk
-        if: env.SNYK_TOKEN != ''
-        run: snyk test --all-projects
-
   sonar:
     runs-on: ubuntu-latest
-    env:
-      SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+    continue-on-error: true # optional extra - never blocks the PR
+    permissions:
+      contents: read
+      id-token: write # secretless SonarQube Cloud auth below - exchanges this for a 30min token
     steps:
       - uses: actions/checkout@v4
-        if: env.SONAR_TOKEN != ''
         with:
           fetch-depth: 0
 
+      - name: Authenticate to SonarQube Cloud
+        id: sonar_auth
+        uses: SonarSource/sonarqube-auth-action@v1
+        with:
+          export-env: "false"
+
       - name: Setup .NET
-        if: env.SONAR_TOKEN != ''
         uses: actions/setup-dotnet@v4
         with:
           global-json-file: global.json
 
       - name: Setup Java
-        if: env.SONAR_TOKEN != ''
         uses: actions/setup-java@v4
         with:
           distribution: zulu
           java-version: '21'
 
       - name: Install SonarScanner for .NET
-        if: env.SONAR_TOKEN != ''
         run: dotnet tool install --global dotnet-sonarscanner
 
       - name: Begin SonarCloud analysis
-        if: env.SONAR_TOKEN != ''
         run: >
           dotnet sonarscanner begin
-          /k:"${{ vars.SONAR_PROJECT_KEY || format('{0}_{1}', github.repository_owner, github.event.repository.name) }}"
-          /o:"${{ vars.SONAR_ORGANIZATION }}"
-          /d:sonar.token="${{ secrets.SONAR_TOKEN }}"
+          /k:"${{ steps.sonar_auth.outputs.project-key }}"
+          /o:"${{ steps.sonar_auth.outputs.organization }}"
+          /d:sonar.token="${{ steps.sonar_auth.outputs.sonar-token }}"
           /d:sonar.cs.opencover.reportsPaths="TestResults/**/coverage.opencover.xml"
           /d:sonar.exclusions="**/bin/**,**/obj/**,**/Migrations/**"
           /d:sonar.coverage.exclusions="src/PrintServer.Host/Program.cs"
 
       - name: Build and test
-        if: env.SONAR_TOKEN != ''
         run: |
           dotnet build PrintServer.slnx
           dotnet test PrintServer.slnx --no-build --collect:"XPlat Code Coverage" --results-directory TestResults -- DataCollectionRunSettings.DataCollectors.DataCollector.Configuration.Format=opencover
 
       - name: End SonarCloud analysis
-        if: env.SONAR_TOKEN != ''
-        run: dotnet sonarscanner end /d:sonar.token="${{ secrets.SONAR_TOKEN }}"
+        run: dotnet sonarscanner end /d:sonar.token="${{ steps.sonar_auth.outputs.sonar-token }}"
