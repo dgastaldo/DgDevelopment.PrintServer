@@ -40,8 +40,17 @@ feature/*  fix/*
 
 ## Pull Request Policy
 
-- Ogni merge in `develop` passa da una **Pull Request** con **1 approvazione** e con i controlli `build-test (ubuntu-latest)`, `build-test (windows-latest)` e `dependency-audit` verdi; Snyk e Sonar sono facoltativi e non vanno tra i controlli obbligatori. Il controllo su macOS gira solo dopo il merge (`03-develop-quality-gate`).
-- Solo **squash merge**, ramo eliminato dopo il merge.
+- Ogni merge in `develop` passa da una **Pull Request** con **1 approvazione** e con tutti questi controlli verdi:
+  - `build-test (ubuntu-latest)` e `build-test (windows-latest)`;
+  - `dependency-audit` (non `dependency-audit-full`, che resta informativo: può segnalare vulnerabilità senza fix e non deve bloccare il merge);
+  - `SonarCloud Code Analysis`, cioè il Quality Gate di SonarQube Cloud, alimentato dal job `sonar` con autenticazione OIDC (il job in sé ha `continue-on-error` e non è un requisito);
+  - CodeQL: `Analyze (csharp)` e `Analyze (actions)`, più la regola sul code scanning, che blocca il merge se la PR introduce alert di sicurezza di gravità `high` o superiore, o altri alert di livello `error`.
+- Il ramo della PR deve essere aggiornato con l'ultimo `develop` prima del merge (i controlli ripartono dopo l'aggiornamento).
+- Il ruleset attiva anche la review automatica di Copilot a ogni push, bozze comprese. Gli amministratori possono aggirare le regole solo tramite PR, mai con push diretto.
+- L'approvazione è automatica (`02-auto-approve`) per le PR del proprietario del repository non in bozza e per quelle di Dependabot di tipo patch o minor; un major di Dependabot richiede una review. Le PR di Dependabot e di release-please seguono per il resto le stesse regole.
+- Il controllo su macOS gira solo dopo il merge (`03-develop-quality-gate`) in un job a parte, facoltativo: non è richiesto, e se fallisce o non trova un runner non blocca né lo smoke test né la promozione.
+- Questi requisiti valgono **solo per `develop`**: `01-pr-quality-gate` parte solo sulle PR verso `develop`, quindi sulle PR di promozione (`personal`, `docs`, `integration`, `main`) non si richiede nessun controllo oltre a PR e approvazione.
+- Metodo di merge: **squash** per feature e fix. Il ruleset ammette anche il merge commit, che serve solo ai backport degli hotfix verso `develop` (vedi Hotfix); il rebase non è ammesso. Il ramo viene eliminato dopo il merge.
 - PR aperta subito (Draft se il lavoro è in corso); a lavoro finito `gh pr ready`.
 - PR "stacked": se una feature dipende da un'altra in corso, il ramo parte dal padre e la PR punta al ramo padre.
 
@@ -49,8 +58,8 @@ feature/*  fix/*
 
 `develop → personal → docs → integration → main`, sempre tramite PR (merge, non squash, per mantenere i rami allineati).
 
-- `develop → personal`: PR aperta e unita a mano.
-- Dal merge in `personal` in poi `05-promote.yml` crea il tag di deploy e apre la PR verso il ramo successivo; ogni salto resta un'approvazione umana.
+- `develop → personal`: PR aperta e unita a mano, con merge commit (`gh pr create --base personal --head develop`). `05-promote.yml` non scatta sui merge in `develop`.
+- Dal merge in `personal` in poi `05-promote.yml` crea il tag di deploy e apre in automatico la PR verso il ramo successivo (riusa quella già aperta); ogni salto resta un'approvazione umana.
 - Ogni ambiente ha la sua release GitHub, con la versione che release-please tiene in `.release-please-manifest.json` al commit promosso:
 
   | Ramo | Tag | Release |

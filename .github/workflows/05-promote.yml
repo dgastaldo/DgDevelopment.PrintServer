@@ -1,10 +1,10 @@
 name: 05 - Promote
 
-# Fires when a PR is merged into develop, personal, docs, integration, or main.
+# Fires when a PR is merged into personal, docs, integration, or main.
 #
-# develop: opens (or reuses, when one is already open) the promotion PR develop -> personal. No tag
-# is created on develop: its versions are marked by release-please's server-vX.Y.Z tags. Merging
-# that PR is still a deliberate human action.
+# develop is deliberately not handled here: the develop -> personal promotion PR is opened by hand
+# (gh pr create --base personal --head develop), and develop's versions are marked by
+# release-please's server-vX.Y.Z tags, so nothing is tagged on develop.
 #
 # personal, docs, integration, main: two effects:
 #   1. Auto-creates and pushes that branch's release tag, which is what actually triggers that
@@ -13,8 +13,9 @@ name: 05 - Promote
 #      integration/vX.Y.Z and vX.Y.Z on main. When that tag already exists (a new promotion that
 #      carries no new release-please version) the run number is appended as build metadata,
 #      e.g. personal/vX.Y.Z+42. See BRANCHING.md.
-#   2. If there's a next branch in the chain, opens the promotion PR toward it - the actual merge
-#      of *that* PR is still a deliberate human action (the promotion approval gate).
+#   2. If there's a next branch in the chain, opens (or reuses, when one is already open) the
+#      promotion PR toward it - the actual merge of *that* PR is still a deliberate human action
+#      (the promotion approval gate).
 #
 # IMPORTANT: tags/PRs created with the default GITHUB_TOKEN do not themselves trigger other
 # workflows (GitHub's anti-recursion safeguard), so the tag-push step below needs a real PAT
@@ -25,7 +26,7 @@ name: 05 - Promote
 on:
   pull_request:
     types: [closed]
-    branches: [develop, personal, docs, integration, main]
+    branches: [personal, docs, integration, main]
 
 permissions:
   contents: write
@@ -46,26 +47,21 @@ jobs:
         id: vars
         run: |
           case "${{ github.base_ref }}" in
-            develop)     prefix="";              next="personal" ;;
             personal)    prefix="personal/v";    next="docs" ;;
             docs)        prefix="docs/v";        next="integration" ;;
             integration) prefix="integration/v"; next="main" ;;
             main)        prefix="v";             next="" ;;
             *)           echo "Unsupported base branch ${{ github.base_ref }}" >&2; exit 1 ;;
           esac
-          tag=""
-          if [[ -n "${prefix}" ]]; then
-            version="$(jq -r '.["."]' .release-please-manifest.json)"
-            tag="${prefix}${version}"
-            if git rev-parse -q --verify "refs/tags/${tag}" >/dev/null; then
-              tag="${tag}+${{ github.run_number }}"
-            fi
+          version="$(jq -r '.["."]' .release-please-manifest.json)"
+          tag="${prefix}${version}"
+          if git rev-parse -q --verify "refs/tags/${tag}" >/dev/null; then
+            tag="${tag}+${{ github.run_number }}"
           fi
           echo "tag=$tag" >> "$GITHUB_OUTPUT"
           echo "next=$next" >> "$GITHUB_OUTPUT"
 
       - name: Create and push the release tag
-        if: steps.vars.outputs.tag != ''
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
@@ -79,15 +75,10 @@ jobs:
           BASE: ${{ github.base_ref }}
           NEXT: ${{ steps.vars.outputs.next }}
           TAG: ${{ steps.vars.outputs.tag }}
-          MERGED_PR: ${{ github.event.pull_request.number }}
         run: |
           if [[ "$(gh pr list --base "$NEXT" --head "$BASE" --state open --json number --jq length)" != "0" ]]; then
             echo "A promotion PR $BASE -> $NEXT is already open."
             exit 0
           fi
-          if [[ -n "$TAG" ]]; then
-            body="Automated promotion PR, opened after \`$BASE\` was tagged \`$TAG\`."
-          else
-            body="Automated promotion PR, opened after #$MERGED_PR was merged into \`$BASE\`. Merge it with a merge commit, not a squash."
-          fi
+          body="Automated promotion PR, opened after \`$BASE\` was tagged \`$TAG\`. Merge it with a merge commit, not a squash."
           gh pr create --base "$NEXT" --head "$BASE" --title "Promote $BASE → $NEXT" --body "$body"
