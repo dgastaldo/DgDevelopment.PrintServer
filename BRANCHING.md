@@ -47,7 +47,7 @@ feature/*  fix/*
   - CodeQL: `Analyze (csharp)` e `Analyze (actions)`, più la regola sul code scanning, che blocca il merge se la PR introduce alert di sicurezza di gravità `high` o superiore, o altri alert di livello `error`.
 - Il ramo della PR deve essere aggiornato con l'ultimo `develop` prima del merge (i controlli ripartono dopo l'aggiornamento).
 - Il ruleset attiva anche la review automatica di Copilot a ogni push, bozze comprese. Gli amministratori possono aggirare le regole solo tramite PR, mai con push diretto.
-- Le PR di Dependabot e di release-please seguono le stesse regole.
+- L'approvazione è automatica (`02-auto-approve`) per le PR del proprietario del repository non in bozza e per quelle di Dependabot di tipo patch o minor; un major di Dependabot richiede una review. Le PR di Dependabot e di release-please seguono per il resto le stesse regole.
 - Il controllo su macOS gira solo dopo il merge (`03-develop-quality-gate`), non è richiesto e non blocca la promozione.
 - Questi requisiti valgono **solo per `develop`**: `01-pr-quality-gate` parte solo sulle PR verso `develop`, quindi sulle PR di promozione (`personal`, `docs`, `integration`, `main`) non si richiede nessun controllo oltre a PR e approvazione.
 - Metodo di merge: **squash** per feature e fix. Il ruleset ammette anche il merge commit, che serve solo ai backport degli hotfix verso `develop` (vedi Hotfix); il rebase non è ammesso. Il ramo viene eliminato dopo il merge.
@@ -58,7 +58,7 @@ feature/*  fix/*
 
 `develop → personal → docs → integration → main`, sempre tramite PR (merge, non squash, per mantenere i rami allineati).
 
-- `develop → personal`: PR aperta e unita a mano.
+- `develop → personal`: la PR viene aperta in automatico da `05-promote.yml` dopo ogni merge in `develop` (se ce n'è già una aperta viene riusata) e si unisce a mano, con merge commit.
 - Dal merge in `personal` in poi `05-promote.yml` crea il tag di deploy e apre la PR verso il ramo successivo; ogni salto resta un'approvazione umana.
 - Ogni ambiente ha la sua release GitHub, con la versione che release-please tiene in `.release-please-manifest.json` al commit promosso:
 
