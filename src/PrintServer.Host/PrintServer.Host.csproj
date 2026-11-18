@@ -8,6 +8,7 @@
   <ItemGroup>
     <ProjectReference Include="..\PrintServer.Core\PrintServer.Core.csproj"/>
     <ProjectReference Include="..\PrintServer.Backends\PrintServer.Backends.csproj"/>
+    <ProjectReference Include="..\PrintServer.Watching\PrintServer.Watching.csproj"/>
   </ItemGroup>
 
 </Project>

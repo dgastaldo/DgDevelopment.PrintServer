@@ -27,6 +27,7 @@
     <ProjectReference Include="..\..\src\PrintServer.Core\PrintServer.Core.csproj" />
     <ProjectReference Include="..\..\src\PrintServer.Backends\PrintServer.Backends.csproj" />
     <ProjectReference Include="..\..\src\PrintServer.Host\PrintServer.Host.csproj" />
+    <ProjectReference Include="..\..\src\PrintServer.Watching\PrintServer.Watching.csproj" />
   </ItemGroup>
 
 </Project>
