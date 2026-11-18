@@ -42,7 +42,7 @@ public sealed class SystemProcessRunner : IProcessRunner
         }
         catch (OperationCanceledException)
         {
-            TryKill(process);
+            Kill(process);
             throw;
         }
 
@@ -52,16 +52,15 @@ public sealed class SystemProcessRunner : IProcessRunner
             await standardError.ConfigureAwait(false));
     }
 
-    private static bool TryKill(Process process)
+    private static void Kill(Process process)
     {
         try
         {
             process.Kill(entireProcessTree: true);
-            return true;
         }
         catch (InvalidOperationException)
         {
-            return false;
+            // The process has already exited, so there is nothing left to kill.
         }
     }
 }
