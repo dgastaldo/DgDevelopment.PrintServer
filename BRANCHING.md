@@ -40,7 +40,14 @@ feature/*  fix/*
 
 ## Pull Request Policy
 
-- Ogni merge in `develop` passa da una **Pull Request** con **1 approvazione** e con i controlli `build-test (ubuntu-latest)`, `build-test (windows-latest)` e `dependency-audit` verdi; Snyk e Sonar sono facoltativi e non vanno tra i controlli obbligatori. Il controllo su macOS gira solo dopo il merge (`03-develop-quality-gate`).
+- Ogni merge in `develop` passa da una **Pull Request** con **1 approvazione** e con tutti questi controlli verdi:
+  - `build-test (ubuntu-latest)` e `build-test (windows-latest)`;
+  - `dependency-audit` (non `dependency-audit-full`, che resta informativo: può segnalare vulnerabilità senza fix e non deve bloccare il merge);
+  - `SonarCloud Code Analysis`, cioè il Quality Gate di SonarQube Cloud, alimentato dal job `sonar` con autenticazione OIDC (il job in sé ha `continue-on-error` e non è un requisito);
+  - CodeQL: `Analyze (csharp)`, `Analyze (actions)` e i risultati del code scanning.
+- Le PR di Dependabot e di release-please seguono le stesse regole.
+- Il controllo su macOS gira solo dopo il merge (`03-develop-quality-gate`), non è richiesto e non blocca la promozione.
+- Questi requisiti valgono **solo per `develop`**: `01-pr-quality-gate` parte solo sulle PR verso `develop`, quindi sulle PR di promozione (`personal`, `docs`, `integration`, `main`) non si richiede nessun controllo oltre a PR e approvazione.
 - Solo **squash merge**, ramo eliminato dopo il merge.
 - PR aperta subito (Draft se il lavoro è in corso); a lavoro finito `gh pr ready`.
 - PR "stacked": se una feature dipende da un'altra in corso, il ramo parte dal padre e la PR punta al ramo padre.
