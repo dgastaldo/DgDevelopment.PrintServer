@@ -58,8 +58,8 @@ feature/*  fix/*
 
 `develop → personal → docs → integration → main`, sempre tramite PR (merge, non squash, per mantenere i rami allineati).
 
-- `develop → personal`: la PR viene aperta in automatico da `05-promote.yml` dopo ogni merge in `develop` (se ce n'è già una aperta viene riusata) e si unisce a mano, con merge commit.
-- Dal merge in `personal` in poi `05-promote.yml` crea il tag di deploy e apre la PR verso il ramo successivo; ogni salto resta un'approvazione umana.
+- `develop → personal`: PR aperta e unita a mano, con merge commit (`gh pr create --base personal --head develop`). `05-promote.yml` non scatta sui merge in `develop`.
+- Dal merge in `personal` in poi `05-promote.yml` crea il tag di deploy e apre in automatico la PR verso il ramo successivo (riusa quella già aperta); ogni salto resta un'approvazione umana.
 - Ogni ambiente ha la sua release GitHub, con la versione che release-please tiene in `.release-please-manifest.json` al commit promosso:
 
   | Ramo | Tag | Release |
