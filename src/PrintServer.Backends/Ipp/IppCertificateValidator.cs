@@ -23,5 +23,5 @@ internal static class IppCertificateValidator
     }
 
     private static string Normalize(string thumbprint) =>
-        new(thumbprint.Where(Uri.IsHexDigit).ToArray().Select(char.ToUpperInvariant).ToArray());
+        new(thumbprint.Where(Uri.IsHexDigit).Select(char.ToUpperInvariant).ToArray());
 }
