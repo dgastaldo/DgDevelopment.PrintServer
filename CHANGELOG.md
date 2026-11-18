@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.3.0](https://github.com/dgastaldo/DgDevelopment.PrintServer/compare/server-v1.2.2...server-v1.3.0) (2026-11-18)
+
+
+### Features
+
+* add the folder watcher ([#48](https://github.com/dgastaldo/DgDevelopment.PrintServer/issues/48)) ([61997c1](https://github.com/dgastaldo/DgDevelopment.PrintServer/commit/61997c1dca2e9a45bafceb416bf4c42cdcfe7d20))
+
 ## [1.2.2](https://github.com/dgastaldo/DgDevelopment.PrintServer/compare/server-v1.2.1...server-v1.2.2) (2026-11-18)
 
 
