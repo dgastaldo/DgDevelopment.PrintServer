@@ -11,6 +11,15 @@ name: 01 - PR Quality Gate
 # separate, still-optional extra (code quality/coverage, not vulnerabilities) that never blocks
 # the PR and authenticates to SonarQube Cloud via secretless OIDC - no token to manage.
 #
+# dependency-audit's npm audit runs --omit=dev: a devDependency-only finding with no fix available
+# upstream (same kind of issue already hit on DgDevelopment.Identity - a picomatch ReDoS pulled in
+# by a build-time-only CSS tool) would otherwise block every PR indefinitely with no actionable
+# fix. dependency-audit-full re-runs the same npm audit without --omit=dev - optional and
+# non-blocking (continue-on-error), purely so a devDependency finding is visible on the PR instead
+# of silently invisible, even though it still can't gate the merge on something unfixable. No npm
+# projects exist in this repo today, so both are currently no-ops that activate automatically if
+# one is ever added.
+#
 # Optional variables: SONAR_PROJECT_KEY (defaults to <owner>_<repo>; set it so a repository rename
 # cannot move the analysis to a different SonarCloud project). Requires an org admin to enable
 # "Secretless analysis for GitHub Actions" once in SonarQube Cloud's organization settings.
@@ -97,10 +106,26 @@ jobs:
           while IFS= read -r lock; do
             dir=$(dirname "$lock")
             echo "::group::npm audit $dir"
-            (cd "$dir" && npm audit --audit-level=high) || status=1
+            (cd "$dir" && npm audit --audit-level=high --omit=dev) || status=1
             echo "::endgroup::"
           done < <(find . -name package-lock.json -not -path "*/node_modules/*")
           exit $status
+
+  dependency-audit-full:
+    runs-on: ubuntu-latest
+    continue-on-error: true # optional, non-blocking: see the header comment on --omit=dev above
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Audit npm dependencies, including devDependencies
+        shell: bash
+        run: |
+          while IFS= read -r lock; do
+            dir=$(dirname "$lock")
+            echo "::group::npm audit $dir"
+            (cd "$dir" && npm audit --audit-level=high)
+            echo "::endgroup::"
+          done < <(find . -name package-lock.json -not -path "*/node_modules/*")
 
   sonar:
     runs-on: ubuntu-latest
