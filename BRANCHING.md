@@ -48,7 +48,7 @@ feature/*  fix/*
 - Il ramo della PR deve essere aggiornato con l'ultimo `develop` prima del merge (i controlli ripartono dopo l'aggiornamento).
 - Il ruleset attiva anche la review automatica di Copilot a ogni push, bozze comprese. Gli amministratori possono aggirare le regole solo tramite PR, mai con push diretto.
 - L'approvazione è automatica (`02-auto-approve`) per le PR del proprietario del repository non in bozza e per quelle di Dependabot di tipo patch o minor; un major di Dependabot richiede una review. Le PR di Dependabot e di release-please seguono per il resto le stesse regole.
-- Il controllo su macOS gira solo dopo il merge (`03-develop-quality-gate`), non è richiesto e non blocca la promozione.
+- Il controllo su macOS gira solo dopo il merge (`03-develop-quality-gate`) in un job a parte, facoltativo: non è richiesto, e se fallisce o non trova un runner non blocca né lo smoke test né la promozione.
 - Questi requisiti valgono **solo per `develop`**: `01-pr-quality-gate` parte solo sulle PR verso `develop`, quindi sulle PR di promozione (`personal`, `docs`, `integration`, `main`) non si richiede nessun controllo oltre a PR e approvazione.
 - Metodo di merge: **squash** per feature e fix. Il ruleset ammette anche il merge commit, che serve solo ai backport degli hotfix verso `develop` (vedi Hotfix); il rebase non è ammesso. Il ramo viene eliminato dopo il merge.
 - PR aperta subito (Draft se il lavoro è in corso); a lavoro finito `gh pr ready`.
