@@ -1,5 +1,17 @@
 # Changelog
 
+## [1.4.0](https://github.com/dgastaldo/DgDevelopment.PrintServer/compare/server-v1.3.0...server-v1.4.0) (2026-11-19)
+
+
+### Features
+
+* add the SQLite job queue ([#53](https://github.com/dgastaldo/DgDevelopment.PrintServer/issues/53)) ([fb51dae](https://github.com/dgastaldo/DgDevelopment.PrintServer/commit/fb51dae3acca74ed9951eefa60a9c58c19e0b52e))
+
+
+### Bug Fixes
+
+* simplify the watcher loops flagged by SonarCloud ([#51](https://github.com/dgastaldo/DgDevelopment.PrintServer/issues/51)) ([222b5a4](https://github.com/dgastaldo/DgDevelopment.PrintServer/commit/222b5a471bda3d28263c48b128ef03c14c2cd406))
+
 ## [1.3.0](https://github.com/dgastaldo/DgDevelopment.PrintServer/compare/server-v1.2.2...server-v1.3.0) (2026-11-18)
 
 
