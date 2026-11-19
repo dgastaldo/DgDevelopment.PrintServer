@@ -51,7 +51,7 @@ Gli stati dei backend sono normalizzati in un `JobStatus` comune (in coda, in st
 ### Componenti
 
 1. **Watcher della cartella** (`FileSystemWatcher` in un `BackgroundService`): attende stabilità di dimensione e data di modifica; filtra estensioni e temporanei; polling con `UsePolling` (eventi duplicati/persi, cartelle di rete SMB/NFS, limiti inotify), e in automatico se gli eventi non sono disponibili. Una sottocartella di primo livello = una stampante. Dettagli in `docs/watcher.md`.
-2. **Coda persistente**: SQLite + EF Core, tabella `jobs` (id, percorso, hash, stampante, stato, tentativi, errore, timestamp creazione/inizio/fine). Stati `in_attesa` → `in_stampa` → `completato` / `fallito`. All'avvio i lavori `in_stampa` tornano in coda; l'hash evita doppie stampe; passaggio watcher → worker con `System.Threading.Channels`.
+2. **Coda persistente** (`PrintServer.Queue`): SQLite + EF Core con migrazioni, tabella `jobs` (id, origine, nome, percorsi, hash SHA-256, stampante, formato, opzioni di stampa, stato, tentativi, errore, timestamp). Stati `in_attesa` → `in_conversione` → `in_stampa` → `completato` / `fallito` / `in_stallo`. Chiave del file: cartella, nome, data di creazione e hash; un duplicato attivo va in `duplicati/`, una nuova versione sostituisce il lavoro in attesa. Il file passa subito in `processing/`. Un lavoro in stampa da più di un'ora senza problemi segnalati dalla stampante va in `stallo/`. All'avvio la coda si riallinea chiedendo al backend; passaggio watcher → coda con `System.Threading.Channels`. Dettagli in `docs/queue.md`.
 3. **Worker di stampa**: un lavoro alla volta (o uno per stampante) via `IPrinterBackend`; retry con attesa crescente (3 tentativi) poi `fallito`; sposta il file in `processati/` o `errori/`.
 4. **Tracciamento e interfaccia**: log su file con rotazione + tabella `jobs` come storico; pagina web di stato (Minimal API + Blazor/Razor Pages) con SignalR; eventuale CLI (`stato`, `coda`, `riprova <id>`).
 
@@ -88,7 +88,7 @@ Ogni voce è un ramo `feature/*` → `develop`:
 - [x] `solution-scaffold` — soluzione .NET 10 (Worker + web)
 - [x] `printer-backend-abstraction` — `IPrinterBackend` + `FakePrinterBackend`
 - [x] `folder-watcher` — stabilità file + polling di riserva
-- [ ] `sqlite-job-queue` — coda SQLite/EF Core, ripresa dopo riavvio
+- [x] `sqlite-job-queue` — coda SQLite/EF Core, ripresa dopo riavvio
 - [ ] `print-worker` — retry, `processati/`/`errori/`
 - [x] `ipp-backend`, [x] `cups-backend`, [x] `windows-spooler-backend`
 - [ ] `status-web-ui` — pagina di stato + SignalR
