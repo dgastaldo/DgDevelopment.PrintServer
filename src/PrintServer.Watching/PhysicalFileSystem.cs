@@ -23,7 +23,7 @@ public sealed class PhysicalFileSystem : IFileSystem
         {
             foreach (var file in new DirectoryInfo(path).EnumerateFiles())
             {
-                entries.Add(new FileEntry(file.FullName, file.Length, file.LastWriteTimeUtc));
+                entries.Add(new FileEntry(file.FullName, file.Length, file.LastWriteTimeUtc, file.CreationTimeUtc));
             }
         }
         catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)

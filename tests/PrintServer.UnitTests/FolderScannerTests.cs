@@ -54,6 +54,17 @@ public sealed class FolderScannerTests
         Assert.Empty(Create().Scan(_root));
     }
 
+    [Theory]
+    [InlineData("processing")]
+    [InlineData("stallo")]
+    [InlineData("duplicati")]
+    public void TheQueueFoldersAreIgnoredByDefault(string folder)
+    {
+        _fileSystem.SetFile(InRoot(folder, "a.pdf"), 10, Stamp);
+
+        Assert.Empty(Create().Scan(_root));
+    }
+
     [Fact]
     public void IgnoredFoldersCanBeConfigured()
     {

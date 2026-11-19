@@ -29,6 +29,7 @@ public sealed class PhysicalFileSystemTests : IDisposable
         Assert.Equal(path, entry.Path);
         Assert.Equal(5, entry.Length);
         Assert.Equal(File.GetLastWriteTimeUtc(path), entry.LastWriteUtc.UtcDateTime);
+        Assert.Equal(File.GetCreationTimeUtc(path), entry.CreatedUtc.UtcDateTime);
     }
 
     [Fact]

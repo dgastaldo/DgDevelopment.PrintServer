@@ -71,7 +71,22 @@ public sealed class FolderWatcherServiceTests : IDisposable
         await service.ScanOnceAsync(initial: false, CancellationToken.None);
 
         var file = await ReadAsync(channel);
-        Assert.Equal(new DetectedFile(InRoot("Office", "a.pdf"), "Office", 42), file);
+        Assert.Equal(new DetectedFile(InRoot("Office", "a.pdf"), "Office", 42, Start), file);
+    }
+
+    [Fact]
+    public async Task ThePublishedFileCarriesItsCreationTime()
+    {
+        var (service, channel) = Create();
+        var created = Start.AddDays(-3);
+        _fileSystem.SetFile(InRoot("a.pdf"), 10, Start, created);
+
+        await service.ScanOnceAsync(initial: true, CancellationToken.None);
+        _time.Advance(Window);
+        await service.ScanOnceAsync(initial: false, CancellationToken.None);
+
+        var file = await ReadAsync(channel);
+        Assert.Equal(created, file.CreatedUtc);
     }
 
     [Fact]

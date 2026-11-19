@@ -9,9 +9,9 @@ internal sealed class FakeFileSystem : IFileSystem
 
     public void AddDirectory(string path) => _directories.Add(path);
 
-    public void SetFile(string path, long length, DateTimeOffset lastWriteUtc)
+    public void SetFile(string path, long length, DateTimeOffset lastWriteUtc, DateTimeOffset? createdUtc = null)
     {
-        _files[path] = new FileEntry(path, length, lastWriteUtc);
+        _files[path] = new FileEntry(path, length, lastWriteUtc, createdUtc ?? lastWriteUtc);
         var parent = Path.GetDirectoryName(path);
         while (!string.IsNullOrEmpty(parent))
         {

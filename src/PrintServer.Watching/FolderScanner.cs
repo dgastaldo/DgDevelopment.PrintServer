@@ -1,9 +1,9 @@
+using PrintServer.Core.Queue;
+
 namespace PrintServer.Watching;
 
 internal sealed class FolderScanner
 {
-    private static readonly string[] DefaultIgnoredFolders = ["processati", "errori"];
-
     private readonly IFileSystem _fileSystem;
     private readonly FileFilter _filter;
     private readonly HashSet<string> _ignoredFolders;
@@ -16,7 +16,7 @@ internal sealed class FolderScanner
 
         _fileSystem = fileSystem;
         _filter = filter;
-        _ignoredFolders = new HashSet<string>(options.IgnoredFolders ?? DefaultIgnoredFolders, StringComparer.OrdinalIgnoreCase);
+        _ignoredFolders = new HashSet<string>(options.IgnoredFolders ?? QueueFolders.All, StringComparer.OrdinalIgnoreCase);
     }
 
     public IReadOnlyList<ScannedFile> Scan(string root)

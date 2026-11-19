@@ -47,9 +47,9 @@ public sealed class WatcherRegistrationTests
 
         Assert.Single(provider.GetServices<IHostedService>().OfType<FolderWatcherService>());
         var channel = provider.GetRequiredService<Channel<DetectedFile>>();
-        Assert.True(channel.Writer.TryWrite(new DetectedFile("a", null, 1)));
-        Assert.True(channel.Writer.TryWrite(new DetectedFile("b", null, 1)));
-        Assert.False(channel.Writer.TryWrite(new DetectedFile("c", null, 1)));
+        Assert.True(channel.Writer.TryWrite(new DetectedFile("a", null, 1, DateTimeOffset.UnixEpoch)));
+        Assert.True(channel.Writer.TryWrite(new DetectedFile("b", null, 1, DateTimeOffset.UnixEpoch)));
+        Assert.False(channel.Writer.TryWrite(new DetectedFile("c", null, 1, DateTimeOffset.UnixEpoch)));
     }
 
     [Fact]
