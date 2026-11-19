@@ -42,12 +42,9 @@ internal sealed class FolderScanner
 
     private void AddFiles(string directory, string? printerName, List<ScannedFile> files)
     {
-        foreach (var entry in _fileSystem.GetFiles(directory))
+        foreach (var entry in _fileSystem.GetFiles(directory).Where(entry => _filter.Accepts(Path.GetFileName(entry.Path))))
         {
-            if (_filter.Accepts(Path.GetFileName(entry.Path)))
-            {
-                files.Add(new ScannedFile(entry, printerName));
-            }
+            files.Add(new ScannedFile(entry, printerName));
         }
     }
 }
