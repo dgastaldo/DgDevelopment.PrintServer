@@ -11,9 +11,9 @@ internal sealed class FileStabilityTracker(TimeProvider time, TimeSpan window)
         ArgumentNullException.ThrowIfNull(files);
 
         var now = time.GetUtcNow();
-        foreach (var file in files)
+        foreach (var entry in files.Select(file => file.Entry))
         {
-            _observations[file.Entry.Path] = new Observation(file.Entry.Length, file.Entry.LastWriteUtc, now, true);
+            _observations[entry.Path] = new Observation(entry.Length, entry.LastWriteUtc, now, true);
         }
     }
 

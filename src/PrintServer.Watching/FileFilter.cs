@@ -25,12 +25,9 @@ internal sealed class FileFilter
             return false;
         }
 
-        foreach (var suffix in TemporarySuffixes)
+        if (TemporarySuffixes.Any(suffix => fileName.EndsWith(suffix, StringComparison.OrdinalIgnoreCase)))
         {
-            if (fileName.EndsWith(suffix, StringComparison.OrdinalIgnoreCase))
-            {
-                return false;
-            }
+            return false;
         }
 
         return _extensions.Contains(Path.GetExtension(fileName));
