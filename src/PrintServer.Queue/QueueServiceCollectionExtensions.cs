@@ -46,7 +46,12 @@ public static class QueueServiceCollectionExtensions
             builder.UseSqlite(connection.ToString());
         });
         services.TryAddSingleton<IJobStore, SqliteJobStore>();
+        services.TryAddSingleton<IJobFiles, PhysicalJobFiles>();
+        services.TryAddSingleton<StallEvaluator>();
+        services.TryAddSingleton<JobIntake>();
+        services.TryAddSingleton<JobRecovery>();
         services.AddHostedService<QueueInitializer>();
+        services.AddHostedService<JobIntakeService>();
 
         return services;
     }

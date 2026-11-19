@@ -7,6 +7,7 @@ namespace PrintServer.Queue;
 public sealed partial class QueueInitializer(
     IDbContextFactory<QueueDbContext> factory,
     QueueDatabaseLocation location,
+    JobRecovery recovery,
     ILogger<QueueInitializer> logger) : IHostedService
 {
     public async Task StartAsync(CancellationToken cancellationToken)
@@ -21,6 +22,8 @@ public sealed partial class QueueInitializer(
         await db.Database.MigrateAsync(cancellationToken).ConfigureAwait(false);
         await db.Database.ExecuteSqlRawAsync("PRAGMA journal_mode=WAL;", cancellationToken).ConfigureAwait(false);
         LogReady(location.Path);
+
+        await recovery.RecoverAsync(cancellationToken).ConfigureAwait(false);
     }
 
     public Task StopAsync(CancellationToken cancellationToken) => Task.CompletedTask;

@@ -1,3 +1,4 @@
+using System.Threading.Channels;
 using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -6,6 +7,7 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Options;
 using PrintServer.Core.Printing;
 using PrintServer.Core.Queue;
+using PrintServer.Core.Watching;
 using PrintServer.Queue;
 
 namespace PrintServer.UnitTests;
@@ -31,6 +33,8 @@ public sealed class QueueInfrastructureTests : IDisposable
     {
         var services = new ServiceCollection();
         services.AddLogging();
+        services.AddSingleton<IPrinterBackend>(new ScriptedPrinterBackend());
+        services.AddSingleton(Channel.CreateUnbounded<DetectedFile>());
         services.AddJobQueue(configuration);
         return services.BuildServiceProvider();
     }
@@ -189,7 +193,10 @@ public sealed class QueueInfrastructureTests : IDisposable
         using var provider = Build(Configure(("Watcher:Path", _directory), ("Queue:DatabasePath", Path.Combine(_directory, "q.db"))));
 
         Assert.IsType<SqliteJobStore>(provider.GetRequiredService<IJobStore>());
-        Assert.Single(provider.GetServices<IHostedService>().OfType<QueueInitializer>());
+        var hosted = provider.GetServices<IHostedService>().ToList();
+        Assert.Single(hosted.OfType<QueueInitializer>());
+        Assert.Single(hosted.OfType<JobIntakeService>());
+        Assert.IsType<QueueInitializer>(hosted[0]);
         Assert.Equal(Path.Combine(_directory, "q.db"), provider.GetRequiredService<QueueDatabaseLocation>().Path);
     }
 
