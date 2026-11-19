@@ -6,4 +6,5 @@ Mini print server multipiattaforma (Windows, macOS, Linux): osserva una cartella
 - Strategia dei rami: [BRANCHING.md](https://github.com/dgastaldo/DgDevelopment.PrintServer/blob/develop/BRANCHING.md)
 - Backend di stampa: [configurazione e limiti](backends.html)
 - Cartella osservata: [configurazione e funzionamento](watcher.html)
+- Coda dei lavori: [stati, cartelle e ripresa](queue.html)
 - Licenza: AGPL-3.0

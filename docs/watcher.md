@@ -2,7 +2,7 @@
 
 Il server può osservare una cartella e rilevare i file da stampare. È spento finché non imposti `Watcher:Path`.
 
-> Stato: il watcher pubblica i file pronti, ma la coda e il worker di stampa non ci sono ancora (voci `sqlite-job-queue` e `print-worker` della roadmap). Per ora serve a provare il rilevamento: ogni file riconosciuto compare nel log, e dopo `QueueCapacity` file non letti il watcher si ferma ad aspettare.
+> Stato: il watcher pubblica i file pronti e la [coda](queue.html) li registra. Il worker di stampa non c'è ancora (voce `print-worker` della roadmap): i lavori restano in attesa. Senza `Watcher:Path` non parte né il watcher né la coda.
 
 ## Configurazione
 
@@ -13,7 +13,7 @@ In `appsettings.json`:
   "Watcher": {
     "Path": "/var/printserver/inbox",
     "Extensions": [".pdf", ".ps"],
-    "IgnoredFolders": ["processati", "errori"],
+    "IgnoredFolders": ["processing", "processati", "errori", "stallo", "duplicati"],
     "StabilityWindow": "00:00:10",
     "UsePolling": false,
     "PollInterval": "00:00:30",
@@ -29,7 +29,7 @@ Oppure con variabili d'ambiente, ad esempio per una prova: `Watcher__Path=/tmp/i
 |---|---|---|
 | `Path` | nessuno | Cartella da osservare. Senza, il watcher non parte. |
 | `Extensions` | `.pdf`, `.ps` | Estensioni accettate, senza distinguere le maiuscole. Il punto iniziale è facoltativo. |
-| `IgnoredFolders` | `processati`, `errori` | Sottocartelle da non guardare. |
+| `IgnoredFolders` | `processing`, `processati`, `errori`, `stallo`, `duplicati` | Sottocartelle da non guardare (quelle gestite dalla coda). Se lo imposti, includi anche queste. |
 | `StabilityWindow` | 10 secondi | Quanto tempo dimensione e data di modifica devono restare invariate prima che un file sia considerato completo. |
 | `UsePolling` | `false` | Usa solo la scansione periodica, senza gli eventi del file system. |
 | `PollInterval` | 30 secondi | Ogni quanto scansionare con `UsePolling` (e quando gli eventi non sono disponibili). |
@@ -45,8 +45,11 @@ inbox/
   fattura.pdf              senza stampante (quella predefinita)
   Ufficio/
     etichetta.pdf          stampante "Ufficio"
+  processing/              ignorata (gestita dalla coda)
   processati/              ignorata
   errori/                  ignorata
+  stallo/                  ignorata
+  duplicati/               ignorata
 ```
 
 Le sottocartelle più in profondità non vengono guardate. Il nome della sottocartella è un dato non fidato: il watcher non verifica che la stampante esista, lo farà il worker.
