@@ -5,3 +5,7 @@ Inventario delle licenze delle dipendenze, da aggiornare a ogni nuova dipendenza
 | Componente | Versione | Licenza | Verificata |
 |---|---|---|---|
 | .NET / ASP.NET Core | 10 | MIT | sì |
+| Microsoft.EntityFrameworkCore, .Sqlite, .Design | 10.0.15 | MIT | sì |
+| Microsoft.Data.Sqlite | 10.0.15 | MIT | sì |
+| SQLitePCLRaw (core, provider, lib, bundle) | 2.1.13 | Apache-2.0 | sì |
+| SQLite (libreria nativa inclusa in SQLitePCLRaw) | - | dominio pubblico | sì |
