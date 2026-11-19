@@ -77,12 +77,17 @@ jobs:
           dotnet publish src/PrintServer.Host/PrintServer.Host.csproj
           -c Release -r linux-x64 --self-contained -p:PublishSingleFile=true -o publish
 
-      - name: Start the binary and call /health
+      - name: Start the binary with the watcher and the queue enabled and call /health
         run: |
-          ASPNETCORE_URLS=http://127.0.0.1:5088 ./publish/PrintServer.Host &
+          mkdir -p "$RUNNER_TEMP/inbox"
+          ASPNETCORE_URLS=http://127.0.0.1:5088 Watcher__Path="$RUNNER_TEMP/inbox" Queue__DatabasePath="$RUNNER_TEMP/queue.db" ./publish/PrintServer.Host &
           PID=$!
           for _ in $(seq 1 30); do
-            if curl -fsS http://127.0.0.1:5088/health; then kill $PID; exit 0; fi
+            if curl -fsS http://127.0.0.1:5088/health; then
+              kill $PID
+              test -f "$RUNNER_TEMP/queue.db" || { echo "The queue database was not created"; exit 1; }
+              exit 0
+            fi
             sleep 1
           done
           kill $PID

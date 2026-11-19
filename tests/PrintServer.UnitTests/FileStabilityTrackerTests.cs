@@ -13,7 +13,7 @@ public sealed class FileStabilityTrackerTests
     public FileStabilityTrackerTests() => _tracker = new FileStabilityTracker(_time, Window);
 
     private static ScannedFile MakeFile(string name, long length, DateTimeOffset lastWrite, string? printer = null) =>
-        new(new FileEntry(name, length, lastWrite), printer);
+        new(new FileEntry(name, length, lastWrite, lastWrite), printer);
 
     [Fact]
     public void FirstSightingIsNeverReported()

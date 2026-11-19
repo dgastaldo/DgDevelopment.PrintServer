@@ -1,9 +1,11 @@
 using PrintServer.Backends.Selection;
+using PrintServer.Queue;
 using PrintServer.Watching;
 
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddPrinterBackend(builder.Configuration);
+builder.Services.AddJobQueue(builder.Configuration);
 builder.Services.AddFolderWatcher(builder.Configuration);
 
 var app = builder.Build();

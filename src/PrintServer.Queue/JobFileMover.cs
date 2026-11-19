@@ -1,0 +1,50 @@
+using PrintServer.Core.Queue;
+
+namespace PrintServer.Queue;
+
+internal sealed class JobFileMover(IJobFiles files, IJobStore store)
+{
+    public async Task<bool> MoveDocumentAsync(Job job, string folder, CancellationToken ct)
+    {
+        ArgumentNullException.ThrowIfNull(job);
+
+        if (!files.Exists(job.DocumentPath))
+        {
+            return false;
+        }
+
+        try
+        {
+            var destination = MoveToFolder(job.DocumentPath, job.OriginDirectory, folder, job.FileName);
+            files.DeleteDirectoryIfEmpty(Path.GetDirectoryName(job.DocumentPath)!);
+            await store.UpdateDocumentPathAsync(job.Id, destination, ct).ConfigureAwait(false);
+            return true;
+        }
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+        {
+            return false;
+        }
+    }
+
+    public string MoveToFolder(string source, string originDirectory, string folder, string fileName)
+    {
+        var directory = Path.Combine(originDirectory, folder);
+        files.CreateDirectory(directory);
+        var destination = UniquePath(directory, fileName);
+        files.Move(source, destination);
+        return destination;
+    }
+
+    private string UniquePath(string directory, string fileName)
+    {
+        var candidate = Path.Combine(directory, fileName);
+        var name = Path.GetFileNameWithoutExtension(fileName);
+        var extension = Path.GetExtension(fileName);
+        for (var index = 1; files.Exists(candidate); index++)
+        {
+            candidate = Path.Combine(directory, $"{name} ({index}){extension}");
+        }
+
+        return candidate;
+    }
+}
