@@ -11,7 +11,7 @@ public sealed class CupsBackend(IProcessRunner runner, IOptions<CupsOptions> opt
 
     public async Task<IReadOnlyList<PrinterInfo>> ListPrintersAsync(CancellationToken ct)
     {
-        var result = await runner.RunAsync(_options.LpstatPath, ["-p", "-d"], ct).ConfigureAwait(false);
+        var result = await runner.RunAsync(_options.LpstatPath, ["-l", "-p", "-d"], ct).ConfigureAwait(false);
         if (result.ExitCode != 0)
         {
             if (CupsOutputParser.IsNoDestinations(result.StandardError))

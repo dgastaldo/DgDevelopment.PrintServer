@@ -91,6 +91,7 @@ Ogni voce è un ramo `feature/*` → `develop`:
 - [x] `sqlite-job-queue` — coda SQLite/EF Core, ripresa dopo riavvio
 - [x] `print-worker` — retry, `processati/`/`errori/`
 - [x] `ipp-backend`, [x] `cups-backend`, [x] `windows-spooler-backend`
+- [x] `printer-status` — problemi della stampante (carta, toner, inceppamento, sportello, errore, offline) dai tre backend
 - [ ] `status-web-ui` — pagina di stato + SignalR
 - [ ] `service-hosting` — Windows Service / systemd / launchd
 - [ ] `cli`

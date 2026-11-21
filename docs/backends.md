@@ -43,8 +43,24 @@ IPP, con l'elenco delle stampanti da usare (la prima è quella predefinita):
 
 Altre opzioni IPP: `DocumentFormat` (se omesso si deduce dall'estensione: PDF, JPEG, PNG, testo, altrimenti `application/octet-stream`) e `TrustedCertificateThumbprints`: elenco di impronte SHA-256 (esadecimali, anche con i due punti) di certificati che si accettano pur non essendo validi, per le stampanti con certificato autofirmato. Il certificato deve coincidere con una delle impronte; non esiste un'opzione per accettare qualsiasi certificato.
 
+## Problemi della stampante
+
+Ogni backend, oltre a nome e disponibilità, segnala i problemi che impediscono di stampare. Il worker li usa per decidere se un lavoro fermo da più di un'ora è in stallo (vedi [coda](queue.html)): con un problema attivo il lavoro resta in attesa.
+
+| Problema | IPP e CUPS (`printer-state-reasons`) | Spooler di Windows |
+|---|---|---|
+| Offline | `offline`, `shutdown` (anche come avviso); stampante che non risponde o non accetta lavori | in pausa, offline, non disponibile, server sconosciuto |
+| Carta esaurita | `media-empty`, `media-needed` | carta esaurita o problema carta |
+| Toner esaurito | `toner-empty`, `marker-supply-empty` | senza toner |
+| Carta inceppata | `media-jam` | carta inceppata |
+| Sportello aperto | `door-open`, `cover-open`, `interlock-open` | sportello aperto |
+| Errore | qualsiasi altro motivo che termina con `-error`, ad esempio `spool-area-full-error` | errore, vassoio pieno, memoria esaurita, intervento dell'utente |
+
+Con IPP e CUPS i motivi che finiscono con `-warning` o `-report` (come `toner-low-warning`) sono avvisi e non bloccano; fa eccezione `offline-report`, che indica una stampante offline. Su CUPS i motivi si leggono da `lpstat -l -p` (riga `Alerts:`). Il backend `Fake` può simulare un problema con `Printing:Fake:Issues` (ad esempio `{ "Fake Printer": "PaperOut" }`).
+
 ## Limiti noti
 
 - **CUPS**: un lavoro che non è più in coda viene considerato completato, perché `lpstat` non distingue tra completato e annullato. Un lavoro su una stampante disabilitata resta in coda.
 - **Spooler di Windows**: lo spooler non converte il documento; il file deve essere in un formato che la stampante capisce da sola. Una sola copia per lavoro; sono elencate solo le stampanti installate sul computer.
+- **Problemi della stampante**: dipendono da ciò che la stampante o il driver dichiarano; alcune non segnalano carta o toner esauriti. In quel caso, dopo un'ora senza progressi, il lavoro va in stallo.
 - **IPP**: il formato del documento deve essere accettato dalla stampante; un lavoro che la stampante non conosce più risulta completato.
