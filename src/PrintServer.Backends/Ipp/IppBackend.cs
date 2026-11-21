@@ -10,10 +10,15 @@ public sealed class IppBackend(HttpClient httpClient, IOptions<IppOptions> optio
     private const string Language = "en";
     private const int PrinterStateIdle = 3;
     private const int PrinterStateProcessing = 4;
+    private const int OrientationPortrait = 3;
+    private const int OrientationLandscape = 4;
     private const int JobStatePending = 3;
     private const int JobStatePendingHeld = 4;
     private const int JobStateProcessing = 5;
     private const int JobStateCompleted = 9;
+
+    private static readonly (PrinterAvailability Availability, PrinterIssues Issues) Unreachable =
+        (PrinterAvailability.Offline, PrinterIssues.Offline);
 
     private readonly IppOptions _options = options.Value;
     private int _requestId;
@@ -24,7 +29,8 @@ public sealed class IppBackend(HttpClient httpClient, IOptions<IppOptions> optio
         for (var i = 0; i < _options.Printers.Count; i++)
         {
             var configured = _options.Printers[i];
-            printers.Add(new PrinterInfo(configured.Name, i == 0, await ReadAvailabilityAsync(configured, ct).ConfigureAwait(false)));
+            var (availability, issues) = await ReadStateAsync(configured, ct).ConfigureAwait(false);
+            printers.Add(new PrinterInfo(configured.Name, i == 0, availability, issues));
         }
 
         return printers;
@@ -66,7 +72,7 @@ public sealed class IppBackend(HttpClient httpClient, IOptions<IppOptions> optio
                     IppAttribute.NameWithoutLanguage("job-name", jobName),
                     IppAttribute.MimeMediaType("document-format", _options.DocumentFormat ?? IppDocumentFormats.ForFile(fullPath)),
                 ],
-                [IppAttribute.Integer("copies", request.Copies)]);
+                JobAttributes(request));
 
             var httpUri = IppUri.ToHttp(printer.Uri);
             var response = await SendAsync(httpUri, header, File.OpenRead(fullPath), ct).ConfigureAwait(false);
@@ -145,12 +151,40 @@ public sealed class IppBackend(HttpClient httpClient, IOptions<IppOptions> optio
         }
     }
 
+    private static List<IppAttribute> JobAttributes(PrintRequest request)
+    {
+        var attributes = new List<IppAttribute> { IppAttribute.Integer("copies", request.Copies) };
+        switch (request.Orientation)
+        {
+            case PageOrientation.Portrait:
+                attributes.Add(IppAttribute.Enum("orientation-requested", OrientationPortrait));
+                break;
+            case PageOrientation.Landscape:
+                attributes.Add(IppAttribute.Enum("orientation-requested", OrientationLandscape));
+                break;
+        }
+
+        var sides = request.Duplex switch
+        {
+            DuplexMode.OneSided => "one-sided",
+            DuplexMode.TwoSidedLongEdge => "two-sided-long-edge",
+            DuplexMode.TwoSidedShortEdge => "two-sided-short-edge",
+            _ => null,
+        };
+        if (sides is not null)
+        {
+            attributes.Add(IppAttribute.Keywords("sides", sides));
+        }
+
+        return attributes;
+    }
+
     private IppPrinterOptions? FindPrinter(string name) =>
         _options.Printers.FirstOrDefault(p => string.Equals(p.Name, name, StringComparison.OrdinalIgnoreCase));
 
     private int NextRequestId() => Interlocked.Increment(ref _requestId);
 
-    private async Task<PrinterAvailability> ReadAvailabilityAsync(IppPrinterOptions printer, CancellationToken ct)
+    private async Task<(PrinterAvailability Availability, PrinterIssues Issues)> ReadStateAsync(IppPrinterOptions printer, CancellationToken ct)
     {
         try
         {
@@ -162,35 +196,37 @@ public sealed class IppBackend(HttpClient httpClient, IOptions<IppOptions> optio
                     IppAttribute.NaturalLanguage("attributes-natural-language", Language),
                     IppAttribute.Uri("printer-uri", IppUri.ToIpp(printer.Uri)),
                     IppAttribute.NameWithoutLanguage("requesting-user-name", _options.UserName),
-                    IppAttribute.Keywords("requested-attributes", "printer-state", "printer-is-accepting-jobs"),
+                    IppAttribute.Keywords("requested-attributes", "printer-state", "printer-is-accepting-jobs", "printer-state-reasons"),
                 ]);
 
             var response = await SendAsync(IppUri.ToHttp(printer.Uri), header, document: null, ct).ConfigureAwait(false);
             if (!response.IsSuccess)
             {
-                return PrinterAvailability.Offline;
+                return Unreachable;
             }
 
             var group = response.FindGroup(IppTags.PrinterAttributes);
+            var issues = PrinterStateReasons.ToIssues(group?.GetStrings("printer-state-reasons") ?? []);
             if (group?.GetBoolean("printer-is-accepting-jobs") == false)
             {
-                return PrinterAvailability.Offline;
+                return (PrinterAvailability.Offline, issues);
             }
 
-            return group?.GetInt32("printer-state") switch
+            var availability = group?.GetInt32("printer-state") switch
             {
                 PrinterStateIdle => PrinterAvailability.Ready,
                 PrinterStateProcessing => PrinterAvailability.Busy,
                 _ => PrinterAvailability.Offline,
             };
+            return (availability, issues);
         }
         catch (Exception ex) when (ex is HttpRequestException or InvalidDataException or InvalidOperationException)
         {
-            return PrinterAvailability.Offline;
+            return Unreachable;
         }
         catch (TaskCanceledException) when (!ct.IsCancellationRequested)
         {
-            return PrinterAvailability.Offline;
+            return Unreachable;
         }
     }
 
