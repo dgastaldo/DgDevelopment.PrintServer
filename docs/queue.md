@@ -91,7 +91,7 @@ Un lavoro `in_stampa` da più di `StallAfter` viene valutato così:
 2. Se il backend dice che è completato o in errore, il lavoro prende quello stato (e il file va in `processati/` o `errori/`).
 3. Altrimenti passa a `in_stallo` e il file va in `stallo/`.
 
-Il controllo avviene a ogni giro del worker e quando arriva un file con lo stesso nome di un lavoro in stampa. La rilevazione dei problemi della stampante dipende dai backend (`printer-status` nella roadmap): finché non c'è, uno stallo è deciso solo dal tempo.
+Il controllo avviene a ogni giro del worker e quando arriva un file con lo stesso nome di un lavoro in stampa. I problemi della stampante li riportano i backend (vedi [Problemi della stampante](backends.html#problemi-della-stampante)).
 
 ## Dopo un riavvio
 

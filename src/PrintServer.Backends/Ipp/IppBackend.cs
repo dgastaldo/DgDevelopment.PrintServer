@@ -15,6 +15,9 @@ public sealed class IppBackend(HttpClient httpClient, IOptions<IppOptions> optio
     private const int JobStateProcessing = 5;
     private const int JobStateCompleted = 9;
 
+    private static readonly (PrinterAvailability Availability, PrinterIssues Issues) Unreachable =
+        (PrinterAvailability.Offline, PrinterIssues.Offline);
+
     private readonly IppOptions _options = options.Value;
     private int _requestId;
 
@@ -24,7 +27,8 @@ public sealed class IppBackend(HttpClient httpClient, IOptions<IppOptions> optio
         for (var i = 0; i < _options.Printers.Count; i++)
         {
             var configured = _options.Printers[i];
-            printers.Add(new PrinterInfo(configured.Name, i == 0, await ReadAvailabilityAsync(configured, ct).ConfigureAwait(false)));
+            var (availability, issues) = await ReadStateAsync(configured, ct).ConfigureAwait(false);
+            printers.Add(new PrinterInfo(configured.Name, i == 0, availability, issues));
         }
 
         return printers;
@@ -150,7 +154,7 @@ public sealed class IppBackend(HttpClient httpClient, IOptions<IppOptions> optio
 
     private int NextRequestId() => Interlocked.Increment(ref _requestId);
 
-    private async Task<PrinterAvailability> ReadAvailabilityAsync(IppPrinterOptions printer, CancellationToken ct)
+    private async Task<(PrinterAvailability Availability, PrinterIssues Issues)> ReadStateAsync(IppPrinterOptions printer, CancellationToken ct)
     {
         try
         {
@@ -162,35 +166,37 @@ public sealed class IppBackend(HttpClient httpClient, IOptions<IppOptions> optio
                     IppAttribute.NaturalLanguage("attributes-natural-language", Language),
                     IppAttribute.Uri("printer-uri", IppUri.ToIpp(printer.Uri)),
                     IppAttribute.NameWithoutLanguage("requesting-user-name", _options.UserName),
-                    IppAttribute.Keywords("requested-attributes", "printer-state", "printer-is-accepting-jobs"),
+                    IppAttribute.Keywords("requested-attributes", "printer-state", "printer-is-accepting-jobs", "printer-state-reasons"),
                 ]);
 
             var response = await SendAsync(IppUri.ToHttp(printer.Uri), header, document: null, ct).ConfigureAwait(false);
             if (!response.IsSuccess)
             {
-                return PrinterAvailability.Offline;
+                return Unreachable;
             }
 
             var group = response.FindGroup(IppTags.PrinterAttributes);
+            var issues = PrinterStateReasons.ToIssues(group?.GetStrings("printer-state-reasons") ?? []);
             if (group?.GetBoolean("printer-is-accepting-jobs") == false)
             {
-                return PrinterAvailability.Offline;
+                return (PrinterAvailability.Offline, issues);
             }
 
-            return group?.GetInt32("printer-state") switch
+            var availability = group?.GetInt32("printer-state") switch
             {
                 PrinterStateIdle => PrinterAvailability.Ready,
                 PrinterStateProcessing => PrinterAvailability.Busy,
                 _ => PrinterAvailability.Offline,
             };
+            return (availability, issues);
         }
         catch (Exception ex) when (ex is HttpRequestException or InvalidDataException or InvalidOperationException)
         {
-            return PrinterAvailability.Offline;
+            return Unreachable;
         }
         catch (TaskCanceledException) when (!ct.IsCancellationRequested)
         {
-            return PrinterAvailability.Offline;
+            return Unreachable;
         }
     }
 

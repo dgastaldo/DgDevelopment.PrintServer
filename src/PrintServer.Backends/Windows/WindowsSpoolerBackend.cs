@@ -14,7 +14,8 @@ public sealed class WindowsSpoolerBackend(ISpoolerApi spooler) : IPrinterBackend
                     .Select(p => new PrinterInfo(
                         p.Name,
                         string.Equals(p.Name, defaultPrinter, StringComparison.OrdinalIgnoreCase),
-                        SpoolerStatusMapper.MapPrinter(p.Status)))
+                        SpoolerStatusMapper.MapPrinter(p.Status),
+                        SpoolerStatusMapper.MapIssues(p.Status)))
                     .ToList();
             },
             ct);
