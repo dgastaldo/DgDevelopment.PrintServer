@@ -8,11 +8,15 @@ namespace PrintServer.WebUi.Components;
 public abstract class RefreshingComponent : ComponentBase, IDisposable
 {
     private readonly CancellationTokenSource _lifetime = new();
+    private readonly CancellationToken _token;
+
+    protected RefreshingComponent() => _token = _lifetime.Token;
 
     [Inject]
     protected IOptions<WebUiOptions> Settings { get; set; } = default!;
 
-    protected CancellationToken Token => _lifetime.Token;
+    // Copied once: a CancellationToken stays valid after its source is disposed, the source itself does not.
+    protected CancellationToken Token => _token;
 
     protected string? LoadError { get; private set; }
 
