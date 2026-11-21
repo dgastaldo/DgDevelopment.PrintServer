@@ -51,9 +51,11 @@ internal sealed class JobFileMover(IJobFiles files, IJobStore store)
         var candidate = Path.Combine(directory, fileName);
         var name = Path.GetFileNameWithoutExtension(fileName);
         var extension = Path.GetExtension(fileName);
-        for (var index = 1; files.Exists(candidate); index++)
+        var index = 1;
+        while (files.Exists(candidate))
         {
             candidate = Path.Combine(directory, $"{name} ({index}){extension}");
+            index++;
         }
 
         return candidate;
