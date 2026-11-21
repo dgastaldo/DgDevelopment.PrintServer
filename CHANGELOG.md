@@ -1,5 +1,19 @@
 # Changelog
 
+## [1.7.0](https://github.com/dgastaldo/DgDevelopment.PrintServer/compare/server-v1.6.0...server-v1.7.0) (2026-11-21)
+
+
+### Features
+
+* add the status web page with Identity login ([#75](https://github.com/dgastaldo/DgDevelopment.PrintServer/issues/75)) ([783ed0a](https://github.com/dgastaldo/DgDevelopment.PrintServer/commit/783ed0a22bd1c33a7c6e3c42f0fd90f98d2e9a1a))
+* cancel, retry and query jobs, and submit files from code ([#74](https://github.com/dgastaldo/DgDevelopment.PrintServer/issues/74)) ([a87b5a3](https://github.com/dgastaldo/DgDevelopment.PrintServer/commit/a87b5a33070ddc4b60a7abc73f180b514ab42574))
+* convert documents and images to PDF before printing ([#71](https://github.com/dgastaldo/DgDevelopment.PrintServer/issues/71)) ([eb02827](https://github.com/dgastaldo/DgDevelopment.PrintServer/commit/eb028270f07257553227c2c9304bacacd7716689))
+
+
+### Bug Fixes
+
+* resolve the remaining SonarCloud findings on develop ([#76](https://github.com/dgastaldo/DgDevelopment.PrintServer/issues/76)) ([d538b7b](https://github.com/dgastaldo/DgDevelopment.PrintServer/commit/d538b7b249b1ab510f528af03731bccc6d78d2a2))
+
 ## [1.6.0](https://github.com/dgastaldo/DgDevelopment.PrintServer/compare/server-v1.5.0...server-v1.6.0) (2026-11-21)
 
 
