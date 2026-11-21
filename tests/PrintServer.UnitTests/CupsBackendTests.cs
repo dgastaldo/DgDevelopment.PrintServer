@@ -27,7 +27,7 @@ public sealed class CupsBackendTests : IDisposable
         Assert.True(printer.IsDefault);
         var call = Assert.Single(_runner.Calls);
         Assert.Equal("lpstat-bin", call.FileName);
-        Assert.Equal(["-p", "-d"], call.Arguments);
+        Assert.Equal(["-l", "-p", "-d"], call.Arguments);
     }
 
     [Fact]

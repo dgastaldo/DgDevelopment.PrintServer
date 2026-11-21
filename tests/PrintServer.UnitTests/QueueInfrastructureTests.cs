@@ -196,7 +196,9 @@ public sealed class QueueInfrastructureTests : IDisposable
         var hosted = provider.GetServices<IHostedService>().ToList();
         Assert.Single(hosted.OfType<QueueInitializer>());
         Assert.Single(hosted.OfType<JobIntakeService>());
+        Assert.Single(hosted.OfType<JobProcessingService>());
         Assert.IsType<QueueInitializer>(hosted[0]);
+        Assert.IsType<JobProcessingService>(hosted[^1]);
         Assert.Equal(Path.Combine(_directory, "q.db"), provider.GetRequiredService<QueueDatabaseLocation>().Path);
     }
 
@@ -208,6 +210,9 @@ public sealed class QueueInfrastructureTests : IDisposable
 
         Assert.Equal(TimeSpan.FromHours(1), defaults.GetRequiredService<IOptions<QueueOptions>>().Value.StallAfter);
         Assert.Null(defaults.GetRequiredService<IOptions<QueueOptions>>().Value.DatabasePath);
+        Assert.Equal(5, defaults.GetRequiredService<IOptions<QueueOptions>>().Value.MaxAttempts);
+        Assert.Equal(TimeSpan.FromSeconds(30), defaults.GetRequiredService<IOptions<QueueOptions>>().Value.RetryBaseDelay);
+        Assert.Equal(TimeSpan.FromSeconds(5), defaults.GetRequiredService<IOptions<QueueOptions>>().Value.PollInterval);
         Assert.Equal(TimeSpan.FromMinutes(150), custom.GetRequiredService<IOptions<QueueOptions>>().Value.StallAfter);
     }
 
@@ -215,6 +220,18 @@ public sealed class QueueInfrastructureTests : IDisposable
     public void ANonPositiveStallTimeIsRejected()
     {
         using var provider = Build(Configure(("Watcher:Path", _directory), ("Queue:StallAfter", "00:00:00")));
+
+        Assert.Throws<OptionsValidationException>(() => provider.GetRequiredService<IOptions<QueueOptions>>().Value);
+    }
+
+    [Theory]
+    [InlineData("Queue:MaxAttempts", "0")]
+    [InlineData("Queue:MaxAttempts", "21")]
+    [InlineData("Queue:RetryBaseDelay", "00:00:00")]
+    [InlineData("Queue:PollInterval", "00:00:00")]
+    public void InvalidWorkerOptionsAreRejected(string key, string value)
+    {
+        using var provider = Build(Configure(("Watcher:Path", _directory), (key, value)));
 
         Assert.Throws<OptionsValidationException>(() => provider.GetRequiredService<IOptions<QueueOptions>>().Value);
     }
