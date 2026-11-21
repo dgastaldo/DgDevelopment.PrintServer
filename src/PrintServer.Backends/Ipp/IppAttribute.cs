@@ -25,6 +25,13 @@ internal sealed record IppAttribute(byte Tag, string Name, IReadOnlyList<byte[]>
         return new IppAttribute(IppTags.Integer, name, [bytes]);
     }
 
+    public static IppAttribute Enum(string name, int value)
+    {
+        var bytes = new byte[4];
+        BinaryPrimitives.WriteInt32BigEndian(bytes, value);
+        return new IppAttribute(IppTags.Enum, name, [bytes]);
+    }
+
     private static IppAttribute Text(byte tag, string name, string value) =>
         new(tag, name, [Encoding.UTF8.GetBytes(value)]);
 }

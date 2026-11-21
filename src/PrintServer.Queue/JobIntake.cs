@@ -122,7 +122,7 @@ public sealed partial class JobIntake
             hash,
             file.Length,
             DocumentFormats.ForFile(name),
-            PrintOptions.Default);
+            file.Options);
 
         if (!await _store.TryEnqueueAsync(newJob, ct).ConfigureAwait(false))
         {

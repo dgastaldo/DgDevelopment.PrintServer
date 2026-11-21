@@ -2,8 +2,9 @@ name: 02 - Auto-approve
 
 # Approves PRs so they don't get stuck waiting on a human reviewer under this repo's branch ruleset
 # (required_approving_review_count: 1):
-#   - Dependabot's own patch/minor dependency-bump PRs - a major bump still needs an explicit human
-#     review, since those are more likely to carry breaking changes.
+#   - Dependabot's own patch/minor dependency-bump PRs, and major bumps of GitHub Actions (they only
+#     affect CI, and the required checks still run). A major bump of any other dependency (NuGet)
+#     still needs an explicit human review, since those are more likely to carry breaking changes.
 #   - PRs opened by the repository owner from a branch of this same repository (never from a fork),
 #     once they are no longer drafts.
 # The approval comes from github-actions[bot], so it is a different identity from the PR author. The
@@ -40,7 +41,10 @@ jobs:
           github-token: "${{ secrets.GITHUB_TOKEN }}"
 
       - name: Approve
-        if: github.event.pull_request.user.login != 'dependabot[bot]' || steps.metadata.outputs.update-type != 'version-update:semver-major'
+        if: >-
+          github.event.pull_request.user.login != 'dependabot[bot]' ||
+          steps.metadata.outputs.update-type != 'version-update:semver-major' ||
+          contains(fromJSON('["github_actions","github-actions"]'), steps.metadata.outputs.package-ecosystem)
         run: gh pr review --approve "$PR_URL"
         env:
           PR_URL: ${{ github.event.pull_request.html_url }}
