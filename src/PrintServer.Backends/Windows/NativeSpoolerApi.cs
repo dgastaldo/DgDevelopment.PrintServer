@@ -11,6 +11,7 @@ public sealed partial class NativeSpoolerApi : ISpoolerApi
 {
     private const int PrinterEnumLocal = 0x2;
     private const int ErrorInvalidParameter = 87;
+    private const int JobControlDelete = 5;
     private const int ErrorInsufficientBuffer = 122;
     private const int BufferSize = 64 * 1024;
 
@@ -160,6 +161,31 @@ public sealed partial class NativeSpoolerApi : ISpoolerApi
         }
     }
 
+    public bool CancelJob(string printerName, int jobId)
+    {
+        if (!OpenPrinter(printerName, out var printer, nint.Zero))
+        {
+            throw new InvalidOperationException($"Cannot open printer '{printerName}': {new Win32Exception(Marshal.GetLastWin32Error()).Message}");
+        }
+
+        try
+        {
+            if (SetJob(printer, jobId, 0, nint.Zero, JobControlDelete))
+            {
+                return true;
+            }
+
+            var error = Marshal.GetLastWin32Error();
+            return error == ErrorInvalidParameter
+                ? true
+                : throw new InvalidOperationException($"SetJob failed: {new Win32Exception(error).Message}");
+        }
+        finally
+        {
+            _ = ClosePrinter(printer);
+        }
+    }
+
     [StructLayout(LayoutKind.Sequential)]
     private struct DocInfo1
     {
@@ -259,4 +285,9 @@ public sealed partial class NativeSpoolerApi : ISpoolerApi
     [LibraryImport("winspool.drv", EntryPoint = "GetJobW", SetLastError = true)]
     [return: MarshalAs(UnmanagedType.Bool)]
     private static partial bool GetJob(nint printer, int jobId, int level, nint job, int bufferSize, out int needed);
+
+    [DefaultDllImportSearchPaths(DllImportSearchPath.System32)]
+    [LibraryImport("winspool.drv", EntryPoint = "SetJobW", SetLastError = true)]
+    [return: MarshalAs(UnmanagedType.Bool)]
+    private static partial bool SetJob(nint printer, int jobId, int level, nint job, int command);
 }

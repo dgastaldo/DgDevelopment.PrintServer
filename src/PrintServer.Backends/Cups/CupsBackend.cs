@@ -125,4 +125,17 @@ public sealed class CupsBackend(IProcessRunner runner, IOptions<CupsOptions> opt
             ? JobStatus.Printing
             : JobStatus.Queued;
     }
+
+    public async Task<bool> CancelJobAsync(string backendJobId, CancellationToken ct)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(backendJobId);
+
+        var result = await runner.RunAsync(_options.CancelPath, [backendJobId], ct).ConfigureAwait(false);
+        if (result.ExitCode == 0 || CupsOutputParser.IsJobGone(result.StandardError))
+        {
+            return true;
+        }
+
+        throw new InvalidOperationException($"cancel failed: {result.StandardError.Trim()}");
+    }
 }

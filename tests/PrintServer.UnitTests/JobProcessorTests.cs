@@ -378,6 +378,15 @@ internal sealed class FailingFirstLookupJobStoreForProcessing(IJobStore inner) :
             ? throw new InvalidOperationException("database unavailable")
             : inner.ListAsync(state, ct);
 
+    public Task<JobPage> QueryAsync(JobQuery query, int skip, int take, CancellationToken ct) =>
+        inner.QueryAsync(query, skip, take, ct);
+
+    public Task<IReadOnlyDictionary<JobState, int>> CountByStateAsync(CancellationToken ct) => inner.CountByStateAsync(ct);
+
+    public Task<bool> CancelAsync(Guid id, string reason, CancellationToken ct) => inner.CancelAsync(id, reason, ct);
+
+    public Task<RestartOutcome> RestartAsync(Guid id, CancellationToken ct) => inner.RestartAsync(id, ct);
+
     public Task<IReadOnlyList<Job>> FindActiveAsync(string originDirectory, string fileName, CancellationToken ct) =>
         inner.FindActiveAsync(originDirectory, fileName, ct);
 

@@ -22,6 +22,7 @@ internal static class IppTags
 internal static class IppOperations
 {
     public const ushort PrintJob = 0x0002;
+    public const ushort CancelJob = 0x0008;
     public const ushort GetJobAttributes = 0x0009;
     public const ushort GetPrinterAttributes = 0x000B;
 }

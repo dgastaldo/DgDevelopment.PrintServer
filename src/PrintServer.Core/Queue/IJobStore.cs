@@ -8,6 +8,14 @@ public interface IJobStore
 
     Task<IReadOnlyList<Job>> ListAsync(JobState state, CancellationToken ct);
 
+    Task<JobPage> QueryAsync(JobQuery query, int skip, int take, CancellationToken ct);
+
+    Task<IReadOnlyDictionary<JobState, int>> CountByStateAsync(CancellationToken ct);
+
+    Task<bool> CancelAsync(Guid id, string reason, CancellationToken ct);
+
+    Task<RestartOutcome> RestartAsync(Guid id, CancellationToken ct);
+
     Task<IReadOnlyList<Job>> FindActiveAsync(string originDirectory, string fileName, CancellationToken ct);
 
     Task<Job?> ClaimNextAsync(CancellationToken ct);

@@ -10,6 +10,8 @@ public sealed class SqliteJobStore(IDbContextFactory<QueueDbContext> factory, Ti
     private const int SqliteConstraintError = 19;
     private const int ClaimAttempts = 5;
     private const int ClaimCandidates = 100;
+    private const int MaxPageSize = 200;
+    private const string LikeEscape = "\\";
 
     public async Task<bool> TryEnqueueAsync(NewJob job, CancellationToken ct)
     {
@@ -44,6 +46,102 @@ public sealed class SqliteJobStore(IDbContextFactory<QueueDbContext> factory, Ti
             .ToListAsync(ct)
             .ConfigureAwait(false);
         return [.. entities.Select(JobMapping.ToJob)];
+    }
+
+    public async Task<JobPage> QueryAsync(JobQuery query, int skip, int take, CancellationToken ct)
+    {
+        ArgumentNullException.ThrowIfNull(query);
+        ArgumentOutOfRangeException.ThrowIfNegative(skip);
+        ArgumentOutOfRangeException.ThrowIfLessThan(take, 1);
+
+        using var db = factory.CreateDbContext();
+        var jobs = db.Jobs.AsNoTracking().AsQueryable();
+        if (query.State is { } state)
+        {
+            jobs = jobs.Where(j => j.State == state);
+        }
+
+        if (!string.IsNullOrWhiteSpace(query.Search))
+        {
+            var pattern = "%" + EscapeLike(query.Search.Trim()) + "%";
+            jobs = jobs.Where(j => EF.Functions.Like(j.FileName, pattern, LikeEscape));
+        }
+
+        var total = await jobs.CountAsync(ct).ConfigureAwait(false);
+        var entities = await jobs
+            .OrderByDescending(j => j.CreatedAt)
+            .ThenBy(j => j.Id)
+            .Skip(skip)
+            .Take(Math.Min(take, MaxPageSize))
+            .ToListAsync(ct)
+            .ConfigureAwait(false);
+        return new JobPage([.. entities.Select(JobMapping.ToJob)], total);
+    }
+
+    public async Task<IReadOnlyDictionary<JobState, int>> CountByStateAsync(CancellationToken ct)
+    {
+        using var db = factory.CreateDbContext();
+        var counts = await db.Jobs.AsNoTracking()
+            .GroupBy(j => j.State)
+            .Select(group => new { State = group.Key, Count = group.Count() })
+            .ToListAsync(ct)
+            .ConfigureAwait(false);
+        return counts.ToDictionary(item => item.State, item => item.Count);
+    }
+
+    public async Task<bool> CancelAsync(Guid id, string reason, CancellationToken ct)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(reason);
+
+        var now = time.GetUtcNow();
+        using var db = factory.CreateDbContext();
+        var updated = await db.Jobs
+            .Where(j => j.Id == id
+                && (j.State == JobState.Pending || j.State == JobState.Converting || j.State == JobState.Printing))
+            .ExecuteUpdateAsync(
+                set => set
+                    .SetProperty(j => j.State, JobState.Cancelled)
+                    .SetProperty(j => j.LastError, reason)
+                    .SetProperty(j => j.FinishedAt, now)
+                    .SetProperty(j => j.NextAttemptAt, (DateTimeOffset?)null),
+                ct)
+            .ConfigureAwait(false);
+        return updated == 1;
+    }
+
+    public async Task<RestartOutcome> RestartAsync(Guid id, CancellationToken ct)
+    {
+        var now = time.GetUtcNow();
+        using var db = factory.CreateDbContext();
+        try
+        {
+            var updated = await db.Jobs
+                .Where(j => j.Id == id
+                    && (j.State == JobState.Failed || j.State == JobState.Stalled || j.State == JobState.Cancelled))
+                .ExecuteUpdateAsync(
+                    set => set
+                        .SetProperty(j => j.State, JobState.Pending)
+                        .SetProperty(j => j.Attempts, 0)
+                        .SetProperty(j => j.LastError, (string?)null)
+                        .SetProperty(j => j.CreatedAt, now)
+                        .SetProperty(j => j.StartedAt, (DateTimeOffset?)null)
+                        .SetProperty(j => j.FinishedAt, (DateTimeOffset?)null)
+                        .SetProperty(j => j.NextAttemptAt, (DateTimeOffset?)null)
+                        .SetProperty(j => j.LastBlockedAt, (DateTimeOffset?)null)
+                        .SetProperty(j => j.BackendJobId, (string?)null)
+                        .SetProperty(j => j.DocumentFormat, j => j.SourceFormat),
+                    ct)
+                .ConfigureAwait(false);
+            return updated == 1 ? RestartOutcome.Restarted : RestartOutcome.NotRestartable;
+        }
+        catch (SqliteException ex) when (ex.SqliteErrorCode == SqliteConstraintError)
+        {
+            return RestartOutcome.Conflict;
+        }
+        catch (DbUpdateException ex) when (ex.InnerException is SqliteException { SqliteErrorCode: SqliteConstraintError })
+        {
+            return RestartOutcome.Conflict;
+        }
     }
 
     public async Task<IReadOnlyList<Job>> FindActiveAsync(string originDirectory, string fileName, CancellationToken ct)
@@ -281,4 +379,9 @@ public sealed class SqliteJobStore(IDbContextFactory<QueueDbContext> factory, Ti
             .ConfigureAwait(false);
         return updated == 1;
     }
+
+    private static string EscapeLike(string text) =>
+        text.Replace(LikeEscape, LikeEscape + LikeEscape, StringComparison.Ordinal)
+            .Replace("%", LikeEscape + "%", StringComparison.Ordinal)
+            .Replace("_", LikeEscape + "_", StringComparison.Ordinal);
 }

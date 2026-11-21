@@ -67,6 +67,18 @@ public sealed class WindowsSpoolerBackend(ISpoolerApi spooler) : IPrinterBackend
             ct);
     }
 
+    public Task<bool> CancelJobAsync(string backendJobId, CancellationToken ct)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(backendJobId);
+
+        if (!BackendJobId.TryParse(backendJobId, out var jobId, out var printerName))
+        {
+            throw new ArgumentException($"'{backendJobId}' is not a Windows spooler job id.", nameof(backendJobId));
+        }
+
+        return Task.Run(() => spooler.CancelJob(printerName, jobId), ct);
+    }
+
     private PrintResult Submit(string printerName, string documentName, string fullPath, CancellationToken ct)
     {
         try

@@ -12,5 +12,7 @@ public static class QueueFolders
 
     public const string Duplicates = "duplicati";
 
-    public static IReadOnlyList<string> All { get; } = [Processing, Completed, Failed, Stalled, Duplicates];
+    public const string Cancelled = "annullati";
+
+    public static IReadOnlyList<string> All { get; } = [Processing, Completed, Failed, Stalled, Duplicates, Cancelled];
 }
