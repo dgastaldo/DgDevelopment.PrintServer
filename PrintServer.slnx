@@ -6,6 +6,7 @@
     <Project Path="src/PrintServer.Host/PrintServer.Host.csproj" />
     <Project Path="src/PrintServer.Queue/PrintServer.Queue.csproj" />
     <Project Path="src/PrintServer.Watching/PrintServer.Watching.csproj" />
+    <Project Path="src/PrintServer.WebUi/PrintServer.WebUi.csproj" />
   </Folder>
   <Folder Name="/tests/">
     <Project Path="tests/PrintServer.UnitTests/PrintServer.UnitTests.csproj" />

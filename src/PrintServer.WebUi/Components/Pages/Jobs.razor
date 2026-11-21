@@ -1,0 +1,88 @@
+@page "/jobs"
+@inject QueueView View
+@inject NavigationManager Navigation
+
+<main class="page">
+    <h1>Lavori</h1>
+    @if (LoadError is not null)
+    {
+        <p class="banner bad">@LoadError</p>
+    }
+    <form class="filters" @onsubmit="ApplyAsync">
+        <label>Stato
+            <select @bind="_state">
+                <option value="">Tutti</option>
+                @foreach (var state in Display.AllStates)
+                {
+                    <option value="@state">@Display.StateLabel(state)</option>
+                }
+            </select>
+        </label>
+        <label>Nome file
+            <input type="search" @bind="_search" placeholder="cerca..." />
+        </label>
+        <button type="submit">Filtra</button>
+    </form>
+
+    <JobTable Jobs="_page.Items" OnChanged="ReloadAsync" />
+
+    <div class="pager">
+        <button type="button" disabled="@(_skip == 0)" @onclick="PreviousAsync">Precedenti</button>
+        <span>@Range()</span>
+        <button type="button" disabled="@(_skip + PageSize >= _page.Total)" @onclick="NextAsync">Successivi</button>
+    </div>
+</main>
+
+@code {
+    private const int PageSize = 25;
+
+    private string _state = string.Empty;
+    private string _search = string.Empty;
+    private int _skip;
+    private JobPage _page = new([], 0);
+    private bool _queryRead;
+
+    [SupplyParameterFromQuery(Name = "state")]
+    public string? StateFilter { get; set; }
+
+    protected override void OnParametersSet()
+    {
+        if (!_queryRead)
+        {
+            _queryRead = true;
+            _state = ParseState(StateFilter);
+        }
+    }
+
+    public static string ParseState(string? value) =>
+        Enum.TryParse<JobState>(value, ignoreCase: true, out var state) && Enum.IsDefined(state) ? state.ToString() : string.Empty;
+
+    private JobQuery Query() => new(
+        Enum.TryParse<JobState>(_state, out var state) ? state : null,
+        string.IsNullOrWhiteSpace(_search) ? null : _search);
+
+    private string Range() => _page.Total == 0
+        ? "Nessun lavoro"
+        : $"{_skip + 1}-{Math.Min(_skip + PageSize, _page.Total)} di {_page.Total}";
+
+    private async Task ApplyAsync()
+    {
+        _skip = 0;
+        await ReloadAsync();
+    }
+
+    private async Task PreviousAsync()
+    {
+        _skip = Math.Max(0, _skip - PageSize);
+        await ReloadAsync();
+    }
+
+    private async Task NextAsync()
+    {
+        _skip += PageSize;
+        await ReloadAsync();
+    }
+
+    protected override async Task LoadAsync(CancellationToken ct) =>
+        _page = await View.JobsAsync(Query(), _skip, PageSize, ct);
+}

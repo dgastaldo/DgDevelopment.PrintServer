@@ -1,0 +1,76 @@
+@page "/"
+@inject QueueView View
+
+<main class="page">
+    <h1>Stato</h1>
+    @if (LoadError is not null)
+    {
+        <p class="banner bad">@LoadError</p>
+    }
+    @if (!View.IsQueueActive)
+    {
+        <p class="banner">La coda non è attiva: imposta <code>Watcher:Path</code> nella configurazione.</p>
+    }
+
+    <section class="cards">
+        @foreach (var state in Display.AllStates)
+        {
+            <a class="card @Display.StateClass(state)" href="/jobs?state=@state">
+                <span class="n">@Count(state)</span>
+                <span>@Display.StateLabel(state)</span>
+            </a>
+        }
+    </section>
+
+    <h2>Stampanti</h2>
+    @if (_printers.Error is not null)
+    {
+        <p class="banner bad">@_printers.Error</p>
+    }
+    else if (_printers.Printers.Count == 0)
+    {
+        <p class="note">Nessuna stampante.</p>
+    }
+    else
+    {
+        <table>
+            <thead><tr><th>Nome</th><th>Stato</th><th>Problemi</th></tr></thead>
+            <tbody>
+                @foreach (var printer in _printers.Printers)
+                {
+                    var problems = Display.Issues(printer);
+                    <tr>
+                        <td>@printer.Name @(printer.IsDefault ? "(predefinita)" : "")</td>
+                        <td>@Availability(printer)</td>
+                        <td class="@(problems.Length > 0 ? "bad" : "")">@(problems.Length > 0 ? problems : "-")</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    }
+
+    <h2>Ultimi lavori</h2>
+    <JobTable Jobs="_recent" OnChanged="ReloadAsync" />
+</main>
+
+@code {
+    private IReadOnlyDictionary<JobState, int> _counts = new Dictionary<JobState, int>();
+    private PrinterListing _printers = new([], null);
+    private IReadOnlyList<Job> _recent = [];
+
+    private int Count(JobState state) => _counts.GetValueOrDefault(state);
+
+    private static string Availability(PrinterInfo printer) => printer.Availability switch
+    {
+        PrinterAvailability.Ready => "Pronta",
+        PrinterAvailability.Busy => "Occupata",
+        _ => "Non disponibile",
+    };
+
+    protected override async Task LoadAsync(CancellationToken ct)
+    {
+        _printers = await View.PrintersAsync(ct);
+        _counts = await View.CountsAsync(ct);
+        _recent = (await View.JobsAsync(new JobQuery(), 0, 10, ct)).Items;
+    }
+}

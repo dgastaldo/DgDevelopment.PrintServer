@@ -1,0 +1,33 @@
+@inherits LayoutComponentBase
+@inject IOptions<WebUiOptions> Settings
+
+<header class="top">
+    <a class="brand" href="/">PrintServer</a>
+    <nav>
+        <NavLink href="/" Match="NavLinkMatch.All">Stato</NavLink>
+        <NavLink href="/jobs">Lavori</NavLink>
+        <AuthorizeView Policy="@WebUiPermissions.AddPolicy">
+            <NavLink href="/add">Aggiungi</NavLink>
+        </AuthorizeView>
+    </nav>
+    <div class="who">
+        <AuthorizeView>
+            <Authorized>
+                <span>@context.User.Identity?.Name</span>
+                @if (Settings.Value.IsOidcConfigured)
+                {
+                    <a href="@WebUiServiceCollectionExtensions.LogoutPath" @attributes="@NoEnhance">Esci</a>
+                }
+                else
+                {
+                    <span class="note">solo lettura, da questa macchina</span>
+                }
+            </Authorized>
+        </AuthorizeView>
+    </div>
+</header>
+@Body
+
+@code {
+    private static readonly Dictionary<string, object> NoEnhance = new() { ["data-enhance-nav"] = "false" };
+}

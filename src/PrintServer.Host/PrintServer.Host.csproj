@@ -3,6 +3,8 @@
   <PropertyGroup>
     <NoWarn>$(NoWarn);CA1515</NoWarn>
     <Version>1.6.0</Version>
+    <!-- The Razor components live in PrintServer.WebUi; this makes the SDK ship the Blazor script with the host. -->
+    <RequiresAspNetWebAssets>true</RequiresAspNetWebAssets>
   </PropertyGroup>
 
   <ItemGroup>
@@ -15,6 +17,7 @@
     <ProjectReference Include="..\PrintServer.Backends\PrintServer.Backends.csproj"/>
     <ProjectReference Include="..\PrintServer.Watching\PrintServer.Watching.csproj"/>
     <ProjectReference Include="..\PrintServer.Queue\PrintServer.Queue.csproj"/>
+    <ProjectReference Include="..\PrintServer.WebUi\PrintServer.WebUi.csproj"/>
   </ItemGroup>
 
   <ItemGroup>
