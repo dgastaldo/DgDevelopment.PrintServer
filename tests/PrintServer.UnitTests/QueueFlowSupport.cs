@@ -17,6 +17,12 @@ internal sealed class ScriptedPrinterBackend : IPrinterBackend
 
     public Exception? ThrowOnStatus { get; set; }
 
+    public List<PrintRequest> Requests { get; } = [];
+
+    public Exception? ThrowOnPrint { get; set; }
+
+    public string? RefuseWith { get; set; }
+
     public Task<IReadOnlyList<PrinterInfo>> ListPrintersAsync(CancellationToken ct)
     {
         if (ThrowOnList is not null)
@@ -27,8 +33,18 @@ internal sealed class ScriptedPrinterBackend : IPrinterBackend
         return Task.FromResult<IReadOnlyList<PrinterInfo>>(Printers);
     }
 
-    public Task<PrintResult> PrintAsync(PrintRequest request, CancellationToken ct) =>
-        Task.FromResult(PrintResult.Success("1"));
+    public Task<PrintResult> PrintAsync(PrintRequest request, CancellationToken ct)
+    {
+        Requests.Add(request);
+        if (ThrowOnPrint is not null)
+        {
+            throw ThrowOnPrint;
+        }
+
+        return Task.FromResult(RefuseWith is null
+            ? PrintResult.Success(Requests.Count.ToString(System.Globalization.CultureInfo.InvariantCulture))
+            : PrintResult.Failure(RefuseWith));
+    }
 
     public Task<JobStatus> GetJobStatusAsync(string backendJobId, CancellationToken ct)
     {
@@ -114,6 +130,7 @@ internal sealed class QueueHarness : IDisposable
         Stalls = new StallEvaluator(Backend, Queue.Store, Files, Microsoft.Extensions.Options.Options.Create(Options), Queue.Time, NullLogger<StallEvaluator>.Instance);
         Intake = new JobIntake(Queue.Store, Files, Stalls, NullLogger<JobIntake>.Instance);
         Recovery = new JobRecovery(Backend, Queue.Store, Files, NullLogger<JobRecovery>.Instance);
+        Processor = new JobProcessor(Backend, Queue.Store, Files, Stalls, Microsoft.Extensions.Options.Options.Create(Options), Queue.Time, NullLogger<JobProcessor>.Instance);
     }
 
     public SqliteQueueFixture Queue { get; }
@@ -129,6 +146,8 @@ internal sealed class QueueHarness : IDisposable
     public JobIntake Intake { get; }
 
     public JobRecovery Recovery { get; }
+
+    public JobProcessor Processor { get; }
 
     public string Inbox => Path.Combine(_root, "inbox");
 

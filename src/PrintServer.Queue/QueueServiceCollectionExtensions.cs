@@ -12,6 +12,7 @@ public static class QueueServiceCollectionExtensions
 {
     private const string WatcherPathKey = "Watcher:Path";
     private const int BusyTimeoutSeconds = 30;
+    private const int MaxAttemptsLimit = 20;
 
     public static IServiceCollection AddJobQueue(this IServiceCollection services, IConfiguration configuration)
     {
@@ -26,6 +27,9 @@ public static class QueueServiceCollectionExtensions
         services.AddOptions<QueueOptions>()
             .Bind(configuration.GetSection(QueueOptions.SectionName))
             .Validate(options => options.StallAfter > TimeSpan.Zero, "Queue options are invalid: StallAfter must be positive.")
+            .Validate(options => options.MaxAttempts is >= 1 and <= MaxAttemptsLimit, "Queue options are invalid: MaxAttempts must be between 1 and 20.")
+            .Validate(options => options.RetryBaseDelay > TimeSpan.Zero, "Queue options are invalid: RetryBaseDelay must be positive.")
+            .Validate(options => options.PollInterval > TimeSpan.Zero, "Queue options are invalid: PollInterval must be positive.")
             .ValidateOnStart();
 
         services.TryAddSingleton(TimeProvider.System);
@@ -50,8 +54,10 @@ public static class QueueServiceCollectionExtensions
         services.TryAddSingleton<StallEvaluator>();
         services.TryAddSingleton<JobIntake>();
         services.TryAddSingleton<JobRecovery>();
+        services.TryAddSingleton<JobProcessor>();
         services.AddHostedService<QueueInitializer>();
         services.AddHostedService<JobIntakeService>();
+        services.AddHostedService<JobProcessingService>();
 
         return services;
     }
