@@ -59,6 +59,20 @@ internal static class SpoolerStatusMapper
         return (status & PrinterBusyMask) != 0 ? PrinterAvailability.Busy : PrinterAvailability.Ready;
     }
 
+    public static PrinterIssues MapIssues(uint status)
+    {
+        var issues = PrinterIssues.None;
+        issues |= (status & (PrinterPaused | PrinterOffline | PrinterNotAvailable | PrinterServerUnknown)) != 0 ? PrinterIssues.Offline : PrinterIssues.None;
+        issues |= (status & (PrinterPaperOut | PrinterPaperProblem)) != 0 ? PrinterIssues.PaperOut : PrinterIssues.None;
+        issues |= (status & PrinterNoToner) != 0 ? PrinterIssues.TonerOut : PrinterIssues.None;
+        issues |= (status & PrinterPaperJam) != 0 ? PrinterIssues.PaperJam : PrinterIssues.None;
+        issues |= (status & PrinterDoorOpen) != 0 ? PrinterIssues.DoorOpen : PrinterIssues.None;
+        issues |= (status & (PrinterError | PrinterOutputBinFull | PrinterOutOfMemory | PrinterUserIntervention | PrinterPendingDeletion)) != 0
+            ? PrinterIssues.Error
+            : PrinterIssues.None;
+        return issues;
+    }
+
     public static JobStatus MapJob(uint status)
     {
         if ((status & JobErrorMask) != 0)

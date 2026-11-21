@@ -37,7 +37,7 @@ jobs:
           source: ./docs
           destination: ./_site
 
-      - uses: actions/upload-pages-artifact@v3
+      - uses: actions/upload-pages-artifact@v5
 
   deploy:
     if: github.ref_type == 'branch'
