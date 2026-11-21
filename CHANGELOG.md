@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.6.0](https://github.com/dgastaldo/DgDevelopment.PrintServer/compare/server-v1.5.0...server-v1.6.0) (2026-11-21)
+
+
+### Features
+
+* run as a Windows service, systemd unit and launchd daemon ([#69](https://github.com/dgastaldo/DgDevelopment.PrintServer/issues/69)) ([a3abd3b](https://github.com/dgastaldo/DgDevelopment.PrintServer/commit/a3abd3b71257dca913afb7cb9d2cc23733f05fd8))
+
 ## [1.5.0](https://github.com/dgastaldo/DgDevelopment.PrintServer/compare/server-v1.4.0...server-v1.5.0) (2026-11-21)
 
 
