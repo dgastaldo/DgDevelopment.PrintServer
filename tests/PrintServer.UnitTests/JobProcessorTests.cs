@@ -347,6 +347,8 @@ public sealed class JobProcessorTests : IDisposable
         }
 
         await service.StopAsync(CancellationToken.None);
+
+        Assert.Single(await _h.Queue.Store.ListAsync(JobState.Printing, CancellationToken.None));
     }
 
     [Fact]
