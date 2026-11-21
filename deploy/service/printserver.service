@@ -1,0 +1,22 @@
+[Unit]
+Description=PrintServer
+Documentation=https://github.com/dgastaldo/DgDevelopment.PrintServer
+After=network-online.target cups.service
+Wants=network-online.target
+
+[Service]
+Type=notify
+User=printserver
+Group=printserver
+WorkingDirectory=/opt/printserver/current
+ExecStart=/opt/printserver/current/PrintServer.Host
+Restart=on-failure
+RestartSec=5
+StateDirectory=printserver
+ConfigurationDirectory=printserver
+SyslogIdentifier=printserver
+NoNewPrivileges=true
+PrivateTmp=true
+
+[Install]
+WantedBy=multi-user.target

@@ -7,4 +7,5 @@ Mini print server multipiattaforma (Windows, macOS, Linux): osserva una cartella
 - Backend di stampa: [configurazione e limiti](backends.html)
 - Cartella osservata: [configurazione e funzionamento](watcher.html)
 - Coda dei lavori: [stati, cartelle e ripresa](queue.html)
+- Servizio di sistema: [installazione e configurazione](service.html)
 - Licenza: AGPL-3.0
