@@ -57,7 +57,7 @@ Gli stati dei backend sono normalizzati in un `JobStatus` comune (in coda, in st
 
 ### Esecuzione e distribuzione
 
-- Servizio: `UseWindowsService()`, `UseSystemd()`, `launchd` su macOS.
+- Servizio: `AddWindowsService()`, `AddSystemd()`, `launchd` su macOS; file e script in `deploy/service`, descrizione in `docs/service.md`.
 - `dotnet publish` self-contained single-file: `win-x64`, `osx-arm64`, `osx-x64`, `linux-x64`, `linux-arm64`.
 - Installer: `.deb`, `.pkg`/Homebrew, `.msi`.
 
@@ -94,7 +94,7 @@ Ogni voce è un ramo `feature/*` → `develop`:
 - [x] `print-options` — orientamento e fronte/retro da sottocartelle (`orizzontale`, `fronte-retro`, …) fino ai backend
 - [x] `printer-status` — problemi della stampante (carta, toner, inceppamento, sportello, errore, offline) dai tre backend
 - [ ] `status-web-ui` — pagina di stato + SignalR
-- [ ] `service-hosting` — Windows Service / systemd / launchd
+- [x] `service-hosting` — Windows Service / systemd / launchd
 - [ ] `cli`
 - [ ] `publish-and-installers`
 

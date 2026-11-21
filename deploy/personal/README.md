@@ -69,5 +69,6 @@ Se dopo un aggiornamento il controllo di salute fallisce, lo script torna da sol
 
 ## Note
 
-- Finché il servizio di sistema non esiste (feature `service-hosting`), gli script aggiornano i file e segnalano che il riavvio va fatto a mano.
+- Il servizio di sistema si installa con gli script di [`deploy/service`](../service) (vedi `docs/service.md`). Se non esiste, gli script aggiornano i file e segnalano che il riavvio va fatto a mano.
+- La configurazione della macchina sta fuori dalla cartella `current/`, quindi un aggiornamento non la sovrascrive.
 - L'Environment `personal` ha un revisore obbligatorio: la pubblicazione della pre-release (job `release` di `06-deploy-personal.yml`) resta in attesa finché non la approvi.
