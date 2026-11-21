@@ -2,7 +2,7 @@
 
 Il server può osservare una cartella e rilevare i file da stampare. È spento finché non imposti `Watcher:Path`.
 
-> Stato: il watcher pubblica i file pronti e la [coda](queue.html) li registra. Il worker di stampa non c'è ancora (voce `print-worker` della roadmap): i lavori restano in attesa. Senza `Watcher:Path` non parte né il watcher né la coda.
+> Stato: il watcher pubblica i file pronti, la [coda](queue.html) li registra e il worker li invia alla stampante. Senza `Watcher:Path` non parte niente di questo.
 
 ## Configurazione
 

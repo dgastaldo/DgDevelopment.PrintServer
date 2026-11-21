@@ -2,7 +2,7 @@
 
 Ogni file rilevato dal watcher diventa un lavoro in una coda persistente (SQLite, EF Core). La coda si accende da sola insieme al watcher: se `Watcher:Path` non è impostato non esiste.
 
-> Stato: la coda registra i lavori, evita i doppioni, riprende dopo un riavvio e mette in stallo i lavori fermi. Il worker che li invia davvero alla stampante, con tentativi ripetuti e spostamento in `processati/` ed `errori/`, è la voce `print-worker` della roadmap.
+> Stato: la coda registra i lavori, evita i doppioni, li invia alla stampante con tentativi ripetuti, sposta i file in `processati/` ed `errori/`, mette in stallo i lavori fermi e riprende dopo un riavvio. Orientamento, fronte/retro e conversione dei formati sono previsti ma non ancora attivi.
 
 ## Configurazione
 
@@ -10,7 +10,10 @@ Ogni file rilevato dal watcher diventa un lavoro in una coda persistente (SQLite
 {
   "Queue": {
     "DatabasePath": "/var/lib/printserver/queue.db",
-    "StallAfter": "01:00:00"
+    "StallAfter": "01:00:00",
+    "MaxAttempts": 5,
+    "RetryBaseDelay": "00:00:30",
+    "PollInterval": "00:00:05"
   }
 }
 ```
@@ -19,6 +22,9 @@ Ogni file rilevato dal watcher diventa un lavoro in una coda persistente (SQLite
 |---|---|---|
 | `DatabasePath` | cartella dati della piattaforma | Percorso del file SQLite. |
 | `StallAfter` | 1 ora | Da quanto tempo un lavoro in stampa, senza problemi segnalati dalla stampante, è considerato in stallo. |
+| `MaxAttempts` | 5 | Tentativi di stampa per lavoro (da 1 a 20), poi `fallito`. |
+| `RetryBaseDelay` | 30 secondi | Attesa dopo il primo tentativo fallito; raddoppia a ogni tentativo successivo. |
+| `PollInterval` | 5 secondi | Ogni quanto il worker guarda la coda e chiede ai backend lo stato dei lavori in stampa. |
 
 Se `DatabasePath` manca, il database `queue.db` va in una cartella dati di sistema, se è scrivibile, altrimenti in quella dell'utente:
 
@@ -66,6 +72,17 @@ Un file è identificato da cartella di origine, nome, data di creazione e hash S
 - Un lavoro già `in_stampa` non viene interrotto: finisce, e la nuova versione viene accodata a parte. Se lo stesso contenuto arriva mentre sta stampando, è un doppione.
 - Un file già completato o fallito può essere rimesso nella cartella e stampa di nuovo: i doppioni si valutano solo contro i lavori attivi.
 
+## Il worker di stampa
+
+Ogni `PollInterval` il worker fa due cose, in quest'ordine.
+
+1. **Controlla i lavori `in_stampa`.** Chiede al backend lo stato: se è completato il lavoro passa a `completato` e il file a `processati/`; se è in errore conta come tentativo fallito; altrimenti applica la regola dello stallo (sotto). Se il backend non risponde il lavoro resta com'è.
+2. **Invia i lavori `in_attesa`**, dal più vecchio. Un lavoro alla volta per stampante, stampanti diverse in parallelo: una stampante ferma non blocca le altre. Una stampante nominata dalla sottocartella si cerca senza distinguere le maiuscole; senza sottocartella si usa quella predefinita. Il lavoro riceve il numero di copie delle sue opzioni.
+
+**Tentativi.** Se il backend rifiuta il lavoro, genera un errore o segnala un errore di stampa, il lavoro torna `in_attesa` con il motivo salvato e riparte dopo `RetryBaseDelay × 2^(tentativo-1)`: con i valori predefiniti 30 s, 1 min, 2 min, 4 min. Al quinto tentativo fallito diventa `fallito` e il file va in `errori/`.
+
+**Errori senza tentativi.** Falliscono subito, senza riprovare: stampante non trovata, nessuna stampante predefinita, file del lavoro sparito da `processing/`.
+
 ## Stallo
 
 Un lavoro `in_stampa` da più di `StallAfter` viene valutato così:
@@ -74,7 +91,7 @@ Un lavoro `in_stampa` da più di `StallAfter` viene valutato così:
 2. Se il backend dice che è completato o in errore, il lavoro prende quello stato (e il file va in `processati/` o `errori/`).
 3. Altrimenti passa a `in_stallo` e il file va in `stallo/`.
 
-Il controllo avviene quando arriva un file con lo stesso nome di un lavoro in stampa. La rilevazione dei problemi della stampante dipende dai backend (`printer-status` nella roadmap): finché non c'è, uno stallo è deciso solo dal tempo.
+Il controllo avviene a ogni giro del worker e quando arriva un file con lo stesso nome di un lavoro in stampa. La rilevazione dei problemi della stampante dipende dai backend (`printer-status` nella roadmap): finché non c'è, uno stallo è deciso solo dal tempo.
 
 ## Dopo un riavvio
 
