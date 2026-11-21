@@ -45,7 +45,7 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: Setup .NET
-        uses: actions/setup-dotnet@v4
+        uses: actions/setup-dotnet@v6
         with:
           global-json-file: global.json
 
@@ -81,7 +81,7 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: Setup .NET
-        uses: actions/setup-dotnet@v4
+        uses: actions/setup-dotnet@v6
         with:
           global-json-file: global.json
 
@@ -147,12 +147,12 @@ jobs:
           export-env: "false"
 
       - name: Setup .NET
-        uses: actions/setup-dotnet@v4
+        uses: actions/setup-dotnet@v6
         with:
           global-json-file: global.json
 
       - name: Setup Java
-        uses: actions/setup-java@v4
+        uses: actions/setup-java@v6
         with:
           distribution: zulu
           java-version: '21'
