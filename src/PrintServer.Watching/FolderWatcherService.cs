@@ -74,7 +74,7 @@ public sealed partial class FolderWatcherService : BackgroundService
         {
             LogDetected(file.Entry.Path, file.PrinterName);
             await _channel.Writer
-                .WriteAsync(new DetectedFile(file.Entry.Path, file.PrinterName, file.Entry.Length, file.Entry.CreatedUtc), ct)
+                .WriteAsync(new DetectedFile(file.Entry.Path, file.PrinterName, file.Entry.Length, file.Entry.CreatedUtc, file.Options), ct)
                 .ConfigureAwait(false);
         }
     }

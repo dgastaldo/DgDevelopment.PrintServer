@@ -10,6 +10,8 @@ public sealed class IppBackend(HttpClient httpClient, IOptions<IppOptions> optio
     private const string Language = "en";
     private const int PrinterStateIdle = 3;
     private const int PrinterStateProcessing = 4;
+    private const int OrientationPortrait = 3;
+    private const int OrientationLandscape = 4;
     private const int JobStatePending = 3;
     private const int JobStatePendingHeld = 4;
     private const int JobStateProcessing = 5;
@@ -70,7 +72,7 @@ public sealed class IppBackend(HttpClient httpClient, IOptions<IppOptions> optio
                     IppAttribute.NameWithoutLanguage("job-name", jobName),
                     IppAttribute.MimeMediaType("document-format", _options.DocumentFormat ?? IppDocumentFormats.ForFile(fullPath)),
                 ],
-                [IppAttribute.Integer("copies", request.Copies)]);
+                JobAttributes(request));
 
             var httpUri = IppUri.ToHttp(printer.Uri);
             var response = await SendAsync(httpUri, header, File.OpenRead(fullPath), ct).ConfigureAwait(false);
@@ -147,6 +149,34 @@ public sealed class IppBackend(HttpClient httpClient, IOptions<IppOptions> optio
         {
             httpClient.Dispose();
         }
+    }
+
+    private static List<IppAttribute> JobAttributes(PrintRequest request)
+    {
+        var attributes = new List<IppAttribute> { IppAttribute.Integer("copies", request.Copies) };
+        switch (request.Orientation)
+        {
+            case PageOrientation.Portrait:
+                attributes.Add(IppAttribute.Enum("orientation-requested", OrientationPortrait));
+                break;
+            case PageOrientation.Landscape:
+                attributes.Add(IppAttribute.Enum("orientation-requested", OrientationLandscape));
+                break;
+        }
+
+        var sides = request.Duplex switch
+        {
+            DuplexMode.OneSided => "one-sided",
+            DuplexMode.TwoSidedLongEdge => "two-sided-long-edge",
+            DuplexMode.TwoSidedShortEdge => "two-sided-short-edge",
+            _ => null,
+        };
+        if (sides is not null)
+        {
+            attributes.Add(IppAttribute.Keywords("sides", sides));
+        }
+
+        return attributes;
     }
 
     private IppPrinterOptions? FindPrinter(string name) =>

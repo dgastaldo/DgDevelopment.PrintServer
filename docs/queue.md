@@ -47,7 +47,7 @@ All'avvio il database viene creato o aggiornato con le migrazioni e passa in mod
 | `fallito` | Non stampabile o sostituito: il motivo è salvato col lavoro. |
 | `in_stallo` | Fermo da troppo tempo senza che la stampante segnali problemi. |
 
-Ogni lavoro conserva anche stampante, formato del documento, hash, dimensione, data di creazione del file e le opzioni di stampa (orientamento, fronte/retro, copie), oggi con i valori predefiniti.
+Ogni lavoro conserva anche stampante, formato del documento, hash, dimensione, data di creazione del file e le opzioni di stampa (orientamento, fronte/retro, copie). Orientamento e fronte/retro vengono dalle cartelle `orizzontale`, `fronte-retro` e simili (vedi [cartella osservata](watcher.html)); le copie sono sempre una.
 
 ## Cartelle
 
@@ -81,7 +81,7 @@ Ogni `PollInterval` il worker fa due cose, in quest'ordine.
 
 **Tentativi.** Se il backend rifiuta il lavoro, genera un errore o segnala un errore di stampa, il lavoro torna `in_attesa` con il motivo salvato e riparte dopo `RetryBaseDelay × 2^(tentativo-1)`: con i valori predefiniti 30 s, 1 min, 2 min, 4 min. Al quinto tentativo fallito diventa `fallito` e il file va in `errori/`.
 
-**Errori senza tentativi.** Falliscono subito, senza riprovare: stampante non trovata, nessuna stampante predefinita, file del lavoro sparito da `processing/`.
+**Errori senza tentativi.** Falliscono subito, senza riprovare: stampante non trovata, nessuna stampante predefinita, file del lavoro sparito da `processing/`, opzioni che il backend non può applicare (spooler di Windows).
 
 ## Stallo
 
@@ -107,4 +107,4 @@ Il riepilogo è scritto nel log.
 
 - **SQLite e cartelle di rete:** il database deve stare su un disco locale.
 - **Binario self-contained:** la libreria nativa di SQLite (`libe_sqlite3`) viene pubblicata accanto all'eseguibile e va tenuta insieme a lui. Pubblicando più volte nella stessa cartella la seconda pubblicazione la rimuove: usa una cartella pulita.
-- **Opzioni di stampa e conversione:** sono già nel modello (orientamento, fronte/retro, `in_conversione`) ma nessuna parte le usa ancora; arriveranno con `print-options` e `document-conversion`.
+- **Conversione:** lo stato `in_conversione` è nel modello ma nessuna parte lo usa ancora; arriverà con `document-conversion`.

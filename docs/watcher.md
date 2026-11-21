@@ -52,7 +52,29 @@ inbox/
   duplicati/               ignorata
 ```
 
-Le sottocartelle più in profondità non vengono guardate. Il nome della sottocartella è un dato non fidato: il watcher non verifica che la stampante esista, lo farà il worker.
+Il nome della sottocartella è un dato non fidato: il watcher non verifica che la stampante esista, lo farà il worker.
+
+**Orientamento e fronte/retro.** Dentro la cartella di una stampante, sottocartelle con un nome riservato impostano come stampare i file che contengono:
+
+| Cartella | Effetto |
+|---|---|
+| `verticale` | orientamento verticale |
+| `orizzontale` | orientamento orizzontale |
+| `fronte` | solo fronte |
+| `fronte-retro` | fronte e retro, rilegatura sul lato lungo |
+| `fronte-retro-corto` | fronte e retro, rilegatura sul lato corto |
+
+```
+inbox/
+  Ufficio/
+    etichetta.pdf                       impostazioni predefinite della stampante
+    orizzontale/relazione.pdf           orizzontale
+    orizzontale/fronte-retro/tabella.pdf   orizzontale, fronte e retro
+    fronte-retro/orizzontale/tabella.pdf   lo stesso, in qualsiasi ordine
+  orizzontale/                          stampante predefinita, orizzontale
+```
+
+Si possono annidare al massimo due cartelle (una per orientamento, una per fronte/retro); più in profondità non si guarda. Se si contraddicono, vince la più interna. Le cartelle riservate valgono anche nella cartella principale, per la stampante predefinita: per questo una stampante non può chiamarsi come una di esse. Le cartelle della coda (`processati`, `errori`, …) si creano dentro la cartella da cui arriva il file, quindi anche dentro `orizzontale/`. Un file senza queste cartelle usa le impostazioni predefinite della stampante.
 
 **Stabilità.** Un file viene pubblicato solo quando dimensione e data di modifica non cambiano per `StabilityWindow`. Un file ancora in copia, o scritto a blocchi, non viene stampato a metà. Se un file sparisce prima di stabilizzarsi non viene pubblicato mai. Se viene riscritto dopo la pubblicazione, è pubblicato di nuovo dopo essersi stabilizzato.
 
