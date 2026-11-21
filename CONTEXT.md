@@ -63,7 +63,7 @@ Gli stati dei backend sono normalizzati in un `JobStatus` comune (in coda, in st
 
 ### Punti delicati
 
-- **Formati**: i PDF si inviano direttamente via IPP/CUPS; Word/immagini vanno convertiti. Su Windows può servire un renderer.
+- **Formati**: i PDF si inviano direttamente via IPP/CUPS; Word, Excel, PowerPoint, OpenDocument, RTF e testo si convertono in PDF con LibreOffice (processo esterno, `docs/conversion.md`); le immagini con PDFsharp.
 - **Più stampanti**: una cartella (o sottocartella) per stampante.
 - **Firewall e permessi**: una porta in ascolto può generare avvisi su Windows/macOS.
 - **Test**: su tre piattaforme e con stampanti diverse; i driver sono la parte imprevedibile.
@@ -93,6 +93,7 @@ Ogni voce è un ramo `feature/*` → `develop`:
 - [x] `ipp-backend`, [x] `cups-backend`, [x] `windows-spooler-backend`
 - [x] `print-options` — orientamento e fronte/retro da sottocartelle (`orizzontale`, `fronte-retro`, …) fino ai backend
 - [x] `printer-status` — problemi della stampante (carta, toner, inceppamento, sportello, errore, offline) dai tre backend
+- [x] `document-conversion` — documenti e immagini convertiti in PDF prima della stampa
 - [ ] `status-web-ui` — pagina di stato + SignalR
 - [x] `service-hosting` — Windows Service / systemd / launchd
 - [ ] `cli`

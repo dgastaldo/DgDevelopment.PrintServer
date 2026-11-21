@@ -17,6 +17,8 @@ public sealed class PhysicalJobFiles : IJobFiles
 
     public void Move(string source, string destination) => File.Move(source, destination);
 
+    public void Delete(string path) => File.Delete(path);
+
     public void DeleteDirectoryIfEmpty(string path)
     {
         if (Directory.Exists(path) && !Directory.EnumerateFileSystemEntries(path).Any())

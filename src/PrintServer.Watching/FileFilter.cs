@@ -1,8 +1,10 @@
+using PrintServer.Core.Printing;
+
 namespace PrintServer.Watching;
 
 internal sealed class FileFilter
 {
-    private static readonly string[] DefaultExtensions = [".pdf", ".ps"];
+    private static readonly string[] DefaultExtensions = [.. DocumentFormats.Extensions];
 
     private static readonly string[] TemporarySuffixes = [".tmp", ".part", ".partial", ".crdownload", ".download"];
 

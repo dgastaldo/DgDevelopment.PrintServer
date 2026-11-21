@@ -64,6 +64,41 @@ internal sealed class ScriptedPrinterBackend : IPrinterBackend
     }
 }
 
+internal sealed class ScriptedDocumentConverter : IDocumentConverter
+{
+    public HashSet<string> Formats { get; } = [DocumentFormats.Docx, DocumentFormats.Png];
+
+    public string? FailWith { get; set; }
+
+    public Exception? ThrowOnConvert { get; set; }
+
+    public List<(string Source, string Format, string Output)> Calls { get; } = [];
+
+    public bool CanConvert(string sourceFormat) => Formats.Contains(sourceFormat);
+
+    private static async Task<ConversionResult> WriteAsync(string outputPath)
+    {
+        await File.WriteAllTextAsync(outputPath, "%PDF converted").ConfigureAwait(false);
+        return ConversionResult.Success();
+    }
+
+    public Task<ConversionResult> ConvertToPdfAsync(string sourcePath, string sourceFormat, string outputPath, CancellationToken ct)
+    {
+        Calls.Add((sourcePath, sourceFormat, outputPath));
+        if (ThrowOnConvert is not null)
+        {
+            throw ThrowOnConvert;
+        }
+
+        if (FailWith is not null)
+        {
+            return Task.FromResult(ConversionResult.Failure(FailWith));
+        }
+
+        return WriteAsync(outputPath);
+    }
+}
+
 internal sealed class FlakyJobFiles : IJobFiles
 {
     private readonly PhysicalJobFiles _inner = new();
@@ -78,6 +113,8 @@ internal sealed class FlakyJobFiles : IJobFiles
         FailHash ? throw new IOException("locked") : _inner.ComputeHashAsync(path, ct);
 
     public void CreateDirectory(string path) => _inner.CreateDirectory(path);
+
+    public void Delete(string path) => _inner.Delete(path);
 
     public void Move(string source, string destination)
     {
@@ -104,6 +141,11 @@ internal sealed class RacingJobStore(IJobStore inner) : IJobStore
         inner.FindActiveAsync(originDirectory, fileName, ct);
 
     public Task<Job?> ClaimNextAsync(CancellationToken ct) => inner.ClaimNextAsync(ct);
+
+    public Task<Job?> ClaimNextConversionAsync(CancellationToken ct) => inner.ClaimNextConversionAsync(ct);
+
+    public Task<bool> FinishConversionAsync(Guid id, string documentFormat, CancellationToken ct) =>
+        inner.FinishConversionAsync(id, documentFormat, ct);
 
     public Task<bool> SetBackendJobIdAsync(Guid id, string backendJobId, CancellationToken ct) =>
         inner.SetBackendJobIdAsync(id, backendJobId, ct);
@@ -137,12 +179,14 @@ internal sealed class QueueHarness : IDisposable
         Stalls = new StallEvaluator(Backend, Queue.Store, Files, Microsoft.Extensions.Options.Options.Create(Options), Queue.Time, NullLogger<StallEvaluator>.Instance);
         Intake = new JobIntake(Queue.Store, Files, Stalls, NullLogger<JobIntake>.Instance);
         Recovery = new JobRecovery(Backend, Queue.Store, Files, NullLogger<JobRecovery>.Instance);
-        Processor = new JobProcessor(Backend, Queue.Store, Files, Stalls, Microsoft.Extensions.Options.Options.Create(Options), Queue.Time, NullLogger<JobProcessor>.Instance);
+        Processor = new JobProcessor(Backend, Queue.Store, Files, Stalls, Converter, Microsoft.Extensions.Options.Options.Create(Options), Queue.Time, NullLogger<JobProcessor>.Instance);
     }
 
     public SqliteQueueFixture Queue { get; }
 
     public ScriptedPrinterBackend Backend { get; } = new();
+
+    public ScriptedDocumentConverter Converter { get; } = new();
 
     public FlakyJobFiles Files { get; } = new();
 
@@ -222,6 +266,11 @@ internal sealed class FailingFirstLookupJobStore(IJobStore inner) : IJobStore
             : inner.FindActiveAsync(originDirectory, fileName, ct);
 
     public Task<Job?> ClaimNextAsync(CancellationToken ct) => inner.ClaimNextAsync(ct);
+
+    public Task<Job?> ClaimNextConversionAsync(CancellationToken ct) => inner.ClaimNextConversionAsync(ct);
+
+    public Task<bool> FinishConversionAsync(Guid id, string documentFormat, CancellationToken ct) =>
+        inner.FinishConversionAsync(id, documentFormat, ct);
 
     public Task<bool> SetBackendJobIdAsync(Guid id, string backendJobId, CancellationToken ct) =>
         inner.SetBackendJobIdAsync(id, backendJobId, ct);

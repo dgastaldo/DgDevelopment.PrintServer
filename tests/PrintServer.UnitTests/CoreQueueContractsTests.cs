@@ -45,7 +45,17 @@ public sealed class CoreQueueContractsTests
     [InlineData("a.JPEG", DocumentFormats.Jpeg)]
     [InlineData("a.png", DocumentFormats.Png)]
     [InlineData("a.txt", DocumentFormats.PlainText)]
-    [InlineData("a.docx", DocumentFormats.Unknown)]
+    [InlineData("a.rtf", DocumentFormats.Rtf)]
+    [InlineData("a.doc", DocumentFormats.Doc)]
+    [InlineData("a.docx", DocumentFormats.Docx)]
+    [InlineData("a.odt", DocumentFormats.Odt)]
+    [InlineData("a.xls", DocumentFormats.Xls)]
+    [InlineData("a.xlsx", DocumentFormats.Xlsx)]
+    [InlineData("a.ods", DocumentFormats.Ods)]
+    [InlineData("a.ppt", DocumentFormats.Ppt)]
+    [InlineData("a.pptx", DocumentFormats.Pptx)]
+    [InlineData("a.odp", DocumentFormats.Odp)]
+    [InlineData("a.zip", DocumentFormats.Unknown)]
     [InlineData("noextension", DocumentFormats.Unknown)]
     public void FormatsAreDeducedFromTheExtension(string file, string expected)
     {

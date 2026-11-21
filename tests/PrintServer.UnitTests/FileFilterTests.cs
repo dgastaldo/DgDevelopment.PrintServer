@@ -21,8 +21,28 @@ public sealed class FileFilterTests
     }
 
     [Theory]
-    [InlineData("photo.png")]
+    [InlineData("memo.doc")]
+    [InlineData("memo.DOCX")]
+    [InlineData("memo.odt")]
+    [InlineData("memo.rtf")]
     [InlineData("notes.txt")]
+    [InlineData("table.xls")]
+    [InlineData("table.xlsx")]
+    [InlineData("table.ods")]
+    [InlineData("slides.ppt")]
+    [InlineData("slides.pptx")]
+    [InlineData("slides.odp")]
+    [InlineData("photo.png")]
+    [InlineData("photo.jpg")]
+    [InlineData("photo.JPEG")]
+    public void AcceptsConvertibleDocumentsAndImagesByDefault(string name)
+    {
+        Assert.True(Create().Accepts(name));
+    }
+
+    [Theory]
+    [InlineData("archive.zip")]
+    [InlineData("program.exe")]
     [InlineData("noextension")]
     [InlineData("")]
     public void RejectsOtherExtensionsByDefault(string name)

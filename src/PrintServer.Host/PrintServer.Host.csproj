@@ -11,6 +11,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\PrintServer.Core\PrintServer.Core.csproj"/>
+    <ProjectReference Include="..\PrintServer.Conversion\PrintServer.Conversion.csproj"/>
     <ProjectReference Include="..\PrintServer.Backends\PrintServer.Backends.csproj"/>
     <ProjectReference Include="..\PrintServer.Watching\PrintServer.Watching.csproj"/>
     <ProjectReference Include="..\PrintServer.Queue\PrintServer.Queue.csproj"/>

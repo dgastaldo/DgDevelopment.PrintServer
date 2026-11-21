@@ -1,4 +1,5 @@
 using PrintServer.Backends.Selection;
+using PrintServer.Conversion;
 using PrintServer.Host;
 using PrintServer.Queue;
 using PrintServer.Watching;
@@ -13,6 +14,7 @@ builder.Services.AddWindowsService(options => options.ServiceName = "PrintServer
 builder.Services.AddSystemd();
 
 builder.Services.AddPrinterBackend(builder.Configuration);
+builder.Services.AddDocumentConversion(builder.Configuration);
 builder.Services.AddJobQueue(builder.Configuration);
 builder.Services.AddFolderWatcher(builder.Configuration);
 

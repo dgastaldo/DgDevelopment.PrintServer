@@ -73,6 +73,7 @@ Per rimuovere il servizio: `sudo systemctl disable --now printserver` e cancella
 
 ## Limiti noti
 
+- **Conversione dei documenti:** richiede LibreOffice sulla macchina e che l'utente del servizio possa eseguirlo (vedi [conversione](conversion.html)). La versione Snap di LibreOffice può avere restrizioni di accesso ai file: se ci sono problemi, usa un pacchetto tradizionale.
 - **Provato solo in parte:** il codice del servizio e gli script sono stati verificati per sintassi e con prove locali, non su un systemd, un launchd o un Windows reali.
 - **Un solo utente di servizio:** su Windows le stampanti di rete collegate al profilo di un utente non sono visibili a `LocalSystem`.
 - **Porta e indirizzo:** `Urls` ascolta su `127.0.0.1` nell'esempio; aprirla a tutta la rete va fatto di proposito (e con un firewall), perché per ora non c'è autenticazione.

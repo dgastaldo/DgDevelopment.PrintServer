@@ -1,3 +1,4 @@
+using PrintServer.Core.Printing;
 using PrintServer.Core.Queue;
 
 namespace PrintServer.Queue;
@@ -16,6 +17,7 @@ internal sealed class JobFileMover(IJobFiles files, IJobStore store)
         try
         {
             var destination = MoveToFolder(job.DocumentPath, job.OriginDirectory, folder, job.FileName);
+            DeleteConvertedFile(job);
             files.DeleteDirectoryIfEmpty(Path.GetDirectoryName(job.DocumentPath)!);
             await store.UpdateDocumentPathAsync(job.Id, destination, ct).ConfigureAwait(false);
             return true;
@@ -23,6 +25,15 @@ internal sealed class JobFileMover(IJobFiles files, IJobStore store)
         catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
         {
             return false;
+        }
+    }
+
+    private void DeleteConvertedFile(Job job)
+    {
+        var converted = JobPaths.ConvertedFile(job.DocumentPath);
+        if (!DocumentFormats.IsPrintable(job.SourceFormat) && files.Exists(converted))
+        {
+            files.Delete(converted);
         }
     }
 

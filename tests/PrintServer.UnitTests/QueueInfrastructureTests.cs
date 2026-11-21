@@ -34,6 +34,7 @@ public sealed class QueueInfrastructureTests : IDisposable
         var services = new ServiceCollection();
         services.AddLogging();
         services.AddSingleton<IPrinterBackend>(new ScriptedPrinterBackend());
+        services.AddSingleton<IDocumentConverter>(new ScriptedDocumentConverter());
         services.AddSingleton(Channel.CreateUnbounded<DetectedFile>());
         services.AddJobQueue(configuration);
         return services.BuildServiceProvider();

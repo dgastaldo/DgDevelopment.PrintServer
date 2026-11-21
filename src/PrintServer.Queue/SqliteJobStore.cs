@@ -1,5 +1,6 @@
 using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
+using PrintServer.Core.Printing;
 using PrintServer.Core.Queue;
 
 namespace PrintServer.Queue;
@@ -60,6 +61,7 @@ public sealed class SqliteJobStore(IDbContextFactory<QueueDbContext> factory, Ti
 
     public async Task<Job?> ClaimNextAsync(CancellationToken ct)
     {
+        var printable = DocumentFormats.Printable.ToArray();
         using var db = factory.CreateDbContext();
         for (var attempt = 0; attempt < ClaimAttempts; attempt++)
         {
@@ -70,7 +72,9 @@ public sealed class SqliteJobStore(IDbContextFactory<QueueDbContext> factory, Ti
                 .ToListAsync(ct)
                 .ConfigureAwait(false);
             var eligible = await db.Jobs.AsNoTracking()
-                .Where(j => j.State == JobState.Pending && (j.NextAttemptAt == null || j.NextAttemptAt <= now))
+                .Where(j => j.State == JobState.Pending
+                    && printable.Contains(j.DocumentFormat)
+                    && (j.NextAttemptAt == null || j.NextAttemptAt <= now))
                 .OrderBy(j => j.CreatedAt)
                 .Take(ClaimCandidates)
                 .ToListAsync(ct)
@@ -99,6 +103,57 @@ public sealed class SqliteJobStore(IDbContextFactory<QueueDbContext> factory, Ti
         }
 
         return null;
+    }
+
+    public async Task<Job?> ClaimNextConversionAsync(CancellationToken ct)
+    {
+        var printable = DocumentFormats.Printable.ToArray();
+        using var db = factory.CreateDbContext();
+        for (var attempt = 0; attempt < ClaimAttempts; attempt++)
+        {
+            var now = time.GetUtcNow();
+            var candidate = await db.Jobs.AsNoTracking()
+                .Where(j => j.State == JobState.Pending && !printable.Contains(j.DocumentFormat))
+                .OrderBy(j => j.CreatedAt)
+                .FirstOrDefaultAsync(ct)
+                .ConfigureAwait(false);
+            if (candidate is null)
+            {
+                return null;
+            }
+
+            var claimed = await db.Jobs
+                .Where(j => j.Id == candidate.Id && j.State == JobState.Pending)
+                .ExecuteUpdateAsync(
+                    set => set
+                        .SetProperty(j => j.State, JobState.Converting)
+                        .SetProperty(j => j.StartedAt, now),
+                    ct)
+                .ConfigureAwait(false);
+            if (claimed == 1)
+            {
+                return await GetAsync(candidate.Id, ct).ConfigureAwait(false);
+            }
+        }
+
+        return null;
+    }
+
+    public async Task<bool> FinishConversionAsync(Guid id, string documentFormat, CancellationToken ct)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(documentFormat);
+
+        using var db = factory.CreateDbContext();
+        var updated = await db.Jobs
+            .Where(j => j.Id == id && j.State == JobState.Converting)
+            .ExecuteUpdateAsync(
+                set => set
+                    .SetProperty(j => j.State, JobState.Pending)
+                    .SetProperty(j => j.DocumentFormat, documentFormat)
+                    .SetProperty(j => j.StartedAt, (DateTimeOffset?)null),
+                ct)
+            .ConfigureAwait(false);
+        return updated == 1;
     }
 
     public async Task<bool> SetBackendJobIdAsync(Guid id, string backendJobId, CancellationToken ct)

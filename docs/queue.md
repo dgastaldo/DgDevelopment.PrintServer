@@ -2,7 +2,7 @@
 
 Ogni file rilevato dal watcher diventa un lavoro in una coda persistente (SQLite, EF Core). La coda si accende da sola insieme al watcher: se `Watcher:Path` non è impostato non esiste.
 
-> Stato: la coda registra i lavori, evita i doppioni, li invia alla stampante con tentativi ripetuti, sposta i file in `processati/` ed `errori/`, mette in stallo i lavori fermi e riprende dopo un riavvio. Orientamento, fronte/retro e conversione dei formati sono previsti ma non ancora attivi.
+> Stato: la coda registra i lavori, evita i doppioni, li invia alla stampante con tentativi ripetuti, sposta i file in `processati/` ed `errori/`, mette in stallo i lavori fermi e riprende dopo un riavvio. Converte prima in PDF i documenti e le immagini (vedi [conversione](conversion.html)).
 
 ## Configurazione
 
@@ -41,7 +41,7 @@ All'avvio il database viene creato o aggiornato con le migrazioni e passa in mod
 | Stato | Significato |
 |---|---|
 | `in_attesa` | Registrato, in attesa del suo turno. |
-| `in_conversione` | Il file viene convertito in un formato adatto alla stampante (previsto, non ancora attivo). |
+| `in_conversione` | Il file viene convertito in PDF ([conversione](conversion.html)). |
 | `in_stampa` | Inviato al backend di stampa. |
 | `completato` | Stampato. |
 | `fallito` | Non stampabile o sostituito: il motivo è salvato col lavoro. |
@@ -55,7 +55,7 @@ Dentro la cartella da cui arriva il file (la principale o la sottocartella di un
 
 | Cartella | Contenuto |
 |---|---|
-| `processing/` | I file dei lavori attivi, uno per sottocartella con l'identificativo del lavoro. Il file viene spostato qui subito, così il watcher non lo rilegge. |
+| `processing/` | I file dei lavori attivi, uno per sottocartella con l'identificativo del lavoro (con l'eventuale PDF convertito accanto). Il file viene spostato qui subito, così il watcher non lo rilegge. |
 | `processati/` | Lavori completati. |
 | `errori/` | Lavori falliti o sostituiti da una versione più recente. |
 | `stallo/` | Lavori messi in stallo. Il file resta lì per intero: se vuoi riprovare, rimettilo nella cartella osservata. |
@@ -81,7 +81,7 @@ Ogni `PollInterval` il worker fa due cose, in quest'ordine.
 
 **Tentativi.** Se il backend rifiuta il lavoro, genera un errore o segnala un errore di stampa, il lavoro torna `in_attesa` con il motivo salvato e riparte dopo `RetryBaseDelay × 2^(tentativo-1)`: con i valori predefiniti 30 s, 1 min, 2 min, 4 min. Al quinto tentativo fallito diventa `fallito` e il file va in `errori/`.
 
-**Errori senza tentativi.** Falliscono subito, senza riprovare: stampante non trovata, nessuna stampante predefinita, file del lavoro sparito da `processing/`, opzioni che il backend non può applicare (spooler di Windows).
+**Errori senza tentativi.** Falliscono subito, senza riprovare: stampante non trovata, nessuna stampante predefinita, file del lavoro sparito da `processing/`, opzioni che il backend non può applicare (spooler di Windows), conversione fallita o convertitore mancante.
 
 ## Stallo
 
@@ -107,4 +107,4 @@ Il riepilogo è scritto nel log.
 
 - **SQLite e cartelle di rete:** il database deve stare su un disco locale.
 - **Binario self-contained:** la libreria nativa di SQLite (`libe_sqlite3`) viene pubblicata accanto all'eseguibile e va tenuta insieme a lui. Pubblicando più volte nella stessa cartella la seconda pubblicazione la rimuove: usa una cartella pulita.
-- **Conversione:** lo stato `in_conversione` è nel modello ma nessuna parte lo usa ancora; arriverà con `document-conversion`.
+- **Conversione:** dipende da LibreOffice per i documenti, vedi [conversione](conversion.html).

@@ -334,6 +334,7 @@ public sealed class JobProcessorTests : IDisposable
             new FailingFirstLookupJobStoreForProcessing(_h.Queue.Store),
             _h.Files,
             _h.Stalls,
+            _h.Converter,
             options,
             TimeProvider.System,
             NullLogger<JobProcessor>.Instance);
@@ -367,6 +368,11 @@ internal sealed class FailingFirstLookupJobStoreForProcessing(IJobStore inner) :
         inner.FindActiveAsync(originDirectory, fileName, ct);
 
     public Task<Job?> ClaimNextAsync(CancellationToken ct) => inner.ClaimNextAsync(ct);
+
+    public Task<Job?> ClaimNextConversionAsync(CancellationToken ct) => inner.ClaimNextConversionAsync(ct);
+
+    public Task<bool> FinishConversionAsync(Guid id, string documentFormat, CancellationToken ct) =>
+        inner.FinishConversionAsync(id, documentFormat, ct);
 
     public Task<bool> SetBackendJobIdAsync(Guid id, string backendJobId, CancellationToken ct) =>
         inner.SetBackendJobIdAsync(id, backendJobId, ct);
