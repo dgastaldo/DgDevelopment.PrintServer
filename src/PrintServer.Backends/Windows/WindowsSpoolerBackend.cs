@@ -14,7 +14,8 @@ public sealed class WindowsSpoolerBackend(ISpoolerApi spooler) : IPrinterBackend
                     .Select(p => new PrinterInfo(
                         p.Name,
                         string.Equals(p.Name, defaultPrinter, StringComparison.OrdinalIgnoreCase),
-                        SpoolerStatusMapper.MapPrinter(p.Status)))
+                        SpoolerStatusMapper.MapPrinter(p.Status),
+                        SpoolerStatusMapper.MapIssues(p.Status)))
                     .ToList();
             },
             ct);
@@ -30,7 +31,12 @@ public sealed class WindowsSpoolerBackend(ISpoolerApi spooler) : IPrinterBackend
 
         if (request.Copies != 1)
         {
-            return Task.FromResult(PrintResult.Failure("The Windows spooler backend sends raw data and supports exactly one copy per job."));
+            return Task.FromResult(PrintResult.Rejected("The Windows spooler backend sends raw data and supports exactly one copy per job."));
+        }
+
+        if (request.HasLayoutOptions)
+        {
+            return Task.FromResult(PrintResult.Rejected("The Windows spooler backend sends raw data and cannot apply the requested orientation or duplex mode."));
         }
 
         var fullPath = Path.GetFullPath(request.FilePath);
