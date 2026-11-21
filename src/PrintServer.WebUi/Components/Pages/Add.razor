@@ -1,0 +1,86 @@
+@page "/add"
+@attribute [Authorize(Policy = WebUiPermissions.AddPolicy)]
+@inject QueueView View
+@inject WebUiActions Actions
+
+<main class="page">
+    <h1>Aggiungi file</h1>
+    @if (!View.CanSubmit)
+    {
+        <p class="banner">La coda non è attiva: imposta <code>Watcher:Path</code> nella configurazione.</p>
+    }
+    else
+    {
+        <form class="filters" @onsubmit="() => { }">
+            <label>Stampante
+                <select @bind="_printer">
+                    <option value="">Predefinita</option>
+                    @foreach (var name in _printers.Printers.Select(printer => printer.Name))
+                    {
+                        <option value="@name">@name</option>
+                    }
+                </select>
+            </label>
+            <label>Orientamento
+                <select @bind="_orientation">
+                    <option value="@PageOrientation.Default">Predefinito</option>
+                    <option value="@PageOrientation.Portrait">Verticale</option>
+                    <option value="@PageOrientation.Landscape">Orizzontale</option>
+                </select>
+            </label>
+            <label>Fronte/retro
+                <select @bind="_duplex">
+                    <option value="@DuplexMode.Default">Predefinito</option>
+                    <option value="@DuplexMode.OneSided">Solo fronte</option>
+                    <option value="@DuplexMode.TwoSidedLongEdge">Fronte e retro (lato lungo)</option>
+                    <option value="@DuplexMode.TwoSidedShortEdge">Fronte e retro (lato corto)</option>
+                </select>
+            </label>
+        </form>
+        @if (_printers.Error is not null)
+        {
+            <p class="banner bad">@_printers.Error</p>
+        }
+        <p>
+            <InputFile OnChange="UploadAsync" multiple accept="@Accept" />
+        </p>
+        <p class="note">Tipi accettati: @string.Join(", ", View.AcceptedExtensions). Dimensione massima per file: @Display.Size(WebUiOptions.UploadSizeLimit) (limite fisso). Per file più grandi copiali direttamente nella cartella osservata.</p>
+        @foreach (var line in _results)
+        {
+            <p class="banner @(line.Failed ? "bad" : "")">@line.Text</p>
+        }
+    }
+</main>
+
+@code {
+    private PrinterListing _printers = new([], null);
+    private string _printer = string.Empty;
+    private PageOrientation _orientation = PageOrientation.Default;
+    private DuplexMode _duplex = DuplexMode.Default;
+    private readonly List<(string Text, bool Failed)> _results = [];
+
+    private string Accept => string.Join(",", View.AcceptedExtensions);
+
+    protected override async Task LoadAsync(CancellationToken ct) => _printers = await View.PrintersAsync(ct);
+
+    private async Task UploadAsync(InputFileChangeEventArgs args)
+    {
+        _results.Clear();
+        var options = new PrintOptions(_orientation, _duplex);
+        foreach (var file in args.GetMultipleFiles(20))
+        {
+            try
+            {
+                await using var stream = file.OpenReadStream(WebUiOptions.UploadSizeLimit);
+                var result = await Actions.AddAsync(file.Name, stream, string.IsNullOrEmpty(_printer) ? null : _printer, options, Token);
+                _results.Add(result.Succeeded
+                    ? ($"{file.Name}: aggiunto, sarà accodato tra pochi secondi.", false)
+                    : ($"{file.Name}: {result.Error}", true));
+            }
+            catch (IOException ex)
+            {
+                _results.Add(($"{file.Name}: {ex.Message}", true));
+            }
+        }
+    }
+}

@@ -53,7 +53,7 @@ Gli stati dei backend sono normalizzati in un `JobStatus` comune (in coda, in st
 1. **Watcher della cartella** (`FileSystemWatcher` in un `BackgroundService`): attende stabilità di dimensione e data di modifica; filtra estensioni e temporanei; polling con `UsePolling` (eventi duplicati/persi, cartelle di rete SMB/NFS, limiti inotify), e in automatico se gli eventi non sono disponibili. Una sottocartella di primo livello = una stampante; sottocartelle `verticale`/`orizzontale`/`fronte`/`fronte-retro`/`fronte-retro-corto` impostano orientamento e fronte/retro. Dettagli in `docs/watcher.md`.
 2. **Coda persistente** (`PrintServer.Queue`): SQLite + EF Core con migrazioni, tabella `jobs` (id, origine, nome, percorsi, hash SHA-256, stampante, formato, opzioni di stampa, stato, tentativi, errore, timestamp). Stati `in_attesa` → `in_conversione` → `in_stampa` → `completato` / `fallito` / `in_stallo`. Chiave del file: cartella, nome, data di creazione e hash; un duplicato attivo va in `duplicati/`, una nuova versione sostituisce il lavoro in attesa. Il file passa subito in `processing/`. Un lavoro in stampa da più di un'ora senza problemi segnalati dalla stampante va in `stallo/`. All'avvio la coda si riallinea chiedendo al backend; passaggio watcher → coda con `System.Threading.Channels`. Dettagli in `docs/queue.md`.
 3. **Worker di stampa** (`JobProcessor` + `JobProcessingService`): un lavoro alla volta per stampante, stampanti in parallelo, via `IPrinterBackend`; 5 tentativi con attesa esponenziale (30 s, 1, 2, 4 min) poi `fallito`; sposta il file in `processati/` o `errori/`; stampante inesistente o file mancante falliscono subito; a ogni giro controlla lo stato dei lavori in stampa e lo stallo. Dettagli in `docs/queue.md`.
-4. **Tracciamento e interfaccia**: log su file con rotazione + tabella `jobs` come storico; pagina web di stato (Minimal API + Blazor/Razor Pages) con SignalR; eventuale CLI (`stato`, `coda`, `riprova <id>`).
+4. **Tracciamento e interfaccia**: log + tabella `jobs` come storico; pagina web di stato (Blazor Server, `PrintServer.WebUi`) con accesso OIDC tramite DgDevelopment.Identity e permessi vedere/gestire/aggiungere (`docs/webui.md`); eventuale CLI (`stato`, `coda`, `riprova <id>`).
 
 ### Esecuzione e distribuzione
 
@@ -94,7 +94,7 @@ Ogni voce è un ramo `feature/*` → `develop`:
 - [x] `print-options` — orientamento e fronte/retro da sottocartelle (`orizzontale`, `fronte-retro`, …) fino ai backend
 - [x] `printer-status` — problemi della stampante (carta, toner, inceppamento, sportello, errore, offline) dai tre backend
 - [x] `document-conversion` — documenti e immagini convertiti in PDF prima della stampa
-- [ ] `status-web-ui` — pagina di stato + SignalR
+- [x] `status-web-ui` — pagina di stato Blazor Server, accesso con DgDevelopment.Identity, riprova/annulla/aggiungi
 - [x] `service-hosting` — Windows Service / systemd / launchd
 - [ ] `cli`
 - [ ] `publish-and-installers`

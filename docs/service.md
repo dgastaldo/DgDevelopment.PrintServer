@@ -24,7 +24,7 @@ Si può scegliere un altro file con la variabile d'ambiente `PRINTSERVER_CONFIG`
 }
 ```
 
-Senza `Printing:Backend` il server usa il backend simulato (`Fake`). Vedi [backend](backends.html), [cartella osservata](watcher.html) e [coda](queue.html) per le altre opzioni.
+Senza `Printing:Backend` il server usa il backend simulato (`Fake`). La [pagina web](webui.html) risponde sullo stesso indirizzo (`Urls`). Vedi [backend](backends.html), [cartella osservata](watcher.html) e [coda](queue.html) per le altre opzioni.
 
 ## Linux (systemd)
 

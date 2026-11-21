@@ -1,0 +1,73 @@
+@page "/jobs/{Id:guid}"
+@inject QueueView View
+@inject WebUiActions Actions
+
+<main class="page">
+    <p><a href="/jobs">&larr; Tutti i lavori</a></p>
+    @if (_message is not null)
+    {
+        <p class="banner @(_failed ? "bad" : "")">@_message</p>
+    }
+    @if (_job is null)
+    {
+        <h1>Lavoro non trovato</h1>
+    }
+    else
+    {
+        <h1>@_job.FileName</h1>
+        <p><span class="badge @Display.StateClass(_job.State)">@Display.StateLabel(_job.State)</span></p>
+        @if (!string.IsNullOrEmpty(_job.LastError))
+        {
+            <p class="banner bad">@_job.LastError</p>
+        }
+        <dl>
+            <dt>Stampante</dt><dd>@Display.Printer(_job.PrinterName)</dd>
+            <dt>Opzioni</dt><dd>@Display.Options(_job.Options)</dd>
+            <dt>Formato</dt><dd>@_job.SourceFormat</dd>
+            <dt>Dimensione</dt><dd>@Display.Size(_job.FileSize)</dd>
+            <dt>Tentativi</dt><dd>@_job.Attempts</dd>
+            <dt>Creato</dt><dd>@Display.When(_job.CreatedAt)</dd>
+            <dt>Iniziato</dt><dd>@Display.When(_job.StartedAt)</dd>
+            <dt>Terminato</dt><dd>@Display.When(_job.FinishedAt)</dd>
+            <dt>Prossimo tentativo</dt><dd>@Display.When(_job.NextAttemptAt)</dd>
+            <dt>Cartella</dt><dd><code>@_job.OriginDirectory</code></dd>
+            <dt>File</dt><dd><code>@_job.DocumentPath</code></dd>
+            <dt>Identificativo</dt><dd><code>@_job.Id</code></dd>
+        </dl>
+        <AuthorizeView Policy="@WebUiPermissions.ManagePolicy">
+            <p class="actions">
+                @if (Display.CanRetry(_job.State))
+                {
+                    <button type="button" @onclick="RetryAsync">Riprova</button>
+                }
+                @if (Display.CanCancel(_job.State))
+                {
+                    <button type="button" class="danger" @onclick="CancelAsync">Annulla</button>
+                }
+            </p>
+        </AuthorizeView>
+    }
+</main>
+
+@code {
+    private Job? _job;
+    private string? _message;
+    private bool _failed;
+
+    [Parameter]
+    public Guid Id { get; set; }
+
+    protected override async Task LoadAsync(CancellationToken ct) => _job = await View.JobAsync(Id, ct);
+
+    private Task RetryAsync() => RunAsync(Actions.RetryAsync(Id, CancellationToken.None), "Lavoro rimesso in coda.");
+
+    private Task CancelAsync() => RunAsync(Actions.CancelAsync(Id, CancellationToken.None), "Lavoro annullato.");
+
+    private async Task RunAsync(Task<QueueActionResult> action, string success)
+    {
+        var result = await action;
+        _failed = !result.Succeeded;
+        _message = result.Succeeded ? (result.Message ?? success) : result.Message;
+        await ReloadAsync();
+    }
+}
