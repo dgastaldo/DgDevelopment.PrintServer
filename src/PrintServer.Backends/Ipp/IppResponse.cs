@@ -28,6 +28,9 @@ internal sealed class IppAttributeGroup(byte tag)
     public bool? GetBoolean(string name) =>
         _attributes.TryGetValue(name, out var values) && values[0].Length == 1 ? values[0][0] != 0 : null;
 
+    public IReadOnlyList<string> GetStrings(string name) =>
+        _attributes.TryGetValue(name, out var values) ? values.Select(v => Encoding.UTF8.GetString(v)).ToList() : [];
+
     public string? GetString(string name) =>
         _attributes.TryGetValue(name, out var values) ? Encoding.UTF8.GetString(values[0]) : null;
 }

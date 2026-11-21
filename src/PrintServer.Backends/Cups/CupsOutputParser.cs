@@ -1,5 +1,6 @@
 using System.Globalization;
 using System.Text.RegularExpressions;
+using PrintServer.Backends.Common;
 using PrintServer.Core.Printing;
 
 namespace PrintServer.Backends.Cups;
@@ -11,7 +12,7 @@ internal static partial class CupsOutputParser
     public static IReadOnlyList<PrinterInfo> ParsePrinters(string lpstatOutput)
     {
         string? defaultPrinter = null;
-        var printers = new List<(string Name, PrinterAvailability Availability)>();
+        var printers = new List<(string Name, PrinterAvailability Availability, PrinterIssues Issues)>();
 
         foreach (var rawLine in lpstatOutput.Split('\n', StringSplitOptions.RemoveEmptyEntries))
         {
@@ -27,12 +28,21 @@ internal static partial class CupsOutputParser
             var printerMatch = PrinterLineRegex().Match(line);
             if (printerMatch.Success)
             {
-                printers.Add((printerMatch.Groups[1].Value, ParseAvailability(printerMatch.Groups[2].Value)));
+                printers.Add((printerMatch.Groups[1].Value, ParseAvailability(printerMatch.Groups[2].Value), PrinterIssues.None));
+                continue;
+            }
+
+            var alertsMatch = AlertsRegex().Match(line);
+            if (alertsMatch.Success && printers.Count > 0)
+            {
+                var last = printers[^1];
+                var reasons = alertsMatch.Groups[1].Value.Split(' ', StringSplitOptions.RemoveEmptyEntries);
+                printers[^1] = last with { Issues = last.Issues | PrinterStateReasons.ToIssues(reasons) };
             }
         }
 
         return printers
-            .Select(p => new PrinterInfo(p.Name, string.Equals(p.Name, defaultPrinter, StringComparison.Ordinal), p.Availability))
+            .Select(p => new PrinterInfo(p.Name, string.Equals(p.Name, defaultPrinter, StringComparison.Ordinal), p.Availability, p.Issues))
             .ToList();
     }
 
@@ -85,6 +95,9 @@ internal static partial class CupsOutputParser
 
     [GeneratedRegex(@"^system default destination:\s*(\S+)$")]
     private static partial Regex DefaultDestinationRegex();
+
+    [GeneratedRegex(@"^Alerts:\s*(.*)$")]
+    private static partial Regex AlertsRegex();
 
     [GeneratedRegex(@"^printer\s+(\S+)\s+(.*)$")]
     private static partial Regex PrinterLineRegex();
