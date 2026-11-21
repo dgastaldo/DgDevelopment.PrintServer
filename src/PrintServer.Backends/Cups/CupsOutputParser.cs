@@ -46,6 +46,12 @@ internal static partial class CupsOutputParser
             .ToList();
     }
 
+    public static bool IsJobGone(string cancelStandardError) =>
+        cancelStandardError.Contains("does not exist", StringComparison.OrdinalIgnoreCase)
+        || cancelStandardError.Contains("not-possible", StringComparison.OrdinalIgnoreCase)
+        || cancelStandardError.Contains("already canceled", StringComparison.OrdinalIgnoreCase)
+        || cancelStandardError.Contains("already completed", StringComparison.OrdinalIgnoreCase);
+
     public static bool IsNoDestinations(string standardError) =>
         standardError.Contains(NoDestinationsMessage, StringComparison.OrdinalIgnoreCase);
 

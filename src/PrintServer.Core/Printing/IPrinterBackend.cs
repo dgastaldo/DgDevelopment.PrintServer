@@ -7,4 +7,6 @@ public interface IPrinterBackend
     Task<PrintResult> PrintAsync(PrintRequest request, CancellationToken ct);
 
     Task<JobStatus> GetJobStatusAsync(string backendJobId, CancellationToken ct);
+
+    Task<bool> CancelJobAsync(string backendJobId, CancellationToken ct);
 }

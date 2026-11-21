@@ -71,6 +71,15 @@ public sealed class FakePrinterBackend(IOptions<FakePrinterOptions> options, Tim
         return Task.FromResult(job.Failure is null ? JobStatus.Completed : JobStatus.Error);
     }
 
+    public Task<bool> CancelJobAsync(string backendJobId, CancellationToken ct)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(backendJobId);
+        ct.ThrowIfCancellationRequested();
+
+        _jobs.TryRemove(backendJobId, out _);
+        return Task.FromResult(true);
+    }
+
     private IList<string> PrinterNames() => _options.Printers.Count > 0 ? _options.Printers : [DefaultPrinterName];
 
     private sealed record FakeJob(DateTimeOffset CreatedAt, string? Failure);

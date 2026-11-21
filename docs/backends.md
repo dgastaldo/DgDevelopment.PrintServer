@@ -55,6 +55,19 @@ Il worker passa al backend orientamento e fronte/retro del lavoro (dalle cartell
 
 Lo spooler di Windows invia dati RAW e non può imporre queste opzioni: un lavoro che le richiede fallisce subito, con il motivo salvato, e il file va in `errori/`. Il file va quindi messo nella cartella della stampante senza `orizzontale`, `fronte-retro` e simili. Se non chiedi niente, le impostazioni predefinite della stampante restano quelle del driver. Se una stampante ignora l'opzione, il server non può accorgersene.
 
+## Annullamento dei lavori
+
+Un lavoro già inviato alla stampante si può annullare dal server; ogni backend lo cancella dalla propria coda:
+
+| Backend | Come |
+|---|---|
+| CUPS | `cancel <id>` (percorso con `Printing:Cups:CancelPath`, predefinito `/usr/bin/cancel`) |
+| IPP | operazione `Cancel-Job` |
+| Spooler di Windows | `SetJob` con comando di cancellazione |
+| `Fake` | dimentica il lavoro |
+
+Se il lavoro è già finito o la stampante non lo conosce più, l'annullamento riesce lo stesso. Se la stampante non risponde, il lavoro risulta comunque annullato nella coda del server e compare un avviso: va controllata la coda della stampante.
+
 ## Problemi della stampante
 
 Ogni backend, oltre a nome e disponibilità, segnala i problemi che impediscono di stampare. Il worker li usa per decidere se un lavoro fermo da più di un'ora è in stallo (vedi [coda](queue.html)): con un problema attivo il lavoro resta in attesa.

@@ -46,6 +46,7 @@ All'avvio il database viene creato o aggiornato con le migrazioni e passa in mod
 | `completato` | Stampato. |
 | `fallito` | Non stampabile o sostituito: il motivo è salvato col lavoro. |
 | `in_stallo` | Fermo da troppo tempo senza che la stampante segnali problemi. |
+| `annullato` | Annullato dall'utente mentre era in attesa, in conversione o in stampa. |
 
 Ogni lavoro conserva anche stampante, formato del documento, hash, dimensione, data di creazione del file e le opzioni di stampa (orientamento, fronte/retro, copie). Orientamento e fronte/retro vengono dalle cartelle `orizzontale`, `fronte-retro` e simili (vedi [cartella osservata](watcher.html)); le copie sono sempre una.
 
@@ -60,6 +61,7 @@ Dentro la cartella da cui arriva il file (la principale o la sottocartella di un
 | `errori/` | Lavori falliti o sostituiti da una versione più recente. |
 | `stallo/` | Lavori messi in stallo. Il file resta lì per intero: se vuoi riprovare, rimettilo nella cartella osservata. |
 | `duplicati/` | File arrivati mentre lo stesso file era già in coda. |
+| `annullati/` | Lavori annullati dall'utente. |
 
 Tutte sono ignorate dal watcher.
 

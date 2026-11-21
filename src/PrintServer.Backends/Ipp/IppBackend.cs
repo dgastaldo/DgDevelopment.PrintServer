@@ -143,6 +143,39 @@ public sealed class IppBackend(HttpClient httpClient, IOptions<IppOptions> optio
         };
     }
 
+    public async Task<bool> CancelJobAsync(string backendJobId, CancellationToken ct)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(backendJobId);
+
+        if (!BackendJobId.TryParse(backendJobId, out var jobId, out var printerName))
+        {
+            throw new ArgumentException($"'{backendJobId}' is not an IPP job id.", nameof(backendJobId));
+        }
+
+        var printer = FindPrinter(printerName)
+            ?? throw new InvalidOperationException($"Printer '{printerName}' is not configured.");
+
+        var header = IppRequestBuilder.Build(
+            IppOperations.CancelJob,
+            NextRequestId(),
+            [
+                IppAttribute.Charset("attributes-charset", "utf-8"),
+                IppAttribute.NaturalLanguage("attributes-natural-language", Language),
+                IppAttribute.Uri("printer-uri", IppUri.ToIpp(printer.Uri)),
+                IppAttribute.Integer("job-id", jobId),
+                IppAttribute.NameWithoutLanguage("requesting-user-name", _options.UserName),
+            ]);
+
+        var response = await SendOrThrowAsync(printer, header, ct).ConfigureAwait(false);
+        if (response.IsSuccess
+            || response.StatusCode is IppStatus.ClientErrorNotFound or IppStatus.ClientErrorGone or IppStatus.ClientErrorNotPossible)
+        {
+            return true;
+        }
+
+        throw new InvalidOperationException($"IPP Cancel-Job failed: {IppStatus.Describe(response.StatusCode)}");
+    }
+
     public void Dispose()
     {
         if (disposeHttpClient)

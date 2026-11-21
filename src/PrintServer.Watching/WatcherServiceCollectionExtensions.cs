@@ -34,6 +34,7 @@ public static class WatcherServiceCollectionExtensions
                 FullMode = BoundedChannelFullMode.Wait,
                 SingleWriter = true,
             }));
+        services.TryAddSingleton<IJobSubmitter, FolderJobSubmitter>();
         services.AddHostedService<FolderWatcherService>();
 
         return services;

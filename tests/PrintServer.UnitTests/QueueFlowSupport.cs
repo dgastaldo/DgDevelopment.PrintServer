@@ -25,6 +25,14 @@ internal sealed class ScriptedPrinterBackend : IPrinterBackend
 
     public string? RejectWith { get; set; }
 
+    public List<string> Cancelled { get; } = [];
+
+    public Exception? ThrowOnCancel { get; set; }
+
+    public bool CancelResult { get; set; } = true;
+
+    public Action? OnPrint { get; set; }
+
     public Task<IReadOnlyList<PrinterInfo>> ListPrintersAsync(CancellationToken ct)
     {
         if (ThrowOnList is not null)
@@ -38,6 +46,7 @@ internal sealed class ScriptedPrinterBackend : IPrinterBackend
     public Task<PrintResult> PrintAsync(PrintRequest request, CancellationToken ct)
     {
         Requests.Add(request);
+        OnPrint?.Invoke();
         if (ThrowOnPrint is not null)
         {
             throw ThrowOnPrint;
@@ -51,6 +60,17 @@ internal sealed class ScriptedPrinterBackend : IPrinterBackend
         return Task.FromResult(RefuseWith is null
             ? PrintResult.Success(Requests.Count.ToString(System.Globalization.CultureInfo.InvariantCulture))
             : PrintResult.Failure(RefuseWith));
+    }
+
+    public Task<bool> CancelJobAsync(string backendJobId, CancellationToken ct)
+    {
+        if (ThrowOnCancel is not null)
+        {
+            throw ThrowOnCancel;
+        }
+
+        Cancelled.Add(backendJobId);
+        return Task.FromResult(CancelResult);
     }
 
     public Task<JobStatus> GetJobStatusAsync(string backendJobId, CancellationToken ct)
@@ -72,6 +92,8 @@ internal sealed class ScriptedDocumentConverter : IDocumentConverter
 
     public Exception? ThrowOnConvert { get; set; }
 
+    public Action? OnConvert { get; set; }
+
     public List<(string Source, string Format, string Output)> Calls { get; } = [];
 
     public bool CanConvert(string sourceFormat) => Formats.Contains(sourceFormat);
@@ -85,6 +107,7 @@ internal sealed class ScriptedDocumentConverter : IDocumentConverter
     public Task<ConversionResult> ConvertToPdfAsync(string sourcePath, string sourceFormat, string outputPath, CancellationToken ct)
     {
         Calls.Add((sourcePath, sourceFormat, outputPath));
+        OnConvert?.Invoke();
         if (ThrowOnConvert is not null)
         {
             throw ThrowOnConvert;
@@ -136,6 +159,15 @@ internal sealed class RacingJobStore(IJobStore inner) : IJobStore
     public Task<Job?> GetAsync(Guid id, CancellationToken ct) => inner.GetAsync(id, ct);
 
     public Task<IReadOnlyList<Job>> ListAsync(JobState state, CancellationToken ct) => inner.ListAsync(state, ct);
+
+    public Task<JobPage> QueryAsync(JobQuery query, int skip, int take, CancellationToken ct) =>
+        inner.QueryAsync(query, skip, take, ct);
+
+    public Task<IReadOnlyDictionary<JobState, int>> CountByStateAsync(CancellationToken ct) => inner.CountByStateAsync(ct);
+
+    public Task<bool> CancelAsync(Guid id, string reason, CancellationToken ct) => inner.CancelAsync(id, reason, ct);
+
+    public Task<RestartOutcome> RestartAsync(Guid id, CancellationToken ct) => inner.RestartAsync(id, ct);
 
     public Task<IReadOnlyList<Job>> FindActiveAsync(string originDirectory, string fileName, CancellationToken ct) =>
         inner.FindActiveAsync(originDirectory, fileName, ct);
@@ -259,6 +291,15 @@ internal sealed class FailingFirstLookupJobStore(IJobStore inner) : IJobStore
     public Task<Job?> GetAsync(Guid id, CancellationToken ct) => inner.GetAsync(id, ct);
 
     public Task<IReadOnlyList<Job>> ListAsync(JobState state, CancellationToken ct) => inner.ListAsync(state, ct);
+
+    public Task<JobPage> QueryAsync(JobQuery query, int skip, int take, CancellationToken ct) =>
+        inner.QueryAsync(query, skip, take, ct);
+
+    public Task<IReadOnlyDictionary<JobState, int>> CountByStateAsync(CancellationToken ct) => inner.CountByStateAsync(ct);
+
+    public Task<bool> CancelAsync(Guid id, string reason, CancellationToken ct) => inner.CancelAsync(id, reason, ct);
+
+    public Task<RestartOutcome> RestartAsync(Guid id, CancellationToken ct) => inner.RestartAsync(id, ct);
 
     public Task<IReadOnlyList<Job>> FindActiveAsync(string originDirectory, string fileName, CancellationToken ct) =>
         Interlocked.Increment(ref _lookups) == 1
