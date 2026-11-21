@@ -65,10 +65,7 @@ public sealed class IppBackend(HttpClient httpClient, IOptions<IppOptions> optio
                 IppOperations.PrintJob,
                 NextRequestId(),
                 [
-                    IppAttribute.Charset("attributes-charset", "utf-8"),
-                    IppAttribute.NaturalLanguage("attributes-natural-language", Language),
-                    IppAttribute.Uri("printer-uri", printerUri),
-                    IppAttribute.NameWithoutLanguage("requesting-user-name", _options.UserName),
+                    .. OperationAttributes(printerUri),
                     IppAttribute.NameWithoutLanguage("job-name", jobName),
                     IppAttribute.MimeMediaType("document-format", _options.DocumentFormat ?? IppDocumentFormats.ForFile(fullPath)),
                 ],
@@ -112,11 +109,8 @@ public sealed class IppBackend(HttpClient httpClient, IOptions<IppOptions> optio
             IppOperations.GetJobAttributes,
             NextRequestId(),
             [
-                IppAttribute.Charset("attributes-charset", "utf-8"),
-                IppAttribute.NaturalLanguage("attributes-natural-language", Language),
-                IppAttribute.Uri("printer-uri", IppUri.ToIpp(printer.Uri)),
+                .. OperationAttributes(IppUri.ToIpp(printer.Uri)),
                 IppAttribute.Integer("job-id", jobId),
-                IppAttribute.NameWithoutLanguage("requesting-user-name", _options.UserName),
                 IppAttribute.Keywords("requested-attributes", "job-state"),
             ]);
 
@@ -159,11 +153,8 @@ public sealed class IppBackend(HttpClient httpClient, IOptions<IppOptions> optio
             IppOperations.CancelJob,
             NextRequestId(),
             [
-                IppAttribute.Charset("attributes-charset", "utf-8"),
-                IppAttribute.NaturalLanguage("attributes-natural-language", Language),
-                IppAttribute.Uri("printer-uri", IppUri.ToIpp(printer.Uri)),
+                .. OperationAttributes(IppUri.ToIpp(printer.Uri)),
                 IppAttribute.Integer("job-id", jobId),
-                IppAttribute.NameWithoutLanguage("requesting-user-name", _options.UserName),
             ]);
 
         var response = await SendOrThrowAsync(printer, header, ct).ConfigureAwait(false);
@@ -212,6 +203,14 @@ public sealed class IppBackend(HttpClient httpClient, IOptions<IppOptions> optio
         return attributes;
     }
 
+    private List<IppAttribute> OperationAttributes(string printerUri) =>
+    [
+        IppAttribute.Charset("attributes-charset", "utf-8"),
+        IppAttribute.NaturalLanguage("attributes-natural-language", Language),
+        IppAttribute.Uri("printer-uri", printerUri),
+        IppAttribute.NameWithoutLanguage("requesting-user-name", _options.UserName),
+    ];
+
     private IppPrinterOptions? FindPrinter(string name) =>
         _options.Printers.FirstOrDefault(p => string.Equals(p.Name, name, StringComparison.OrdinalIgnoreCase));
 
@@ -225,10 +224,7 @@ public sealed class IppBackend(HttpClient httpClient, IOptions<IppOptions> optio
                 IppOperations.GetPrinterAttributes,
                 NextRequestId(),
                 [
-                    IppAttribute.Charset("attributes-charset", "utf-8"),
-                    IppAttribute.NaturalLanguage("attributes-natural-language", Language),
-                    IppAttribute.Uri("printer-uri", IppUri.ToIpp(printer.Uri)),
-                    IppAttribute.NameWithoutLanguage("requesting-user-name", _options.UserName),
+                    .. OperationAttributes(IppUri.ToIpp(printer.Uri)),
                     IppAttribute.Keywords("requested-attributes", "printer-state", "printer-is-accepting-jobs", "printer-state-reasons"),
                 ]);
 
