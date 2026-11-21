@@ -7,6 +7,7 @@ internal static class PrinterStateReasons
     private const string ErrorSuffix = "-error";
     private const string WarningSuffix = "-warning";
     private const string ReportSuffix = "-report";
+    private static readonly string[] Suffixes = [ErrorSuffix, WarningSuffix, ReportSuffix];
 
     private static readonly Dictionary<string, PrinterIssues> Known = new(StringComparer.OrdinalIgnoreCase)
     {
@@ -60,14 +61,7 @@ internal static class PrinterStateReasons
 
     private static string Strip(string reason)
     {
-        foreach (var suffix in new[] { ErrorSuffix, WarningSuffix, ReportSuffix })
-        {
-            if (reason.EndsWith(suffix, StringComparison.OrdinalIgnoreCase))
-            {
-                return reason[..^suffix.Length];
-            }
-        }
-
-        return reason;
+        var suffix = Suffixes.FirstOrDefault(s => reason.EndsWith(s, StringComparison.OrdinalIgnoreCase));
+        return suffix is null ? reason : reason[..^suffix.Length];
     }
 }
