@@ -23,6 +23,8 @@ internal sealed class ScriptedPrinterBackend : IPrinterBackend
 
     public string? RefuseWith { get; set; }
 
+    public string? RejectWith { get; set; }
+
     public Task<IReadOnlyList<PrinterInfo>> ListPrintersAsync(CancellationToken ct)
     {
         if (ThrowOnList is not null)
@@ -39,6 +41,11 @@ internal sealed class ScriptedPrinterBackend : IPrinterBackend
         if (ThrowOnPrint is not null)
         {
             throw ThrowOnPrint;
+        }
+
+        if (RejectWith is not null)
+        {
+            return Task.FromResult(PrintResult.Rejected(RejectWith));
         }
 
         return Task.FromResult(RefuseWith is null

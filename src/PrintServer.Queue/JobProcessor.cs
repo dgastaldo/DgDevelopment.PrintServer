@@ -113,12 +113,24 @@ public sealed partial class JobProcessor
         PrintResult result;
         try
         {
-            var request = new PrintRequest(job.DocumentPath, printer.Name, job.Options.Copies, job.FileName);
+            var request = new PrintRequest(
+                job.DocumentPath,
+                printer.Name,
+                job.Options.Copies,
+                job.FileName,
+                job.Options.Orientation,
+                job.Options.Duplex);
             result = await _backend.PrintAsync(request, ct).ConfigureAwait(false);
         }
         catch (Exception ex) when (IsBackendFailure(ex))
         {
             await RetryOrFailAsync(job, $"The backend could not print the job: {ex.Message}", ct).ConfigureAwait(false);
+            return;
+        }
+
+        if (result.IsPermanent)
+        {
+            await FailAsync(job, result.Error ?? "The backend rejected the job.", ct).ConfigureAwait(false);
             return;
         }
 

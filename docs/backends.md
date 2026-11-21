@@ -43,6 +43,18 @@ IPP, con l'elenco delle stampanti da usare (la prima è quella predefinita):
 
 Altre opzioni IPP: `DocumentFormat` (se omesso si deduce dall'estensione: PDF, JPEG, PNG, testo, altrimenti `application/octet-stream`) e `TrustedCertificateThumbprints`: elenco di impronte SHA-256 (esadecimali, anche con i due punti) di certificati che si accettano pur non essendo validi, per le stampanti con certificato autofirmato. Il certificato deve coincidere con una delle impronte; non esiste un'opzione per accettare qualsiasi certificato.
 
+## Orientamento e fronte/retro
+
+Il worker passa al backend orientamento e fronte/retro del lavoro (dalle cartelle descritte in [cartella osservata](watcher.html)):
+
+| Backend | Orientamento | Fronte/retro |
+|---|---|---|
+| CUPS | `-o orientation-requested=3` (verticale) o `4` (orizzontale) | `-o sides=one-sided`, `two-sided-long-edge`, `two-sided-short-edge` |
+| IPP | attributo `orientation-requested` (3 o 4) | attributo `sides` (stessi valori) |
+| Spooler di Windows | non applicabile | non applicabile |
+
+Lo spooler di Windows invia dati RAW e non può imporre queste opzioni: un lavoro che le richiede fallisce subito, con il motivo salvato, e il file va in `errori/`. Il file va quindi messo nella cartella della stampante senza `orizzontale`, `fronte-retro` e simili. Se non chiedi niente, le impostazioni predefinite della stampante restano quelle del driver. Se una stampante ignora l'opzione, il server non può accorgersene.
+
 ## Problemi della stampante
 
 Ogni backend, oltre a nome e disponibilità, segnala i problemi che impediscono di stampare. Il worker li usa per decidere se un lavoro fermo da più di un'ora è in stallo (vedi [coda](queue.html)): con un problema attivo il lavoro resta in attesa.
