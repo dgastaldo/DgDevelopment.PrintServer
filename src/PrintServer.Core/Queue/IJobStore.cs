@@ -12,6 +12,10 @@ public interface IJobStore
 
     Task<Job?> ClaimNextAsync(CancellationToken ct);
 
+    Task<Job?> ClaimNextConversionAsync(CancellationToken ct);
+
+    Task<bool> FinishConversionAsync(Guid id, string documentFormat, CancellationToken ct);
+
     Task<bool> SetBackendJobIdAsync(Guid id, string backendJobId, CancellationToken ct);
 
     Task<bool> MarkBlockedAsync(Guid id, CancellationToken ct);

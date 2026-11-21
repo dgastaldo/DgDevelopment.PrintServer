@@ -10,5 +10,7 @@ public interface IJobFiles
 
     void Move(string source, string destination);
 
+    void Delete(string path);
+
     void DeleteDirectoryIfEmpty(string path);
 }

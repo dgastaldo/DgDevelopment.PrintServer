@@ -12,7 +12,7 @@ In `appsettings.json`:
 {
   "Watcher": {
     "Path": "/var/printserver/inbox",
-    "Extensions": [".pdf", ".ps"],
+    "Extensions": [".pdf", ".ps", ".docx", ".png"],
     "IgnoredFolders": ["processing", "processati", "errori", "stallo", "duplicati"],
     "StabilityWindow": "00:00:10",
     "UsePolling": false,
@@ -28,7 +28,7 @@ Oppure con variabili d'ambiente, ad esempio per una prova: `Watcher__Path=/tmp/i
 | Opzione | Predefinito | Significato |
 |---|---|---|
 | `Path` | nessuno | Cartella da osservare. Senza, il watcher non parte. |
-| `Extensions` | `.pdf`, `.ps` | Estensioni accettate, senza distinguere le maiuscole. Il punto iniziale è facoltativo. |
+| `Extensions` | PDF e PostScript, più tutti i formati che il server sa convertire (`.doc` `.docx` `.odt` `.rtf` `.txt` `.xls` `.xlsx` `.ods` `.ppt` `.pptx` `.odp` `.jpg` `.jpeg` `.png`) | Estensioni accettate, senza distinguere le maiuscole. Il punto iniziale è facoltativo. Se lo imposti, sostituisce l'elenco. |
 | `IgnoredFolders` | `processing`, `processati`, `errori`, `stallo`, `duplicati` | Sottocartelle da non guardare (quelle gestite dalla coda). Se lo imposti, includi anche queste. |
 | `StabilityWindow` | 10 secondi | Quanto tempo dimensione e data di modifica devono restare invariate prima che un file sia considerato completo. |
 | `UsePolling` | `false` | Usa solo la scansione periodica, senza gli eventi del file system. |
@@ -90,5 +90,5 @@ Se il watcher non si può creare (ad esempio per i limiti di inotify su Linux) i
 
 - **Cartelle di rete (SMB/NFS):** spesso non generano eventi. Senza `UsePolling` un file arrivato lì non viene rilevato fino al riavvio: su quelle cartelle va attivato.
 - **Eventi persi:** senza `UsePolling`, un evento perso (su Linux o macOS) non viene recuperato finché non arriva un altro evento o un errore del watcher.
-- **Formati:** il watcher non converte niente. Word e immagini restano fuori finché non ci saranno i convertitori. Lo spooler di Windows, inoltre, non converte i PDF: la stampante deve capirli da sola.
+- **Formati:** il watcher non converte niente: accoda i file e li converte la [coda](conversion.html) (per i documenti serve LibreOffice). Lo spooler di Windows, inoltre, non converte i PDF: la stampante deve capirli da sola.
 - **Sorgenti lente:** se un file resta fermo per più di `StabilityWindow` mentre è ancora in scrittura (ad esempio un trasferimento di rete lento), viene pubblicato troppo presto: in quel caso alza `StabilityWindow`.

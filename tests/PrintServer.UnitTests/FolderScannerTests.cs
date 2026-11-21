@@ -90,7 +90,7 @@ public sealed class FolderScannerTests
     {
         _fileSystem.SetFile(InRoot("a.pdf"), 10, Stamp);
         _fileSystem.SetFile(InRoot("b.pdf.tmp"), 10, Stamp);
-        _fileSystem.SetFile(InRoot("c.docx"), 10, Stamp);
+        _fileSystem.SetFile(InRoot("c.zip"), 10, Stamp);
 
         var file = Assert.Single(Create().Scan(_root));
 
