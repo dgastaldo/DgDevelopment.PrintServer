@@ -2,23 +2,23 @@
 
   <PropertyGroup>
     <NoWarn>$(NoWarn);CA1515</NoWarn>
-    <Version>1.5.0</Version>
+    <Version>1.6.0</Version>
   </PropertyGroup>
 
   <ItemGroup>
-    <InternalsVisibleTo Include="PrintServer.UnitTests" />
+    <InternalsVisibleTo Include="PrintServer.UnitTests"/>
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\PrintServer.Core\PrintServer.Core.csproj" />
-    <ProjectReference Include="..\PrintServer.Backends\PrintServer.Backends.csproj" />
-    <ProjectReference Include="..\PrintServer.Watching\PrintServer.Watching.csproj" />
-    <ProjectReference Include="..\PrintServer.Queue\PrintServer.Queue.csproj" />
+    <ProjectReference Include="..\PrintServer.Core\PrintServer.Core.csproj"/>
+    <ProjectReference Include="..\PrintServer.Backends\PrintServer.Backends.csproj"/>
+    <ProjectReference Include="..\PrintServer.Watching\PrintServer.Watching.csproj"/>
+    <ProjectReference Include="..\PrintServer.Queue\PrintServer.Queue.csproj"/>
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.Extensions.Hosting.Systemd" Version="10.0.15" />
-    <PackageReference Include="Microsoft.Extensions.Hosting.WindowsServices" Version="10.0.15" />
+    <PackageReference Include="Microsoft.Extensions.Hosting.Systemd" Version="10.0.15"/>
+    <PackageReference Include="Microsoft.Extensions.Hosting.WindowsServices" Version="10.0.15"/>
   </ItemGroup>
 
 </Project>
