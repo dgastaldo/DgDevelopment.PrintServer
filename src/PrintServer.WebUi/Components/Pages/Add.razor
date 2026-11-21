@@ -44,7 +44,7 @@
         <p>
             <InputFile OnChange="UploadAsync" multiple accept="@Accept" />
         </p>
-        <p class="note">Tipi accettati: @string.Join(", ", View.AcceptedExtensions). Dimensione massima per file: @Display.Size(WebUiOptions.UploadSizeLimit) (limite fisso). Per file più grandi copiali direttamente nella cartella osservata.</p>
+        <p class="note">Tipi accettati: @string.Join(", ", View.AcceptedExtensions). Dimensione massima per file: @(WebUiOptions.UploadSizeLimit / 1_000_000) MB (limite fisso). Per file più grandi copiali direttamente nella cartella osservata.</p>
         @foreach (var line in _results)
         {
             <p class="banner @(line.Failed ? "bad" : "")">@line.Text</p>
