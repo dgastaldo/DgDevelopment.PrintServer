@@ -45,9 +45,5 @@ public sealed class LoopbackAuthenticationHandler : AuthenticationHandler<Authen
         return Task.CompletedTask;
     }
 
-    protected override Task HandleForbiddenAsync(AuthenticationProperties properties)
-    {
-        Response.StatusCode = StatusCodes.Status403Forbidden;
-        return Task.CompletedTask;
-    }
+    protected override Task HandleForbiddenAsync(AuthenticationProperties properties) => HandleChallengeAsync(properties);
 }

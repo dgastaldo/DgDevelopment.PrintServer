@@ -15,9 +15,9 @@
             <label>Stampante
                 <select @bind="_printer">
                     <option value="">Predefinita</option>
-                    @foreach (var printer in _printers.Printers)
+                    @foreach (var name in _printers.Printers.Select(printer => printer.Name))
                     {
-                        <option value="@printer.Name">@printer.Name</option>
+                        <option value="@name">@name</option>
                     }
                 </select>
             </label>
@@ -44,7 +44,7 @@
         <p>
             <InputFile OnChange="UploadAsync" multiple accept="@Accept" />
         </p>
-        <p class="note">Tipi accettati: @string.Join(", ", View.AcceptedExtensions). Dimensione massima: @Display.Size(Settings.Value.MaxUploadBytes).</p>
+        <p class="note">Tipi accettati: @string.Join(", ", View.AcceptedExtensions). Dimensione massima: @Display.Size(Math.Min(Settings.Value.MaxUploadBytes, WebUiOptions.UploadSizeLimit)).</p>
         @foreach (var line in _results)
         {
             <p class="banner @(line.Failed ? "bad" : "")">@line.Text</p>
@@ -71,7 +71,7 @@
         {
             try
             {
-                await using var stream = file.OpenReadStream(Settings.Value.MaxUploadBytes);
+                await using var stream = file.OpenReadStream(Math.Min(Settings.Value.MaxUploadBytes, WebUiOptions.UploadSizeLimit));
                 var result = await Actions.AddAsync(file.Name, stream, string.IsNullOrEmpty(_printer) ? null : _printer, options, Token);
                 _results.Add(result.Succeeded
                     ? ($"{file.Name}: aggiunto, sarà accodato tra pochi secondi.", false)
