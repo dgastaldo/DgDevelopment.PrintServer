@@ -30,6 +30,7 @@ public sealed class WatcherRegistrationTests
 
         Assert.Empty(provider.GetServices<IHostedService>());
         Assert.Null(provider.GetService<Channel<DetectedFile>>());
+        Assert.Null(provider.GetService<IJobSubmitter>());
     }
 
     [Fact]
@@ -46,6 +47,7 @@ public sealed class WatcherRegistrationTests
         using var provider = Build(Configure(("Watcher:Path", Path.GetTempPath()), ("Watcher:QueueCapacity", "2")));
 
         Assert.Single(provider.GetServices<IHostedService>().OfType<FolderWatcherService>());
+        Assert.IsType<FolderJobSubmitter>(provider.GetRequiredService<IJobSubmitter>());
         var channel = provider.GetRequiredService<Channel<DetectedFile>>();
         Assert.True(channel.Writer.TryWrite(new DetectedFile("a", null, 1, DateTimeOffset.UnixEpoch)));
         Assert.True(channel.Writer.TryWrite(new DetectedFile("b", null, 1, DateTimeOffset.UnixEpoch)));

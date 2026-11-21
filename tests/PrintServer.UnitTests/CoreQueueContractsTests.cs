@@ -75,14 +75,15 @@ public sealed class CoreQueueContractsTests
     [InlineData(JobState.Completed, false)]
     [InlineData(JobState.Failed, false)]
     [InlineData(JobState.Stalled, false)]
+    [InlineData(JobState.Cancelled, false)]
     public void OnlyPendingConvertingAndPrintingJobsAreActive(JobState state, bool active)
     {
         Assert.Equal(active, JobStates.IsActive(state));
     }
 
     [Fact]
-    public void TheQueueFoldersAreTheFiveDocumentedOnes()
+    public void TheQueueFoldersAreTheSixDocumentedOnes()
     {
-        Assert.Equal(["processing", "processati", "errori", "stallo", "duplicati"], QueueFolders.All);
+        Assert.Equal(["processing", "processati", "errori", "stallo", "duplicati", "annullati"], QueueFolders.All);
     }
 }

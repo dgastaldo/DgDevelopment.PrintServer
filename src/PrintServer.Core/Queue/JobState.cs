@@ -8,4 +8,5 @@ public enum JobState
     Completed,
     Failed,
     Stalled,
+    Cancelled,
 }

@@ -100,7 +100,10 @@ public sealed partial class JobProcessor
         if (await _store.FinishConversionAsync(job.Id, DocumentFormats.Pdf, ct).ConfigureAwait(false))
         {
             LogConverted(job.Id, job.FileName);
+            return;
         }
+
+        await MoveAsync(job, QueueFolders.Cancelled, ct).ConfigureAwait(false);
     }
 
     private async Task CheckPrintingAsync(Job job, CancellationToken ct)
@@ -184,8 +187,25 @@ public sealed partial class JobProcessor
             return;
         }
 
-        await _store.SetBackendJobIdAsync(job.Id, result.BackendJobId!, ct).ConfigureAwait(false);
+        if (!await _store.SetBackendJobIdAsync(job.Id, result.BackendJobId!, ct).ConfigureAwait(false))
+        {
+            await CancelOrphanAsync(job, result.BackendJobId!, ct).ConfigureAwait(false);
+            return;
+        }
+
         LogSent(job.Id, job.FileName, printer.Name);
+    }
+
+    private async Task CancelOrphanAsync(Job job, string backendJobId, CancellationToken ct)
+    {
+        try
+        {
+            await _backend.CancelJobAsync(backendJobId, ct).ConfigureAwait(false);
+        }
+        catch (Exception ex) when (IsBackendFailure(ex))
+        {
+            LogOrphanNotCancelled(ex, job.Id);
+        }
     }
 
     private static PrinterInfo? FindPrinter(IReadOnlyList<PrinterInfo> printers, string? name) =>
@@ -250,6 +270,9 @@ public sealed partial class JobProcessor
 
     [LoggerMessage(Level = LogLevel.Information, Message = "Job {JobId} ('{FileName}') sent to printer '{Printer}'.")]
     private partial void LogSent(Guid jobId, string fileName, string printer);
+
+    [LoggerMessage(Level = LogLevel.Warning, Message = "Job {JobId} was cancelled while it was being sent, and the printer could not drop it.")]
+    private partial void LogOrphanNotCancelled(Exception exception, Guid jobId);
 
     [LoggerMessage(Level = LogLevel.Information, Message = "Job {JobId} ('{FileName}') converted to PDF.")]
     private partial void LogConverted(Guid jobId, string fileName);

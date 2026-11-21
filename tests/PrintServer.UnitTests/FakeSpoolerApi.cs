@@ -16,6 +16,16 @@ internal sealed class FakeSpoolerApi : ISpoolerApi
 
     public List<(string Printer, string Document, long Length)> Submitted { get; } = [];
 
+    public List<(string Printer, int JobId)> Cancelled { get; } = [];
+
+    public bool CancelResult { get; set; } = true;
+
+    public bool CancelJob(string printerName, int jobId)
+    {
+        Cancelled.Add((printerName, jobId));
+        return CancelResult;
+    }
+
     public IReadOnlyList<SpoolerPrinter> EnumeratePrinters() => Printers;
 
     public string? GetDefaultPrinterName() => DefaultPrinter;

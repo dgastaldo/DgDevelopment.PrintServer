@@ -9,4 +9,6 @@ public interface ISpoolerApi
     int SubmitRawDocument(string printerName, string documentName, Stream content, CancellationToken ct);
 
     uint? GetJobStatus(string printerName, int jobId);
+
+    bool CancelJob(string printerName, int jobId);
 }

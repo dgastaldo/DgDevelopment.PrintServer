@@ -120,6 +120,7 @@ public sealed class QueueInfrastructureTests : IDisposable
     [InlineData(JobState.Completed, "completato")]
     [InlineData(JobState.Failed, "fallito")]
     [InlineData(JobState.Stalled, "in_stallo")]
+    [InlineData(JobState.Cancelled, "annullato")]
     public void EveryStateHasAReadableDatabaseName(JobState state, string name)
     {
         Assert.Equal(name, JobStateNames.ToDatabase(state));
@@ -198,6 +199,7 @@ public sealed class QueueInfrastructureTests : IDisposable
         Assert.Single(hosted.OfType<QueueInitializer>());
         Assert.Single(hosted.OfType<JobIntakeService>());
         Assert.Single(hosted.OfType<JobProcessingService>());
+        Assert.NotNull(provider.GetRequiredService<JobAdministrator>());
         Assert.IsType<QueueInitializer>(hosted[0]);
         Assert.IsType<JobProcessingService>(hosted[^1]);
         Assert.Equal(Path.Combine(_directory, "q.db"), provider.GetRequiredService<QueueDatabaseLocation>().Path);

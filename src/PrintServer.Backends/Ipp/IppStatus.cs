@@ -4,7 +4,11 @@ namespace PrintServer.Backends.Ipp;
 
 internal static class IppStatus
 {
+    public const ushort ClientErrorNotPossible = 0x0404;
+
     public const ushort ClientErrorNotFound = 0x0406;
+
+    public const ushort ClientErrorGone = 0x0407;
 
     public static string Describe(ushort code)
     {

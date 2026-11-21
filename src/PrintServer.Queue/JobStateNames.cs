@@ -10,6 +10,7 @@ internal static class JobStateNames
     public const string Completed = "completato";
     public const string Failed = "fallito";
     public const string Stalled = "in_stallo";
+    public const string Cancelled = "annullato";
 
     public static string ToDatabase(JobState state) => state switch
     {
@@ -19,6 +20,7 @@ internal static class JobStateNames
         JobState.Completed => Completed,
         JobState.Failed => Failed,
         JobState.Stalled => Stalled,
+        JobState.Cancelled => Cancelled,
         _ => throw new ArgumentOutOfRangeException(nameof(state), state, "Unknown job state."),
     };
 
@@ -30,6 +32,7 @@ internal static class JobStateNames
         Completed => JobState.Completed,
         Failed => JobState.Failed,
         Stalled => JobState.Stalled,
+        Cancelled => JobState.Cancelled,
         _ => throw new InvalidOperationException($"Unknown job state '{value}' in the database."),
     };
 }

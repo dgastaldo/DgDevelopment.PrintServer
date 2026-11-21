@@ -54,6 +54,7 @@ public static class QueueServiceCollectionExtensions
         services.TryAddSingleton<StallEvaluator>();
         services.TryAddSingleton<JobIntake>();
         services.TryAddSingleton<JobRecovery>();
+        services.TryAddSingleton<JobAdministrator>();
         services.TryAddSingleton<RetryPolicy>();
         services.TryAddSingleton<JobProcessor>();
         services.AddHostedService<QueueInitializer>();

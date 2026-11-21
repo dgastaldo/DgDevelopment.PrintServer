@@ -14,6 +14,21 @@ public static class PrintOptionFolders
 
     public static IReadOnlyList<string> All { get; } = [Portrait, Landscape, OneSided, TwoSidedLongEdge, TwoSidedShortEdge];
 
+    public static string? FolderFor(PageOrientation orientation) => orientation switch
+    {
+        PageOrientation.Portrait => Portrait,
+        PageOrientation.Landscape => Landscape,
+        _ => null,
+    };
+
+    public static string? FolderFor(DuplexMode duplex) => duplex switch
+    {
+        DuplexMode.OneSided => OneSided,
+        DuplexMode.TwoSidedLongEdge => TwoSidedLongEdge,
+        DuplexMode.TwoSidedShortEdge => TwoSidedShortEdge,
+        _ => null,
+    };
+
     public static bool TryApply(string folderName, PrintOptions current, out PrintOptions applied)
     {
         ArgumentNullException.ThrowIfNull(folderName);
