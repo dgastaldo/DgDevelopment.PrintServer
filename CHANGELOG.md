@@ -1,5 +1,14 @@
 # Changelog
 
+## [1.5.0](https://github.com/dgastaldo/DgDevelopment.PrintServer/compare/server-v1.4.0...server-v1.5.0) (2026-11-21)
+
+
+### Features
+
+* add the print worker ([#63](https://github.com/dgastaldo/DgDevelopment.PrintServer/issues/63)) ([a2caf3d](https://github.com/dgastaldo/DgDevelopment.PrintServer/commit/a2caf3daab04ff6875f580050e88f45617b10b4d))
+* choose orientation and duplex from option subfolders ([#65](https://github.com/dgastaldo/DgDevelopment.PrintServer/issues/65)) ([119543d](https://github.com/dgastaldo/DgDevelopment.PrintServer/commit/119543db694d7de080c3d6d26247507218d02729))
+* report printer problems from the CUPS, IPP and spooler backends ([#64](https://github.com/dgastaldo/DgDevelopment.PrintServer/issues/64)) ([1d9bcdb](https://github.com/dgastaldo/DgDevelopment.PrintServer/commit/1d9bcdb02143480253a7b0aac9460d81df610ec5))
+
 ## [1.4.0](https://github.com/dgastaldo/DgDevelopment.PrintServer/compare/server-v1.3.0...server-v1.4.0) (2026-11-19)
 
 
