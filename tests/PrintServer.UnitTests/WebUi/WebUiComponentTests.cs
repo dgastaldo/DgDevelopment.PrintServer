@@ -185,7 +185,7 @@ public sealed class WebUiComponentTests
         Assert.Contains("Fronte e retro (lato corto)", html, StringComparison.Ordinal);
         Assert.Contains("type=\"file\"", html, StringComparison.Ordinal);
         Assert.Contains(".docx", html, StringComparison.Ordinal);
-        Assert.Contains("25 MB", html, StringComparison.Ordinal);
+        Assert.Contains("8 MB", html, StringComparison.Ordinal);
     }
 
     [Fact]
