@@ -32,6 +32,16 @@ internal sealed class IppResponseWriter
 
     public IppResponseWriter Text(byte tag, string name, string value) => Attribute(tag, name, Encoding.UTF8.GetBytes(value));
 
+    public IppResponseWriter Keywords(string name, params string[] values)
+    {
+        for (var i = 0; i < values.Length; i++)
+        {
+            Attribute(0x44, i == 0 ? name : string.Empty, Encoding.UTF8.GetBytes(values[i]));
+        }
+
+        return this;
+    }
+
     public IppResponseWriter Attribute(byte tag, string name, byte[] value)
     {
         _bytes.Add(tag);
@@ -58,6 +68,10 @@ internal sealed class IppResponseWriter
 
     public static byte[] Printer(int state, bool acceptingJobs) =>
         new IppResponseWriter(0).Group(0x04).Int(0x23, "printer-state", state).Bool("printer-is-accepting-jobs", acceptingJobs).Build();
+
+    public static byte[] Printer(int state, bool acceptingJobs, params string[] reasons) =>
+        new IppResponseWriter(0).Group(0x04).Int(0x23, "printer-state", state).Bool("printer-is-accepting-jobs", acceptingJobs)
+            .Keywords("printer-state-reasons", reasons).Build();
 
     public static byte[] JobCreated(int jobId) =>
         new IppResponseWriter(0).Group(0x02).Int(0x21, "job-id", jobId).Build();

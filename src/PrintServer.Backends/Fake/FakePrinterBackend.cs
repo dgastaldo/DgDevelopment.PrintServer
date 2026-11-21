@@ -17,7 +17,7 @@ public sealed class FakePrinterBackend(IOptions<FakePrinterOptions> options, Tim
     {
         ct.ThrowIfCancellationRequested();
         IReadOnlyList<PrinterInfo> printers = PrinterNames()
-            .Select((name, index) => new PrinterInfo(name, index == 0, PrinterAvailability.Ready))
+            .Select((name, index) => new PrinterInfo(name, index == 0, PrinterAvailability.Ready, _options.Issues.TryGetValue(name, out var issues) ? issues : PrinterIssues.None))
             .ToList();
         return Task.FromResult(printers);
     }
