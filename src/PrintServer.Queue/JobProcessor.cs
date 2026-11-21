@@ -1,6 +1,5 @@
 using System.Net.Http;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
 using PrintServer.Core.Printing;
 using PrintServer.Core.Queue;
 
@@ -14,8 +13,7 @@ public sealed partial class JobProcessor
     private readonly JobFileMover _mover;
     private readonly StallEvaluator _stalls;
     private readonly IDocumentConverter _converter;
-    private readonly QueueOptions _options;
-    private readonly TimeProvider _time;
+    private readonly RetryPolicy _retries;
     private readonly ILogger<JobProcessor> _logger;
 
     public JobProcessor(
@@ -24,8 +22,7 @@ public sealed partial class JobProcessor
         IJobFiles files,
         StallEvaluator stalls,
         IDocumentConverter converter,
-        IOptions<QueueOptions> options,
-        TimeProvider time,
+        RetryPolicy retries,
         ILogger<JobProcessor> logger)
     {
         ArgumentNullException.ThrowIfNull(backend);
@@ -33,8 +30,7 @@ public sealed partial class JobProcessor
         ArgumentNullException.ThrowIfNull(files);
         ArgumentNullException.ThrowIfNull(stalls);
         ArgumentNullException.ThrowIfNull(converter);
-        ArgumentNullException.ThrowIfNull(options);
-        ArgumentNullException.ThrowIfNull(time);
+        ArgumentNullException.ThrowIfNull(retries);
         ArgumentNullException.ThrowIfNull(logger);
 
         _backend = backend;
@@ -43,8 +39,7 @@ public sealed partial class JobProcessor
         _mover = new JobFileMover(files, store);
         _stalls = stalls;
         _converter = converter;
-        _options = options.Value;
-        _time = time;
+        _retries = retries;
         _logger = logger;
     }
 
@@ -200,14 +195,14 @@ public sealed partial class JobProcessor
 
     private async Task RetryOrFailAsync(Job job, string reason, CancellationToken ct)
     {
-        if (job.Attempts >= _options.MaxAttempts)
+        if (_retries.IsExhausted(job.Attempts))
         {
             await FailAsync(job, $"{reason} (gave up after {job.Attempts} attempts)", ct).ConfigureAwait(false);
             return;
         }
 
-        var delay = _options.RetryBaseDelay * Math.Pow(2, job.Attempts - 1);
-        if (await _store.RetryLaterAsync(job.Id, reason, _time.GetUtcNow() + delay, ct).ConfigureAwait(false))
+        var delay = _retries.DelayAfter(job.Attempts);
+        if (await _store.RetryLaterAsync(job.Id, reason, _retries.NextAttemptAfter(job.Attempts), ct).ConfigureAwait(false))
         {
             LogRetry(job.Id, job.FileName, job.Attempts, delay, reason);
         }

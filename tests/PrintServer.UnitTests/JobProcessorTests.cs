@@ -335,8 +335,7 @@ public sealed class JobProcessorTests : IDisposable
             _h.Files,
             _h.Stalls,
             _h.Converter,
-            options,
-            TimeProvider.System,
+            new RetryPolicy(options, TimeProvider.System),
             NullLogger<JobProcessor>.Instance);
         using var service = new JobProcessingService(failing, options, TimeProvider.System, NullLogger<JobProcessingService>.Instance);
         await service.StartAsync(CancellationToken.None);
@@ -348,6 +347,19 @@ public sealed class JobProcessorTests : IDisposable
         }
 
         await service.StopAsync(CancellationToken.None);
+    }
+
+    [Fact]
+    public void TheRetryPolicyDoublesTheDelayAndGivesUpAtTheLimit()
+    {
+        var policy = new RetryPolicy(Options.Create(new QueueOptions { MaxAttempts = 3, RetryBaseDelay = TimeSpan.FromSeconds(10) }), _h.Queue.Time);
+
+        Assert.Equal(TimeSpan.FromSeconds(10), policy.DelayAfter(1));
+        Assert.Equal(TimeSpan.FromSeconds(20), policy.DelayAfter(2));
+        Assert.Equal(TimeSpan.FromSeconds(40), policy.DelayAfter(3));
+        Assert.Equal(_h.Now + TimeSpan.FromSeconds(20), policy.NextAttemptAfter(2));
+        Assert.False(policy.IsExhausted(2));
+        Assert.True(policy.IsExhausted(3));
     }
 }
 

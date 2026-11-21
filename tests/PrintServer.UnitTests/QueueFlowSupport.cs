@@ -179,7 +179,7 @@ internal sealed class QueueHarness : IDisposable
         Stalls = new StallEvaluator(Backend, Queue.Store, Files, Microsoft.Extensions.Options.Options.Create(Options), Queue.Time, NullLogger<StallEvaluator>.Instance);
         Intake = new JobIntake(Queue.Store, Files, Stalls, NullLogger<JobIntake>.Instance);
         Recovery = new JobRecovery(Backend, Queue.Store, Files, NullLogger<JobRecovery>.Instance);
-        Processor = new JobProcessor(Backend, Queue.Store, Files, Stalls, Converter, Microsoft.Extensions.Options.Options.Create(Options), Queue.Time, NullLogger<JobProcessor>.Instance);
+        Processor = new JobProcessor(Backend, Queue.Store, Files, Stalls, Converter, new RetryPolicy(Microsoft.Extensions.Options.Options.Create(Options), Queue.Time), NullLogger<JobProcessor>.Instance);
     }
 
     public SqliteQueueFixture Queue { get; }
