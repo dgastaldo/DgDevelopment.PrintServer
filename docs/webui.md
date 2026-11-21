@@ -66,7 +66,8 @@ Non mettere un reverse proxy sulla stessa macchina davanti al server in questa m
 | `ViewPermission`, `ManagePermission`, `AddPermission` | `printserver.view`, `printserver.manage`, `printserver.add` | Nomi dei tre permessi. |
 | `SessionLifetime` | 8 ore | Durata della sessione dopo l'accesso. |
 | `RefreshInterval` | 3 secondi | Ogni quanto la pagina si aggiorna. |
-| `MaxUploadBytes` | 8 MB | Dimensione massima di un file aggiunto dalla pagina; valori più alti sono ridotti a 8 MB (limite fisso). File più grandi vanno messi direttamente nella cartella osservata. |
+
+Le aggiunte dalla pagina hanno un limite fisso di 25 MB per file (non configurabile); la pagina lo indica accanto al campo di caricamento. File più grandi vanno copiati direttamente nella cartella osservata.
 
 ## HTTPS e indirizzo
 

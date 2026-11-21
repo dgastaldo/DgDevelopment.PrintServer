@@ -257,7 +257,6 @@ public sealed class WebUiTests : IDisposable
     }
 
     [Theory]
-    [InlineData("WebUi:MaxUploadBytes", "0")]
     [InlineData("WebUi:SessionLifetime", "00:00:00")]
     [InlineData("WebUi:RefreshInterval", "00:00:00")]
     [InlineData("WebUi:Authority", "not a url")]

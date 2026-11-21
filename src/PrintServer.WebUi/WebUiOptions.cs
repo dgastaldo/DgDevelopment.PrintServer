@@ -24,10 +24,8 @@ public sealed class WebUiOptions
 
     public TimeSpan SessionLifetime { get; set; } = TimeSpan.FromHours(8);
 
-    /// <summary>Hard ceiling for <see cref="MaxUploadBytes"/>: uploads through the page are never larger than this.</summary>
-    public const long UploadSizeLimit = 8 * 1024 * 1024;
-
-    public long MaxUploadBytes { get; set; } = UploadSizeLimit;
+    /// <summary>Largest file the upload page accepts. Fixed on purpose: it is not configurable.</summary>
+    public const long UploadSizeLimit = 25 * 1024 * 1024;
 
     public TimeSpan RefreshInterval { get; set; } = TimeSpan.FromSeconds(3);
 

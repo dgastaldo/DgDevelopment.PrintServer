@@ -29,7 +29,7 @@ public static class WebUiServiceCollectionExtensions
 
         services.AddOptions<WebUiOptions>()
             .Bind(configuration.GetSection(WebUiOptions.SectionName))
-            .Validate(IsValid, "WebUi options are invalid: Authority must be an absolute URL, MaxUploadBytes, SessionLifetime and RefreshInterval must be positive and the three permissions must differ from nothing.")
+            .Validate(IsValid, "WebUi options are invalid: Authority must be an absolute URL, SessionLifetime and RefreshInterval must be positive and the three permissions must differ from nothing.")
             .ValidateOnStart();
 
         if (!options.Enabled)
@@ -112,8 +112,7 @@ public static class WebUiServiceCollectionExtensions
             : "/";
 
     private static bool IsValid(WebUiOptions options) =>
-        options.MaxUploadBytes > 0
-        && options.SessionLifetime > TimeSpan.Zero
+        options.SessionLifetime > TimeSpan.Zero
         && options.RefreshInterval > TimeSpan.Zero
         && !string.IsNullOrWhiteSpace(options.PermissionClaim)
         && !string.IsNullOrWhiteSpace(options.ViewPermission)
