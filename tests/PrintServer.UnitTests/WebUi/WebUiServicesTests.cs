@@ -236,13 +236,20 @@ public sealed class WebUiServicesTests
         Assert.All(english, pair => Assert.Matches("^[A-Z][A-Za-z]*(\\.[A-Z][A-Za-z]*)+$", pair.Key));
         Assert.All(english, pair => Assert.False(string.IsNullOrWhiteSpace(pair.Value), pair.Key));
         Assert.All(italian, pair => Assert.False(string.IsNullOrWhiteSpace(pair.Value), pair.Key));
-        Assert.All(english, pair => Assert.Equal(PlaceholdersOf(pair.Value), PlaceholdersOf(italian[pair.Key])));
+        Assert.All(english, pair => Assert.Equal(Placeholders.Of(pair.Value), Placeholders.Of(italian[pair.Key])));
 
         static Dictionary<string, string> KeysOf(System.Resources.ResourceSet set) =>
             set.Cast<System.Collections.DictionaryEntry>().ToDictionary(entry => (string)entry.Key, entry => (string)entry.Value!);
+    }
 
-        static string PlaceholdersOf(string text) =>
-            string.Join(",", System.Text.RegularExpressions.Regex.Matches(text, "\\{\\d+\\}").Select(match => match.Value).Order());
+    [Fact]
+    public void TheStringsMarkerOnlyExistsToNameTheResources()
+    {
+        // The marker is never created by the page; it is a type argument for IStringLocalizer<T>.
+        var marker = Activator.CreateInstance(typeof(Strings), nonPublic: true);
+
+        Assert.NotNull(marker);
+        Assert.Equal("Resources", Strings.ResourcesPath);
     }
 
     [Fact]
