@@ -8,18 +8,6 @@ public static class Display
     public static IReadOnlyList<JobState> AllStates { get; } =
         [JobState.Pending, JobState.Converting, JobState.Printing, JobState.Completed, JobState.Failed, JobState.Stalled, JobState.Cancelled];
 
-    public static string StateLabel(JobState state) => state switch
-    {
-        JobState.Pending => "Pending",
-        JobState.Converting => "Converting",
-        JobState.Printing => "Printing",
-        JobState.Completed => "Completed",
-        JobState.Failed => "Failed",
-        JobState.Stalled => "Stalled",
-        JobState.Cancelled => "Cancelled",
-        _ => state.ToString(),
-    };
-
     public static string StateClass(JobState state) => state switch
     {
         JobState.Completed => "ok",

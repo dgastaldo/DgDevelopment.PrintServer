@@ -20,6 +20,60 @@ $PreviousVersionFile = Join-Path $InstallDir '.version.previous'
 $FailedFile = Join-Path $InstallDir '.failed-tag'
 $LockFile = Join-Path $InstallDir '.update.lock'
 
+# Messages come in English (the default) and Italian; the keys are English so the
+# catalog stays readable even where a translation is missing.
+# Language: PRINTSERVER_LANG, then the Windows display language, then English.
+$Messages = @{
+    en = @{
+        ServiceNotFound      = 'service {0} not found, restart it manually'
+        NoPreviousVersion    = 'no previous version to roll back to'
+        RolledBack           = 'rolled back to {0}'
+        AnotherUpdateRunning = 'another update is running'
+        NoRelease            = 'no {0}* release found'
+        UpToDate             = 'already up to date ({0})'
+        FailedHealthBefore   = '{0} failed its health check earlier, skipping until a newer release'
+        MissingAssets        = 'release {0} has no {1} or SHA256SUMS'
+        Downloading          = 'downloading {0} (win-x64)'
+        ChecksumMismatch     = 'checksum mismatch for {0}, aborting'
+        NoExecutable         = 'archive does not contain PrintServer.Host.exe'
+        Updated              = 'updated to {0}'
+        HealthFailedRollback = 'health check failed after updating to {0}, rolling back'
+    }
+    it = @{
+        ServiceNotFound      = 'servizio {0} non trovato, riavvialo a mano'
+        NoPreviousVersion    = 'nessuna versione precedente a cui tornare'
+        RolledBack           = 'tornato alla versione {0}'
+        AnotherUpdateRunning = 'un altro aggiornamento è in corso'
+        NoRelease            = 'nessuna release {0}* trovata'
+        UpToDate             = 'già aggiornato ({0})'
+        FailedHealthBefore   = '{0} non ha superato il controllo di salute in precedenza, la salto fino a una release più recente'
+        MissingAssets        = 'la release {0} non contiene {1} o SHA256SUMS'
+        Downloading          = 'scarico {0} (win-x64)'
+        ChecksumMismatch     = 'checksum diversa per {0}, interrompo'
+        NoExecutable         = 'l''archivio non contiene PrintServer.Host.exe'
+        Updated              = 'aggiornato a {0}'
+        HealthFailedRollback = 'controllo di salute fallito dopo l''aggiornamento a {0}, torno indietro'
+    }
+}
+
+function Get-Language {
+    foreach ($candidate in @($env:PRINTSERVER_LANG, (Get-UICulture).TwoLetterISOLanguageName)) {
+        if ($candidate -and $candidate.Length -ge 2) {
+            $code = $candidate.Substring(0, 2).ToLowerInvariant()
+            if ($Messages.ContainsKey($code)) { return $code }
+        }
+    }
+    return 'en'
+}
+
+$LanguageCode = Get-Language
+
+function Get-Text([string]$Key, [object[]]$Arguments = @()) {
+    $format = $Messages[$LanguageCode][$Key]
+    if (-not $format) { $format = $Messages['en'][$Key] }
+    return ($format -f $Arguments)
+}
+
 function Write-Log($Message) {
     $timestamp = (Get-Date).ToUniversalTime().ToString('yyyy-MM-ddTHH:mm:ssZ')
     Write-Output "$timestamp $Message"
@@ -28,7 +82,7 @@ function Write-Log($Message) {
 function Restart-PrintService {
     $service = Get-Service -Name $ServiceName -ErrorAction SilentlyContinue
     if ($null -eq $service) {
-        Write-Log "service $ServiceName not found, restart it manually"
+        Write-Log (Get-Text 'ServiceNotFound' @($ServiceName))
         return
     }
     if ($service.Status -ne 'Stopped') { Stop-Service -Name $ServiceName -Force }
@@ -50,7 +104,7 @@ function Test-Healthy {
 
 function Invoke-Rollback {
     if (-not (Test-Path $Previous)) {
-        Write-Log 'no previous version to roll back to'
+        Write-Log (Get-Text 'NoPreviousVersion')
         exit 1
     }
     $failed = Join-Path $InstallDir 'failed'
@@ -62,14 +116,14 @@ function Invoke-Rollback {
     if (Test-Path $PreviousVersionFile) { Move-Item $PreviousVersionFile $VersionFile -Force }
     Remove-Item $failed -Recurse -Force
     Restart-PrintService
-    Write-Log ("rolled back to {0}" -f (Get-Content $VersionFile -ErrorAction SilentlyContinue))
+    Write-Log (Get-Text 'RolledBack' @((Get-Content $VersionFile -ErrorAction SilentlyContinue)))
 }
 
 New-Item -ItemType Directory -Force -Path $InstallDir | Out-Null
 try {
     $lock = [System.IO.File]::Open($LockFile, 'OpenOrCreate', 'ReadWrite', 'None')
 } catch {
-    Write-Log 'another update is running'
+    Write-Log (Get-Text 'AnotherUpdateRunning')
     exit 0
 }
 
@@ -87,19 +141,19 @@ try {
         Select-Object -Last 1
 
     if ($null -eq $latest) {
-        Write-Log "no $TagPrefix* release found"
+        Write-Log (Get-Text 'NoRelease' @($TagPrefix))
         exit 0
     }
 
     $tag = $latest.tag_name
     $installed = if (Test-Path $VersionFile) { (Get-Content $VersionFile -Raw).Trim() } else { '' }
     if ($tag -eq $installed) {
-        Write-Log "already up to date ($tag)"
+        Write-Log (Get-Text 'UpToDate' @($tag))
         exit 0
     }
     $failedTag = if (Test-Path $FailedFile) { (Get-Content $FailedFile -Raw).Trim() } else { '' }
     if ($tag -eq $failedTag) {
-        Write-Log "$tag failed its health check earlier, skipping until a newer release"
+        Write-Log (Get-Text 'FailedHealthBefore' @($tag))
         exit 0
     }
 
@@ -107,13 +161,13 @@ try {
     $archive = $latest.assets | Where-Object { $_.name -eq $archiveName } | Select-Object -First 1
     $sums = $latest.assets | Where-Object { $_.name -eq 'SHA256SUMS' } | Select-Object -First 1
     if ($null -eq $archive -or $null -eq $sums) {
-        Write-Log "release $tag has no $archiveName or SHA256SUMS"
+        Write-Log (Get-Text 'MissingAssets' @($tag, $archiveName))
         exit 1
     }
 
     $work = Join-Path ([IO.Path]::GetTempPath()) ([Guid]::NewGuid().ToString())
     New-Item -ItemType Directory -Path $work | Out-Null
-    Write-Log "downloading $tag (win-x64)"
+    Write-Log (Get-Text 'Downloading' @($tag))
     Invoke-WebRequest -Uri $archive.browser_download_url -OutFile (Join-Path $work $archiveName) -UseBasicParsing
     Invoke-WebRequest -Uri $sums.browser_download_url -OutFile (Join-Path $work 'SHA256SUMS') -UseBasicParsing
 
@@ -121,7 +175,7 @@ try {
     $expected = if ($line) { ($line -split '\s+')[0] } else { '' }
     $actual = (Get-FileHash -Algorithm SHA256 -Path (Join-Path $work $archiveName)).Hash
     if ([string]::IsNullOrEmpty($expected) -or $expected.ToLower() -ne $actual.ToLower()) {
-        Write-Log "checksum mismatch for $archiveName, aborting"
+        Write-Log (Get-Text 'ChecksumMismatch' @($archiveName))
         exit 1
     }
 
@@ -129,7 +183,7 @@ try {
     Expand-Archive -Path (Join-Path $work $archiveName) -DestinationPath $extract
     $newDir = Join-Path $extract 'printserver-win-x64'
     if (-not (Test-Path (Join-Path $newDir 'PrintServer.Host.exe'))) {
-        Write-Log 'archive does not contain PrintServer.Host.exe'
+        Write-Log (Get-Text 'NoExecutable')
         exit 1
     }
 
@@ -144,9 +198,9 @@ try {
 
     Restart-PrintService
     if (Test-Healthy) {
-        Write-Log "updated to $tag"
+        Write-Log (Get-Text 'Updated' @($tag))
     } else {
-        Write-Log "health check failed after updating to $tag, rolling back"
+        Write-Log (Get-Text 'HealthFailedRollback' @($tag))
         Set-Content -Path $FailedFile -Value $tag -NoNewline
         Invoke-Rollback
         exit 1
