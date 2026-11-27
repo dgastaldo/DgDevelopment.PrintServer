@@ -143,6 +143,21 @@ public sealed class WebUiTests : IDisposable
     }
 
     [Theory]
+    [InlineData("http", false)]
+    [InlineData("https", true)]
+    public async Task TheLanguageCookieIsSecureOnlyOverHttps(string scheme, bool secure)
+    {
+        using var client = Create(IPAddress.Loopback, oidc: false);
+
+        using var response = await client.GetAsync(new Uri($"{scheme}://localhost/language?culture=it"));
+
+        var cookie = Assert.Single(response.Headers.GetValues("Set-Cookie"));
+        Assert.Equal(secure, cookie.Contains("secure", StringComparison.OrdinalIgnoreCase));
+        Assert.Contains("httponly", cookie, StringComparison.OrdinalIgnoreCase);
+        Assert.Contains("samesite=lax", cookie, StringComparison.OrdinalIgnoreCase);
+    }
+
+    [Theory]
     [InlineData("/language?culture=fr&returnUrl=%2Fjobs", "/jobs")]
     [InlineData("/language?returnUrl=%2Fjobs", "/jobs")]
     [InlineData("/language?culture=en&returnUrl=https%3A%2F%2Fevil.example", "/")]

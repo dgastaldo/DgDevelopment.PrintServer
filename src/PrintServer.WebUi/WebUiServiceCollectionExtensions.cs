@@ -117,10 +117,12 @@ public static class WebUiServiceCollectionExtensions
             var language = Languages.FirstOrDefault(candidate => string.Equals(candidate, culture, StringComparison.OrdinalIgnoreCase));
             if (language is not null)
             {
+                // Secure only over HTTPS: the page also works over plain HTTP on a LAN, where a Secure cookie would be dropped
+                // by the browser and the language choice would silently not stick. The cookie holds no secret.
                 context.Response.Cookies.Append(
                     CookieRequestCultureProvider.DefaultCookieName,
                     CookieRequestCultureProvider.MakeCookieValue(new RequestCulture(language)),
-                    new CookieOptions { Expires = DateTimeOffset.UtcNow.AddYears(1), IsEssential = true, SameSite = SameSiteMode.Lax, HttpOnly = true, Secure = true });
+                    new CookieOptions { Expires = DateTimeOffset.UtcNow.AddYears(1), IsEssential = true, SameSite = SameSiteMode.Lax, HttpOnly = true, Secure = context.Request.IsHttps });
             }
 
             return Results.LocalRedirect(SafeReturnUrl(returnUrl));
