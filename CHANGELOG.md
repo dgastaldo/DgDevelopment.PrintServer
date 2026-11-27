@@ -1,5 +1,19 @@
 # Changelog
 
+## [1.8.0](https://github.com/dgastaldo/DgDevelopment.PrintServer/compare/server-v1.7.0...server-v1.8.0) (2026-11-27)
+
+
+### Features
+
+* print the installer and update script messages in English or Italian ([#79](https://github.com/dgastaldo/DgDevelopment.PrintServer/issues/79)) ([391752e](https://github.com/dgastaldo/DgDevelopment.PrintServer/commit/391752e5ca6d00770abad6749b15a4c47e1e2f79))
+* show the status page in English or Italian ([#78](https://github.com/dgastaldo/DgDevelopment.PrintServer/issues/78)) ([2be4080](https://github.com/dgastaldo/DgDevelopment.PrintServer/commit/2be40803e0958bc28306dbb4bb810e4628a02ebf))
+* use English names for queue folders, option folders and job states ([#77](https://github.com/dgastaldo/DgDevelopment.PrintServer/issues/77)) ([4aba15c](https://github.com/dgastaldo/DgDevelopment.PrintServer/commit/4aba15c113fd30a345a62355532fcb940137e7d0))
+
+
+### Bug Fixes
+
+* resolve the remaining SonarCloud findings ([#87](https://github.com/dgastaldo/DgDevelopment.PrintServer/issues/87)) ([e426de3](https://github.com/dgastaldo/DgDevelopment.PrintServer/commit/e426de30d686666af6aa0c44ea8a3156a02c2b25))
+
 ## [1.7.0](https://github.com/dgastaldo/DgDevelopment.PrintServer/compare/server-v1.6.0...server-v1.7.0) (2026-11-21)
 
 
