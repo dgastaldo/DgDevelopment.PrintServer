@@ -3,46 +3,46 @@
 @inject WebUiActions Actions
 
 <main class="page">
-    <p><a href="/jobs">&larr; Tutti i lavori</a></p>
+    <p><a href="/jobs">&larr; @T["Detail.Back"]</a></p>
     @if (_message is not null)
     {
         <p class="banner @(_failed ? "bad" : "")">@_message</p>
     }
     @if (_job is null)
     {
-        <h1>Lavoro non trovato</h1>
+        <h1>@T["Detail.NotFound"]</h1>
     }
     else
     {
         <h1>@_job.FileName</h1>
-        <p><span class="badge @Display.StateClass(_job.State)">@Display.StateLabel(_job.State)</span></p>
+        <p><span class="badge @Display.StateClass(_job.State)">@T.StateLabel(_job.State)</span></p>
         @if (!string.IsNullOrEmpty(_job.LastError))
         {
             <p class="banner bad">@_job.LastError</p>
         }
         <dl>
-            <dt>Stampante</dt><dd>@Display.Printer(_job.PrinterName)</dd>
-            <dt>Opzioni</dt><dd>@Display.Options(_job.Options)</dd>
-            <dt>Formato</dt><dd>@_job.SourceFormat</dd>
-            <dt>Dimensione</dt><dd>@Display.Size(_job.FileSize)</dd>
-            <dt>Tentativi</dt><dd>@_job.Attempts</dd>
-            <dt>Creato</dt><dd>@Display.When(_job.CreatedAt)</dd>
-            <dt>Iniziato</dt><dd>@Display.When(_job.StartedAt)</dd>
-            <dt>Terminato</dt><dd>@Display.When(_job.FinishedAt)</dd>
-            <dt>Prossimo tentativo</dt><dd>@Display.When(_job.NextAttemptAt)</dd>
-            <dt>Cartella</dt><dd><code>@_job.OriginDirectory</code></dd>
-            <dt>File</dt><dd><code>@_job.DocumentPath</code></dd>
-            <dt>Identificativo</dt><dd><code>@_job.Id</code></dd>
+            <dt>@T["Column.Printer"]</dt><dd>@T.Printer(_job.PrinterName)</dd>
+            <dt>@T["Column.Options"]</dt><dd>@T.Options(_job.Options)</dd>
+            <dt>@T["Column.Format"]</dt><dd>@_job.SourceFormat</dd>
+            <dt>@T["Column.Size"]</dt><dd>@UiText.Size(_job.FileSize)</dd>
+            <dt>@T["Column.Attempts"]</dt><dd>@_job.Attempts</dd>
+            <dt>@T["Column.Created"]</dt><dd>@UiText.When(_job.CreatedAt)</dd>
+            <dt>@T["Column.Started"]</dt><dd>@UiText.When(_job.StartedAt)</dd>
+            <dt>@T["Column.Finished"]</dt><dd>@UiText.When(_job.FinishedAt)</dd>
+            <dt>@T["Column.NextAttempt"]</dt><dd>@UiText.When(_job.NextAttemptAt)</dd>
+            <dt>@T["Column.Folder"]</dt><dd><code>@_job.OriginDirectory</code></dd>
+            <dt>@T["Column.DocumentPath"]</dt><dd><code>@_job.DocumentPath</code></dd>
+            <dt>@T["Column.Id"]</dt><dd><code>@_job.Id</code></dd>
         </dl>
         <AuthorizeView Policy="@WebUiPermissions.ManagePolicy">
             <p class="actions">
                 @if (Display.CanRetry(_job.State))
                 {
-                    <button type="button" @onclick="RetryAsync">Riprova</button>
+                    <button type="button" @onclick="RetryAsync">@T["Action.Retry"]</button>
                 }
                 @if (Display.CanCancel(_job.State))
                 {
-                    <button type="button" class="danger" @onclick="CancelAsync">Annulla</button>
+                    <button type="button" class="danger" @onclick="CancelAsync">@T["Action.Cancel"]</button>
                 }
             </p>
         </AuthorizeView>
@@ -59,9 +59,9 @@
 
     protected override async Task LoadAsync(CancellationToken ct) => _job = await View.JobAsync(Id, ct);
 
-    private Task RetryAsync() => RunAsync(Actions.RetryAsync(Id, CancellationToken.None), "Lavoro rimesso in coda.");
+    private Task RetryAsync() => RunAsync(Actions.RetryAsync(Id, CancellationToken.None), T["Action.Requeued"]);
 
-    private Task CancelAsync() => RunAsync(Actions.CancelAsync(Id, CancellationToken.None), "Lavoro annullato.");
+    private Task CancelAsync() => RunAsync(Actions.CancelAsync(Id, CancellationToken.None), T["Action.Cancelled"]);
 
     private async Task RunAsync(Task<QueueActionResult> action, string success)
     {

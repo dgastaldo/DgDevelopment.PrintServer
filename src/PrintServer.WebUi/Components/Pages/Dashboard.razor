@@ -2,14 +2,14 @@
 @inject QueueView View
 
 <main class="page">
-    <h1>Stato</h1>
+    <h1>@T["Dashboard.Title"]</h1>
     @if (LoadError is not null)
     {
         <p class="banner bad">@LoadError</p>
     }
     @if (!View.IsQueueActive)
     {
-        <p class="banner">La coda non è attiva: imposta <code>Watcher:Path</code> nella configurazione.</p>
+        <p class="banner">@T["Queue.Inactive"]</p>
     }
 
     <section class="cards">
@@ -17,31 +17,31 @@
         {
             <a class="card @Display.StateClass(state)" href="/jobs?state=@state">
                 <span class="n">@Count(state)</span>
-                <span>@Display.StateLabel(state)</span>
+                <span>@T.StateLabel(state)</span>
             </a>
         }
     </section>
 
-    <h2>Stampanti</h2>
+    <h2>@T["Dashboard.Printers"]</h2>
     @if (_printers.Error is not null)
     {
         <p class="banner bad">@_printers.Error</p>
     }
     else if (_printers.Printers.Count == 0)
     {
-        <p class="note">Nessuna stampante.</p>
+        <p class="note">@T["Dashboard.NoPrinters"]</p>
     }
     else
     {
         <table>
-            <thead><tr><th>Nome</th><th>Stato</th><th>Problemi</th></tr></thead>
+            <thead><tr><th>@T["Column.Name"]</th><th>@T["Column.Status"]</th><th>@T["Column.Problems"]</th></tr></thead>
             <tbody>
                 @foreach (var printer in _printers.Printers)
                 {
-                    var problems = Display.Issues(printer);
+                    var problems = T.Issues(printer);
                     <tr>
-                        <td>@printer.Name @(printer.IsDefault ? "(predefinita)" : "")</td>
-                        <td>@Availability(printer)</td>
+                        <td>@printer.Name @(printer.IsDefault ? T["Dashboard.DefaultMark"] : "")</td>
+                        <td>@T.Availability(printer)</td>
                         <td class="@(problems.Length > 0 ? "bad" : "")">@(problems.Length > 0 ? problems : "-")</td>
                     </tr>
                 }
@@ -49,7 +49,7 @@
         </table>
     }
 
-    <h2>Ultimi lavori</h2>
+    <h2>@T["Dashboard.LatestJobs"]</h2>
     <JobTable Jobs="_recent" OnChanged="ReloadAsync" />
 </main>
 
@@ -59,13 +59,6 @@
     private IReadOnlyList<Job> _recent = [];
 
     private int Count(JobState state) => _counts.GetValueOrDefault(state);
-
-    private static string Availability(PrinterInfo printer) => printer.Availability switch
-    {
-        PrinterAvailability.Ready => "Pronta",
-        PrinterAvailability.Busy => "Occupata",
-        _ => "Non disponibile",
-    };
 
     protected override async Task LoadAsync(CancellationToken ct)
     {

@@ -13,6 +13,9 @@ public abstract class RefreshingComponent : ComponentBase, IDisposable
     protected RefreshingComponent() => _token = _lifetime.Token;
 
     [Inject]
+    protected UiText T { get; set; } = default!;
+
+    [Inject]
     protected IOptions<WebUiOptions> Settings { get; set; } = default!;
 
     // Copied once: a CancellationToken stays valid after its source is disposed, the source itself does not.
@@ -56,7 +59,7 @@ public abstract class RefreshingComponent : ComponentBase, IDisposable
         }
         catch (Exception ex) when (ex is InvalidOperationException or IOException or SqliteException or DbUpdateException)
         {
-            LoadError = $"Impossibile leggere la coda: {ex.Message}";
+            LoadError = T.Format("Error.QueueUnreadable", ex.Message);
         }
     }
 

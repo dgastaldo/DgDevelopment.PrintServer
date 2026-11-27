@@ -12,11 +12,12 @@ namespace PrintServer.WebUi;
 public sealed class WebUiActions(
     AuthenticationStateProvider authentication,
     IAuthorizationService authorization,
-    IServiceProvider services)
+    IServiceProvider services,
+    UiText text)
 {
-    private const string Denied = "Non hai il permesso per questa operazione.";
+    private string Denied => text["Error.Denied"];
 
-    private const string QueueOff = "La coda non è attiva: manca la cartella osservata (Watcher:Path).";
+    private string QueueOff => text["Error.QueueOff"];
 
     public async Task<QueueActionResult> RetryAsync(Guid id, CancellationToken ct)
     {

@@ -93,6 +93,85 @@ public sealed class WebUiTests : IDisposable
         return app;
     }
 
+    private static async Task<string> GetAsync(HttpClient client, string path, string? acceptLanguage = null, string? cookie = null)
+    {
+        using var request = new HttpRequestMessage(HttpMethod.Get, new Uri(path, UriKind.Relative));
+        if (acceptLanguage is not null)
+        {
+            request.Headers.TryAddWithoutValidation("Accept-Language", acceptLanguage);
+        }
+
+        if (cookie is not null)
+        {
+            request.Headers.TryAddWithoutValidation("Cookie", cookie);
+        }
+
+        using var response = await client.SendAsync(request);
+        return await response.Content.ReadAsStringAsync();
+    }
+
+    [Fact]
+    public async Task ThePageIsInEnglishUnlessTheBrowserAsksForItalian()
+    {
+        using var client = Create(IPAddress.Loopback, oidc: false);
+
+        var plain = await GetAsync(client, "/");
+        var italian = await GetAsync(client, "/", acceptLanguage: "it-IT,it;q=0.9,en;q=0.5");
+        var german = await GetAsync(client, "/", acceptLanguage: "de-DE");
+
+        Assert.Contains("<html lang=\"en\">", plain, StringComparison.Ordinal);
+        Assert.Contains("<h1>Status</h1>", plain, StringComparison.Ordinal);
+        Assert.Contains("<html lang=\"it\">", italian, StringComparison.Ordinal);
+        Assert.Contains("<h1>Stato</h1>", italian, StringComparison.Ordinal);
+        Assert.Contains("<h1>Status</h1>", german, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public async Task TheLanguageLinkRemembersTheChoiceInACookie()
+    {
+        using var client = Create(IPAddress.Loopback, oidc: false);
+
+        using var response = await client.GetAsync(new Uri("/language?culture=it&returnUrl=%2Fjobs", UriKind.Relative));
+
+        Assert.Equal(HttpStatusCode.Redirect, response.StatusCode);
+        Assert.Equal("/jobs", response.Headers.Location!.OriginalString);
+        var cookie = Assert.Single(response.Headers.GetValues("Set-Cookie"));
+        Assert.Contains(".AspNetCore.Culture=c%3Dit%7Cuic%3Dit", cookie, StringComparison.Ordinal);
+
+        var html = await GetAsync(client, "/", acceptLanguage: "en", cookie: ".AspNetCore.Culture=c%3Dit%7Cuic%3Dit");
+        Assert.Contains("<h1>Stato</h1>", html, StringComparison.Ordinal);
+    }
+
+    [Theory]
+    [InlineData("/language?culture=fr&returnUrl=%2Fjobs", "/jobs")]
+    [InlineData("/language?returnUrl=%2Fjobs", "/jobs")]
+    [InlineData("/language?culture=en&returnUrl=https%3A%2F%2Fevil.example", "/")]
+    [InlineData("/language?culture=en&returnUrl=%2F%2Fevil.example", "/")]
+    [InlineData("/language?culture=EN", "/")]
+    public async Task OnlyKnownLanguagesAreStoredAndTheReturnAddressStaysLocal(string path, string expected)
+    {
+        ArgumentNullException.ThrowIfNull(path);
+        using var client = Create(IPAddress.Loopback, oidc: false);
+
+        using var response = await client.GetAsync(new Uri(path, UriKind.Relative));
+
+        Assert.Equal(HttpStatusCode.Redirect, response.StatusCode);
+        Assert.Equal(expected, response.Headers.Location!.OriginalString);
+        var stored = response.Headers.TryGetValues("Set-Cookie", out var cookies) && cookies.Any();
+        Assert.Equal(path.Contains("culture=en", StringComparison.OrdinalIgnoreCase), stored);
+    }
+
+    [Fact]
+    public async Task TheLanguageLinkWorksWithoutLoggingIn()
+    {
+        using var client = Create(IPAddress.Loopback, oidc: true);
+
+        using var response = await client.GetAsync(new Uri("/language?culture=it", UriKind.Relative));
+
+        Assert.Equal(HttpStatusCode.Redirect, response.StatusCode);
+        Assert.Equal("/", response.Headers.Location!.OriginalString);
+    }
+
     [Fact]
     public async Task WithoutAProviderThePageIsReadOnlyFromThisMachine()
     {
@@ -103,7 +182,7 @@ public sealed class WebUiTests : IDisposable
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
         Assert.Contains("PrintServer", html, StringComparison.Ordinal);
-        Assert.Contains("solo lettura", html, StringComparison.Ordinal);
+        Assert.Contains("read-only", html, StringComparison.Ordinal);
         Assert.DoesNotContain("href=\"/add\"", html, StringComparison.Ordinal);
     }
 
@@ -162,7 +241,7 @@ public sealed class WebUiTests : IDisposable
         var html = await (await viewer.GetAsync(new Uri("/", UriKind.Relative))).Content.ReadAsStringAsync();
 
         Assert.Contains("Mario Rossi", html, StringComparison.Ordinal);
-        Assert.Contains("Esci", html, StringComparison.Ordinal);
+        Assert.Contains("Sign out", html, StringComparison.Ordinal);
         Assert.DoesNotContain("href=\"/add\"", html, StringComparison.Ordinal);
         Assert.Equal(HttpStatusCode.Forbidden, (await viewer.GetAsync(new Uri("/add", UriKind.Relative))).StatusCode);
     }

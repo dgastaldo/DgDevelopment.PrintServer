@@ -6,7 +6,7 @@ using PrintServer.Core.Watching;
 
 namespace PrintServer.WebUi;
 
-public sealed class QueueView(IServiceProvider services)
+public sealed class QueueView(IServiceProvider services, UiText text)
 {
     private readonly IJobStore? _store = services.GetService<IJobStore>();
     private readonly IPrinterBackend? _backend = services.GetService<IPrinterBackend>();
@@ -31,7 +31,7 @@ public sealed class QueueView(IServiceProvider services)
     {
         if (_backend is null)
         {
-            return new PrinterListing([], "Nessun backend di stampa configurato.");
+            return new PrinterListing([], text["Error.NoBackend"]);
         }
 
         try
@@ -40,7 +40,7 @@ public sealed class QueueView(IServiceProvider services)
         }
         catch (Exception ex) when (ex is InvalidOperationException or IOException or HttpRequestException or TimeoutException)
         {
-            return new PrinterListing([], $"Impossibile leggere le stampanti: {ex.Message}");
+            return new PrinterListing([], text.Format("Error.PrintersUnreadable", ex.Message));
         }
     }
 }

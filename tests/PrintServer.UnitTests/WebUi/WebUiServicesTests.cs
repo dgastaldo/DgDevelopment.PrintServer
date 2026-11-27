@@ -45,7 +45,7 @@ public sealed class WebUiServicesTests
 
             Assert.False(cancel.Succeeded);
             Assert.False(retry.Succeeded);
-            Assert.Contains("permesso", cancel.Message, StringComparison.Ordinal);
+            Assert.Contains("permission", cancel.Message, StringComparison.Ordinal);
             Assert.Equal(JobState.Pending, (await env.Queue.GetAsync(job.Id)).State);
         }
     }
@@ -115,8 +115,8 @@ public sealed class WebUiServicesTests
         Assert.Null(await view.JobAsync(Guid.NewGuid(), CancellationToken.None));
 
         var services = new ServiceCollection().BuildServiceProvider();
-        var bare = new QueueView(services);
-        Assert.Contains("Nessun backend", (await bare.PrintersAsync(CancellationToken.None)).Error, StringComparison.Ordinal);
+        var bare = new QueueView(services, TestText.Create());
+        Assert.Contains("No printer backend", (await bare.PrintersAsync(CancellationToken.None)).Error, StringComparison.Ordinal);
     }
 
     [Theory]
@@ -145,39 +145,104 @@ public sealed class WebUiServicesTests
     [InlineData(JobState.Cancelled, "Cancelled", "muted", true, false)]
     public void StatesAreDescribedForThePage(JobState state, string label, string css, bool retry, bool cancel)
     {
-        Assert.Equal(label, Display.StateLabel(state));
+        Assert.Equal(label, TestText.Create().StateLabel(state));
         Assert.Equal(css, Display.StateClass(state));
         Assert.Equal(retry, Display.CanRetry(state));
         Assert.Equal(cancel, Display.CanCancel(state));
         Assert.Contains(state, Display.AllStates);
-        Assert.Equal("99", Display.StateLabel((JobState)99));
+        Assert.Equal("99", TestText.Create().StateLabel((JobState)99));
+    }
+
+    [Theory]
+    [InlineData(JobState.Pending, "In attesa")]
+    [InlineData(JobState.Converting, "In conversione")]
+    [InlineData(JobState.Printing, "In stampa")]
+    [InlineData(JobState.Completed, "Completato")]
+    [InlineData(JobState.Failed, "Fallito")]
+    [InlineData(JobState.Stalled, "In stallo")]
+    [InlineData(JobState.Cancelled, "Annullato")]
+    public void StatesAreAvailableInItalian(JobState state, string label)
+    {
+        using var scope = new CultureScope("it");
+
+        Assert.Equal(label, TestText.Create().StateLabel(state));
     }
 
     [Fact]
     public void ValuesAreFormattedForReading()
     {
-        Assert.Equal("Predefinita", Display.Printer(null));
-        Assert.Equal("Office", Display.Printer("Office"));
-        Assert.Equal("Predefinite", Display.Options(PrintOptions.Default));
-        Assert.Equal("Orizzontale, Fronte e retro (lato lungo)", Display.Options(new PrintOptions(PageOrientation.Landscape, DuplexMode.TwoSidedLongEdge)));
-        Assert.Equal("Verticale, Solo fronte", Display.Options(new PrintOptions(PageOrientation.Portrait, DuplexMode.OneSided)));
-        Assert.Equal("Fronte e retro (lato corto)", Display.Options(new PrintOptions(PageOrientation.Default, DuplexMode.TwoSidedShortEdge)));
-        Assert.Equal("-", Display.When(null));
-        Assert.Equal("21/11/2026", Display.When(new DateTimeOffset(2026, 11, 21, 12, 0, 0, TimeSpan.Zero))[..10]);
-        Assert.Equal("10 B", Display.Size(10));
-        Assert.Equal("1.5 KB", Display.Size(1536));
-        Assert.Equal("2 MB", Display.Size(2 * 1024 * 1024));
+        var text = TestText.Create();
+
+        Assert.Equal("Default", text.Printer(null));
+        Assert.Equal("Office", text.Printer("Office"));
+        Assert.Equal("Defaults", text.Options(PrintOptions.Default));
+        Assert.Equal("Landscape, Two-sided (long edge)", text.Options(new PrintOptions(PageOrientation.Landscape, DuplexMode.TwoSidedLongEdge)));
+        Assert.Equal("Portrait, One-sided", text.Options(new PrintOptions(PageOrientation.Portrait, DuplexMode.OneSided)));
+        Assert.Equal("Two-sided (short edge)", text.Options(new PrintOptions(PageOrientation.Default, DuplexMode.TwoSidedShortEdge)));
+        Assert.Equal("-", UiText.When(null));
+        Assert.Equal("10 B", UiText.Size(10));
+        Assert.Equal("1.5 KB", UiText.Size(1536));
+        Assert.Equal("2 MB", UiText.Size(2 * 1024 * 1024));
+    }
+
+    [Fact]
+    public void ValuesFollowTheCultureInItalian()
+    {
+        using var scope = new CultureScope("it");
+        var text = TestText.Create();
+
+        Assert.Equal("Predefinita", text.Printer(null));
+        Assert.Equal("Orizzontale, Fronte e retro (lato lungo)", text.Options(new PrintOptions(PageOrientation.Landscape, DuplexMode.TwoSidedLongEdge)));
+        Assert.Equal("Verticale, Solo fronte", text.Options(new PrintOptions(PageOrientation.Portrait, DuplexMode.OneSided)));
+        Assert.Equal("Predefinite", text.Options(PrintOptions.Default));
+        Assert.Equal("21/11/2026", UiText.When(new DateTimeOffset(2026, 11, 21, 12, 0, 0, TimeSpan.Zero))[..10]);
+        Assert.Equal("1,5 KB", UiText.Size(1536));
     }
 
     [Fact]
     public void PrinterProblemsAreListedInWords()
     {
+        var text = TestText.Create();
         var all = new PrinterInfo("P", false, PrinterAvailability.Offline, PrinterIssues.PaperOut | PrinterIssues.TonerOut | PrinterIssues.PaperJam | PrinterIssues.DoorOpen | PrinterIssues.Error);
 
-        Assert.Equal("Non disponibile, Carta esaurita, Toner esaurito, Carta inceppata, Sportello aperto, Errore", Display.Issues(all));
-        Assert.Equal(string.Empty, Display.Issues(new PrinterInfo("P", false, PrinterAvailability.Ready)));
-        Assert.Throws<ArgumentNullException>(() => Display.Issues(null!));
-        Assert.Throws<ArgumentNullException>(() => Display.Options(null!));
+        Assert.Equal("Unavailable, Out of paper, Out of toner, Paper jam, Door open, Error", text.Issues(all));
+        Assert.Equal(string.Empty, text.Issues(new PrinterInfo("P", false, PrinterAvailability.Ready)));
+        Assert.Equal("Ready", text.Availability(new PrinterInfo("P", false, PrinterAvailability.Ready)));
+        Assert.Equal("Busy", text.Availability(new PrinterInfo("P", false, PrinterAvailability.Busy)));
+        Assert.Equal("Unavailable", text.Availability(new PrinterInfo("P", false, PrinterAvailability.Offline)));
+        Assert.Throws<ArgumentNullException>(() => text.Issues(null!));
+        Assert.Throws<ArgumentNullException>(() => text.Options(null!));
+        Assert.Throws<ArgumentNullException>(() => text.Availability(null!));
+    }
+
+    [Fact]
+    public void ItalianProblemsAreListedInWords()
+    {
+        using var scope = new CultureScope("it");
+        var all = new PrinterInfo("P", false, PrinterAvailability.Offline, PrinterIssues.PaperOut | PrinterIssues.TonerOut | PrinterIssues.PaperJam | PrinterIssues.DoorOpen | PrinterIssues.Error);
+
+        Assert.Equal("Non disponibile, Carta esaurita, Toner esaurito, Carta inceppata, Sportello aperto, Errore", TestText.Create().Issues(all));
+    }
+
+    [Fact]
+    public void EveryTextExistsInBothLanguagesWithEnglishKeys()
+    {
+        var manager = new System.Resources.ResourceManager("PrintServer.WebUi.Resources.Strings", typeof(Strings).Assembly);
+        var english = KeysOf(manager.GetResourceSet(System.Globalization.CultureInfo.InvariantCulture, createIfNotExists: true, tryParents: false)!);
+        var italian = KeysOf(manager.GetResourceSet(new System.Globalization.CultureInfo("it"), createIfNotExists: true, tryParents: false)!);
+
+        Assert.NotEmpty(english);
+        Assert.Equal(english.Keys.Order(), italian.Keys.Order());
+        Assert.All(english, pair => Assert.Matches("^[A-Z][A-Za-z]*(\\.[A-Z][A-Za-z]*)+$", pair.Key));
+        Assert.All(english, pair => Assert.False(string.IsNullOrWhiteSpace(pair.Value), pair.Key));
+        Assert.All(italian, pair => Assert.False(string.IsNullOrWhiteSpace(pair.Value), pair.Key));
+        Assert.All(english, pair => Assert.Equal(PlaceholdersOf(pair.Value), PlaceholdersOf(italian[pair.Key])));
+
+        static Dictionary<string, string> KeysOf(System.Resources.ResourceSet set) =>
+            set.Cast<System.Collections.DictionaryEntry>().ToDictionary(entry => (string)entry.Key, entry => (string)entry.Value!);
+
+        static string PlaceholdersOf(string text) =>
+            string.Join(",", System.Text.RegularExpressions.Regex.Matches(text, "\\{\\d+\\}").Select(match => match.Value).Order());
     }
 
     [Fact]

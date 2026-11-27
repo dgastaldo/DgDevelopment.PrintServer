@@ -77,6 +77,8 @@ internal sealed class WebUiEnvironment : IDisposable
             services.AddSingleton<IJobSubmitter>(new FolderJobSubmitter(Microsoft.Extensions.Options.Options.Create(new WatcherOptions { Path = _inbox })));
         }
 
+        services.AddLocalization(localization => localization.ResourcesPath = "Resources");
+        services.AddScoped<UiText>();
         services.AddScoped<QueueView>();
         services.AddScoped<WebUiActions>();
         Provider = services.BuildServiceProvider();
