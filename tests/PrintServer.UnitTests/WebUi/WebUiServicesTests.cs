@@ -243,6 +243,16 @@ public sealed class WebUiServicesTests
     }
 
     [Fact]
+    public void TheStringsMarkerOnlyExistsToNameTheResources()
+    {
+        // The marker is never created by the page; it is a type argument for IStringLocalizer<T>.
+        var marker = Activator.CreateInstance(typeof(Strings), nonPublic: true);
+
+        Assert.NotNull(marker);
+        Assert.Equal("Resources", Strings.ResourcesPath);
+    }
+
+    [Fact]
     public void TheSubmitterAndStoreInterfacesAreWired()
     {
         using var env = new WebUiEnvironment(true, WebUiEnvironment.View);
