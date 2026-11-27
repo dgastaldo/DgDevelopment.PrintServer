@@ -83,7 +83,7 @@ public sealed class JobProcessorTests : IDisposable
         Assert.Equal(JobState.Failed, failed.State);
         Assert.Contains("Nowhere", failed.LastError, StringComparison.Ordinal);
         Assert.Empty(_h.Backend.Requests);
-        Assert.True(InFolder("Nowhere", "errori", "a.pdf"));
+        Assert.True(InFolder("Nowhere", "errors", "a.pdf"));
     }
 
     [Fact]
@@ -148,7 +148,7 @@ public sealed class JobProcessorTests : IDisposable
 
         var done = await _h.GetAsync(first.Id);
         Assert.Equal(JobState.Completed, done.State);
-        Assert.True(InFolder("Office", "processati", "a.pdf"));
+        Assert.True(InFolder("Office", "processed", "a.pdf"));
         Assert.Equal(["a.pdf", "b.pdf"], _h.Backend.Requests.Select(r => r.JobName));
     }
 
@@ -217,7 +217,7 @@ public sealed class JobProcessorTests : IDisposable
         Assert.Equal(5, failed.Attempts);
         Assert.Equal("printer busy (gave up after 5 attempts)", failed.LastError);
         Assert.Equal(5, _h.Backend.Requests.Count);
-        Assert.True(InFolder("Office", "errori", "a.pdf"));
+        Assert.True(InFolder("Office", "errors", "a.pdf"));
     }
 
     [Theory]
@@ -281,7 +281,7 @@ public sealed class JobProcessorTests : IDisposable
 
         var failed = await _h.GetAsync(job.Id);
         Assert.Equal(JobState.Failed, failed.State);
-        Assert.True(InFolder("Office", "errori", "a.pdf"));
+        Assert.True(InFolder("Office", "errors", "a.pdf"));
     }
 
     [Fact]
@@ -306,7 +306,7 @@ public sealed class JobProcessorTests : IDisposable
         await RunAsync();
 
         Assert.Equal(JobState.Stalled, (await _h.GetAsync(job.Id)).State);
-        Assert.True(InFolder("Office", "stallo", "a.pdf"));
+        Assert.True(InFolder("Office", "stalled", "a.pdf"));
     }
 
     [Fact]

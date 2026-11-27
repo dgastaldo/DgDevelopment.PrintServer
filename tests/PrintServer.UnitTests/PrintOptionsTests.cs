@@ -36,12 +36,12 @@ public sealed class PrintOptionsTests : IDisposable
     }
 
     [Theory]
-    [InlineData("verticale", PageOrientation.Portrait, DuplexMode.Default)]
-    [InlineData("orizzontale", PageOrientation.Landscape, DuplexMode.Default)]
-    [InlineData("ORIZZONTALE", PageOrientation.Landscape, DuplexMode.Default)]
-    [InlineData("fronte", PageOrientation.Default, DuplexMode.OneSided)]
-    [InlineData("fronte-retro", PageOrientation.Default, DuplexMode.TwoSidedLongEdge)]
-    [InlineData("fronte-retro-corto", PageOrientation.Default, DuplexMode.TwoSidedShortEdge)]
+    [InlineData("portrait", PageOrientation.Portrait, DuplexMode.Default)]
+    [InlineData("landscape", PageOrientation.Landscape, DuplexMode.Default)]
+    [InlineData("LANDSCAPE", PageOrientation.Landscape, DuplexMode.Default)]
+    [InlineData("one-sided", PageOrientation.Default, DuplexMode.OneSided)]
+    [InlineData("two-sided-long-edge", PageOrientation.Default, DuplexMode.TwoSidedLongEdge)]
+    [InlineData("two-sided-short-edge", PageOrientation.Default, DuplexMode.TwoSidedShortEdge)]
     public void FolderNamesMapToOptions(string name, PageOrientation orientation, DuplexMode duplex)
     {
         Assert.True(PrintOptionFolders.TryApply(name, PrintOptions.Default, out var applied));
@@ -51,7 +51,7 @@ public sealed class PrintOptionsTests : IDisposable
 
     [Theory]
     [InlineData("Ufficio")]
-    [InlineData("processati")]
+    [InlineData("processed")]
     [InlineData("")]
     public void OtherFolderNamesAreNotOptions(string name)
     {
@@ -63,11 +63,11 @@ public sealed class PrintOptionsTests : IDisposable
     {
         var current = new PrintOptions(PageOrientation.Landscape, DuplexMode.Default, 2);
 
-        PrintOptionFolders.TryApply("fronte-retro", current, out var applied);
+        PrintOptionFolders.TryApply("two-sided-long-edge", current, out var applied);
 
         Assert.Equal(new PrintOptions(PageOrientation.Landscape, DuplexMode.TwoSidedLongEdge, 2), applied);
         Assert.Throws<ArgumentNullException>(() => PrintOptionFolders.TryApply(null!, current, out _));
-        Assert.Throws<ArgumentNullException>(() => PrintOptionFolders.TryApply("fronte", null!, out _));
+        Assert.Throws<ArgumentNullException>(() => PrintOptionFolders.TryApply("one-sided", null!, out _));
         Assert.Equal(5, PrintOptionFolders.All.Count);
     }
 
@@ -75,7 +75,7 @@ public sealed class PrintOptionsTests : IDisposable
     public void AnOptionFolderUnderAPrinterSetsTheOptionsOfItsFiles()
     {
         _fileSystem.SetFile(InRoot("Office", "plain.pdf"), 1, Stamp);
-        _fileSystem.SetFile(InRoot("Office", "orizzontale", "wide.pdf"), 1, Stamp);
+        _fileSystem.SetFile(InRoot("Office", "landscape", "wide.pdf"), 1, Stamp);
 
         var files = Scan().ToDictionary(file => Path.GetFileName(file.Entry.Path));
 
@@ -87,8 +87,8 @@ public sealed class PrintOptionsTests : IDisposable
     [Fact]
     public void NestedOptionFoldersCombineInAnyOrder()
     {
-        _fileSystem.SetFile(InRoot("Office", "orizzontale", "fronte-retro", "a.pdf"), 1, Stamp);
-        _fileSystem.SetFile(InRoot("Office", "fronte-retro", "orizzontale", "b.pdf"), 1, Stamp);
+        _fileSystem.SetFile(InRoot("Office", "landscape", "two-sided-long-edge", "a.pdf"), 1, Stamp);
+        _fileSystem.SetFile(InRoot("Office", "two-sided-long-edge", "landscape", "b.pdf"), 1, Stamp);
 
         var files = Scan();
 
@@ -99,7 +99,7 @@ public sealed class PrintOptionsTests : IDisposable
     [Fact]
     public void TheInnermostFolderWinsOnAConflict()
     {
-        _fileSystem.SetFile(InRoot("Office", "orizzontale", "verticale", "a.pdf"), 1, Stamp);
+        _fileSystem.SetFile(InRoot("Office", "landscape", "portrait", "a.pdf"), 1, Stamp);
 
         Assert.Equal(PageOrientation.Portrait, Assert.Single(Scan()).Options.Orientation);
     }
@@ -107,7 +107,7 @@ public sealed class PrintOptionsTests : IDisposable
     [Fact]
     public void OptionFoldersNestedTooDeepAreIgnored()
     {
-        _fileSystem.SetFile(InRoot("Office", "orizzontale", "fronte", "verticale", "a.pdf"), 1, Stamp);
+        _fileSystem.SetFile(InRoot("Office", "landscape", "one-sided", "portrait", "a.pdf"), 1, Stamp);
 
         Assert.Empty(Scan());
     }
@@ -115,8 +115,8 @@ public sealed class PrintOptionsTests : IDisposable
     [Fact]
     public void AnOptionFolderInTheRootAppliesToTheDefaultPrinter()
     {
-        _fileSystem.SetFile(InRoot("fronte-retro", "a.pdf"), 1, Stamp);
-        _fileSystem.SetFile(InRoot("fronte-retro", "orizzontale", "b.pdf"), 1, Stamp);
+        _fileSystem.SetFile(InRoot("two-sided-long-edge", "a.pdf"), 1, Stamp);
+        _fileSystem.SetFile(InRoot("two-sided-long-edge", "landscape", "b.pdf"), 1, Stamp);
 
         var files = Scan().ToDictionary(file => Path.GetFileName(file.Entry.Path));
 
@@ -128,8 +128,8 @@ public sealed class PrintOptionsTests : IDisposable
     [Fact]
     public void FoldersOfTheQueueInsideAnOptionFolderAreIgnored()
     {
-        _fileSystem.SetFile(InRoot("Office", "orizzontale", "processati", "done.pdf"), 1, Stamp);
-        _fileSystem.SetFile(InRoot("Office", "orizzontale", "processing", "id", "wip.pdf"), 1, Stamp);
+        _fileSystem.SetFile(InRoot("Office", "landscape", "processed", "done.pdf"), 1, Stamp);
+        _fileSystem.SetFile(InRoot("Office", "landscape", "processing", "id", "wip.pdf"), 1, Stamp);
         _fileSystem.SetFile(InRoot("Office", "Other", "a.pdf"), 1, Stamp);
 
         Assert.Empty(Scan());

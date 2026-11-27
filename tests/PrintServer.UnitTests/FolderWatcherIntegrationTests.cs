@@ -152,8 +152,8 @@ public sealed class FolderWatcherIntegrationTests : IAsyncLifetime
     public async Task FilesInTheProcessedFolderAreIgnored()
     {
         var channel = await StartAsync();
-        Directory.CreateDirectory(Path.Combine(_root, "processati"));
-        await File.WriteAllTextAsync(Path.Combine(_root, "processati", "done.pdf"), "content");
+        Directory.CreateDirectory(Path.Combine(_root, "processed"));
+        await File.WriteAllTextAsync(Path.Combine(_root, "processed", "done.pdf"), "content");
         var path = Path.Combine(_root, "new.pdf");
         await File.WriteAllTextAsync(path, "content");
 

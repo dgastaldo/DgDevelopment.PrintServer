@@ -302,9 +302,9 @@ public sealed class SqliteJobStoreTests : IDisposable
     {
         var job = await _queue.EnqueueAsync(SqliteQueueFixture.MakeJob());
 
-        Assert.True(await _queue.Store.UpdateDocumentPathAsync(job.Id, "/inbox/Office/processati/a.pdf", Ct));
+        Assert.True(await _queue.Store.UpdateDocumentPathAsync(job.Id, "/inbox/Office/processed/a.pdf", Ct));
 
-        Assert.Equal("/inbox/Office/processati/a.pdf", (await _queue.Store.GetAsync(job.Id, Ct))!.DocumentPath);
+        Assert.Equal("/inbox/Office/processed/a.pdf", (await _queue.Store.GetAsync(job.Id, Ct))!.DocumentPath);
         Assert.False(await _queue.Store.UpdateDocumentPathAsync(Guid.NewGuid(), "/x", Ct));
     }
 
@@ -318,7 +318,7 @@ public sealed class SqliteJobStoreTests : IDisposable
         await _queue.Store.CompleteAsync(job.Id, Ct);
         states.Add(await ReadStateAsync(job.Id));
 
-        Assert.Equal(["in_attesa", "in_stampa", "completato"], states);
+        Assert.Equal(["pending", "printing", "completed"], states);
     }
 
     [Fact]

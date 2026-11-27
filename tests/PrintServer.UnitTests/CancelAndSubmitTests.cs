@@ -163,10 +163,10 @@ public sealed class CancelAndSubmitTests : IDisposable
     }
 
     [Theory]
-    [InlineData(PageOrientation.Landscape, DuplexMode.TwoSidedLongEdge, "orizzontale", "fronte-retro")]
-    [InlineData(PageOrientation.Portrait, DuplexMode.Default, "verticale", null)]
-    [InlineData(PageOrientation.Default, DuplexMode.OneSided, "fronte", null)]
-    [InlineData(PageOrientation.Default, DuplexMode.TwoSidedShortEdge, "fronte-retro-corto", null)]
+    [InlineData(PageOrientation.Landscape, DuplexMode.TwoSidedLongEdge, "landscape", "two-sided-long-edge")]
+    [InlineData(PageOrientation.Portrait, DuplexMode.Default, "portrait", null)]
+    [InlineData(PageOrientation.Default, DuplexMode.OneSided, "one-sided", null)]
+    [InlineData(PageOrientation.Default, DuplexMode.TwoSidedShortEdge, "two-sided-short-edge", null)]
     public async Task TheOptionsBecomeFoldersTheWatcherUnderstands(PageOrientation orientation, DuplexMode duplex, string first, string? second)
     {
         using var content = Content();
@@ -187,7 +187,7 @@ public sealed class CancelAndSubmitTests : IDisposable
 
         await Submitter().SubmitAsync("a.pdf", content, null, new PrintOptions(PageOrientation.Landscape), CancellationToken.None);
 
-        Assert.True(File.Exists(Path.Combine(_directory, "orizzontale", "a.pdf")));
+        Assert.True(File.Exists(Path.Combine(_directory, "landscape", "a.pdf")));
     }
 
     [Theory]
@@ -247,9 +247,9 @@ public sealed class CancelAndSubmitTests : IDisposable
     [Theory]
     [InlineData("..")]
     [InlineData("a/b")]
-    [InlineData("processati")]
-    [InlineData("ERRORI")]
-    [InlineData("orizzontale")]
+    [InlineData("processed")]
+    [InlineData("ERRORS")]
+    [InlineData("landscape")]
     [InlineData(" Office")]
     public async Task PrinterNamesThatCannotBeFoldersAreRefused(string printer)
     {
@@ -326,7 +326,7 @@ public sealed class CancelAndSubmitTests : IDisposable
         Assert.True(SubmissionResult.Success().Succeeded);
         Assert.False(SubmissionResult.Failure("no").Succeeded);
         Assert.Throws<ArgumentException>(() => SubmissionResult.Failure(" "));
-        Assert.Equal("verticale", PrintOptionFolders.FolderFor(PageOrientation.Portrait));
+        Assert.Equal("portrait", PrintOptionFolders.FolderFor(PageOrientation.Portrait));
         Assert.Null(PrintOptionFolders.FolderFor(PageOrientation.Default));
         Assert.Null(PrintOptionFolders.FolderFor(DuplexMode.Default));
     }

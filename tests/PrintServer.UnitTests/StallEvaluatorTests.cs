@@ -52,7 +52,7 @@ public sealed class StallEvaluatorTests : IDisposable
         var stalled = await _h.GetAsync(job.Id);
         Assert.Equal(JobState.Stalled, stalled.State);
         Assert.StartsWith("Stalled: no progress for 01:00:00", stalled.LastError, StringComparison.Ordinal);
-        Assert.Equal(Path.Combine(_h.Folder("Office", "stallo"), "a.pdf"), stalled.DocumentPath);
+        Assert.Equal(Path.Combine(_h.Folder("Office", "stalled"), "a.pdf"), stalled.DocumentPath);
         Assert.True(File.Exists(stalled.DocumentPath));
     }
 
@@ -147,7 +147,7 @@ public sealed class StallEvaluatorTests : IDisposable
 
         var done = await _h.GetAsync(job.Id);
         Assert.Equal(JobState.Completed, done.State);
-        Assert.Equal(Path.Combine(_h.Folder("Office", "processati"), "a.pdf"), done.DocumentPath);
+        Assert.Equal(Path.Combine(_h.Folder("Office", "processed"), "a.pdf"), done.DocumentPath);
     }
 
     [Fact]
@@ -162,7 +162,7 @@ public sealed class StallEvaluatorTests : IDisposable
 
         var failed = await _h.GetAsync(job.Id);
         Assert.Equal(JobState.Failed, failed.State);
-        Assert.Equal(Path.Combine(_h.Folder("Office", "errori"), "a.pdf"), failed.DocumentPath);
+        Assert.Equal(Path.Combine(_h.Folder("Office", "errors"), "a.pdf"), failed.DocumentPath);
     }
 
     [Theory]

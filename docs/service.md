@@ -34,7 +34,7 @@ sudo deploy/service/install-service.sh
 
 Lo script crea l'utente di sistema `printserver`, la configurazione, l'unit `/etc/systemd/system/printserver.service`, poi abilita e avvia il servizio. L'unit è di tipo `notify`: systemd considera il servizio pronto quando il server lo comunica. La cartella dati `/var/lib/printserver` (database della coda) la crea systemd, di proprietà dell'utente del servizio.
 
-**Permessi.** Il servizio gira come `printserver`, non come root: la cartella osservata deve essere leggibile e scrivibile da quell'utente (il server crea al suo interno `processing/`, `processati/` e le altre), ad esempio `sudo install -d -o printserver /var/printserver/inbox`. Per stampare con CUPS l'utente deve poter usare le stampanti.
+**Permessi.** Il servizio gira come `printserver`, non come root: la cartella osservata deve essere leggibile e scrivibile da quell'utente (il server crea al suo interno `processing/`, `processed/` e le altre), ad esempio `sudo install -d -o printserver /var/printserver/inbox`. Per stampare con CUPS l'utente deve poter usare le stampanti.
 
 Opzioni dello script, come variabili d'ambiente: `INSTALL_DIR` (default `/opt/printserver`), `SERVICE_NAME`, `SERVICE_USER`, `CONFIG_DIR`, `UNIT_DIR`; con `--no-start` installa senza avviare.
 

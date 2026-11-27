@@ -89,7 +89,7 @@ public sealed class JobIntakeTests : IDisposable
         Assert.Equal(IntakeOutcome.Duplicate, result.Outcome);
         Assert.Equal(first.JobId, result.JobId);
         Assert.False(File.Exists(again.FilePath));
-        Assert.True(File.Exists(Path.Combine(_h.Folder("Office", "duplicati"), "a.pdf")));
+        Assert.True(File.Exists(Path.Combine(_h.Folder("Office", "duplicates"), "a.pdf")));
         Assert.Single(await _h.Queue.Store.ListAsync(JobState.Pending, CancellationToken.None));
     }
 
@@ -101,7 +101,7 @@ public sealed class JobIntakeTests : IDisposable
         await _h.IntakeAsync(_h.Drop("Office", "a.pdf", "hello", Old));
         await _h.IntakeAsync(_h.Drop("Office", "a.pdf", "hello", Old));
 
-        var names = Directory.GetFiles(_h.Folder("Office", "duplicati")).Select(path => Path.GetFileName(path)!).Order().ToArray();
+        var names = Directory.GetFiles(_h.Folder("Office", "duplicates")).Select(path => Path.GetFileName(path)!).Order().ToArray();
         Assert.Equal(["a (1).pdf", "a.pdf"], names);
     }
 
@@ -118,7 +118,7 @@ public sealed class JobIntakeTests : IDisposable
         var replaced = await _h.GetAsync(firstJob.Id);
         Assert.Equal(JobState.Failed, replaced.State);
         Assert.Equal("Replaced by a new arrival of the same file.", replaced.LastError);
-        Assert.Equal(Path.Combine(_h.Folder("Office", "errori"), "a.pdf"), replaced.DocumentPath);
+        Assert.Equal(Path.Combine(_h.Folder("Office", "errors"), "a.pdf"), replaced.DocumentPath);
         Assert.True(File.Exists(replaced.DocumentPath));
         Assert.False(Directory.Exists(Path.GetDirectoryName(firstJob.DocumentPath)));
         var current = Assert.Single(await _h.Queue.Store.ListAsync(JobState.Pending, CancellationToken.None));
@@ -267,7 +267,7 @@ public sealed class JobIntakeTests : IDisposable
         Assert.Equal(IntakeOutcome.Enqueued, result.Outcome);
         var stalled = await _h.GetAsync(first.JobId.Value);
         Assert.Equal(JobState.Stalled, stalled.State);
-        Assert.Equal(Path.Combine(_h.Folder("Office", "stallo"), "a.pdf"), stalled.DocumentPath);
+        Assert.Equal(Path.Combine(_h.Folder("Office", "stalled"), "a.pdf"), stalled.DocumentPath);
         Assert.True(File.Exists(stalled.DocumentPath));
     }
 

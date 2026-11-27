@@ -10,13 +10,13 @@ public static class Display
 
     public static string StateLabel(JobState state) => state switch
     {
-        JobState.Pending => "In attesa",
-        JobState.Converting => "In conversione",
-        JobState.Printing => "In stampa",
-        JobState.Completed => "Completato",
-        JobState.Failed => "Fallito",
-        JobState.Stalled => "In stallo",
-        JobState.Cancelled => "Annullato",
+        JobState.Pending => "Pending",
+        JobState.Converting => "Converting",
+        JobState.Printing => "Printing",
+        JobState.Completed => "Completed",
+        JobState.Failed => "Failed",
+        JobState.Stalled => "Stalled",
+        JobState.Cancelled => "Cancelled",
         _ => state.ToString(),
     };
 

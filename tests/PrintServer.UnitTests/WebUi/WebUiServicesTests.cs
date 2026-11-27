@@ -136,13 +136,13 @@ public sealed class WebUiServicesTests
     }
 
     [Theory]
-    [InlineData(JobState.Pending, "In attesa", "info", false, true)]
-    [InlineData(JobState.Converting, "In conversione", "info", false, true)]
-    [InlineData(JobState.Printing, "In stampa", "info", false, true)]
-    [InlineData(JobState.Completed, "Completato", "ok", false, false)]
-    [InlineData(JobState.Failed, "Fallito", "bad", true, false)]
-    [InlineData(JobState.Stalled, "In stallo", "bad", true, false)]
-    [InlineData(JobState.Cancelled, "Annullato", "muted", true, false)]
+    [InlineData(JobState.Pending, "Pending", "info", false, true)]
+    [InlineData(JobState.Converting, "Converting", "info", false, true)]
+    [InlineData(JobState.Printing, "Printing", "info", false, true)]
+    [InlineData(JobState.Completed, "Completed", "ok", false, false)]
+    [InlineData(JobState.Failed, "Failed", "bad", true, false)]
+    [InlineData(JobState.Stalled, "Stalled", "bad", true, false)]
+    [InlineData(JobState.Cancelled, "Cancelled", "muted", true, false)]
     public void StatesAreDescribedForThePage(JobState state, string label, string css, bool retry, bool cancel)
     {
         Assert.Equal(label, Display.StateLabel(state));

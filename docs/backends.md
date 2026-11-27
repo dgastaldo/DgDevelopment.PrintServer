@@ -53,7 +53,7 @@ Il worker passa al backend orientamento e fronte/retro del lavoro (dalle cartell
 | IPP | attributo `orientation-requested` (3 o 4) | attributo `sides` (stessi valori) |
 | Spooler di Windows | non applicabile | non applicabile |
 
-Lo spooler di Windows invia dati RAW e non può imporre queste opzioni: un lavoro che le richiede fallisce subito, con il motivo salvato, e il file va in `errori/`. Il file va quindi messo nella cartella della stampante senza `orizzontale`, `fronte-retro` e simili. Se non chiedi niente, le impostazioni predefinite della stampante restano quelle del driver. Se una stampante ignora l'opzione, il server non può accorgersene.
+Lo spooler di Windows invia dati RAW e non può imporre queste opzioni: un lavoro che le richiede fallisce subito, con il motivo salvato, e il file va in `errors/`. Il file va quindi messo nella cartella della stampante senza `landscape`, `two-sided-long-edge` e simili. Se non chiedi niente, le impostazioni predefinite della stampante restano quelle del driver. Se una stampante ignora l'opzione, il server non può accorgersene.
 
 ## Annullamento dei lavori
 

@@ -4,13 +4,13 @@ namespace PrintServer.Queue;
 
 internal static class JobStateNames
 {
-    public const string Pending = "in_attesa";
-    public const string Converting = "in_conversione";
-    public const string Printing = "in_stampa";
-    public const string Completed = "completato";
-    public const string Failed = "fallito";
-    public const string Stalled = "in_stallo";
-    public const string Cancelled = "annullato";
+    public const string Pending = "pending";
+    public const string Converting = "converting";
+    public const string Printing = "printing";
+    public const string Completed = "completed";
+    public const string Failed = "failed";
+    public const string Stalled = "stalled";
+    public const string Cancelled = "cancelled";
 
     public static string ToDatabase(JobState state) => state switch
     {
