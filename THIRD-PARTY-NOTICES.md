@@ -10,7 +10,7 @@ Inventario delle licenze delle dipendenze, da aggiornare a ogni nuova dipendenza
 | Microsoft.Extensions.Hosting.Systemd, .WindowsServices (e System.ServiceProcess.ServiceController, Microsoft.Extensions.Logging.EventLog) | 10.0.15 | MIT | sì |
 | Microsoft.AspNetCore.Authentication.OpenIdConnect (e Microsoft.IdentityModel.*, System.IdentityModel.Tokens.Jwt) | 10.0.15 | MIT | sì |
 | Microsoft.AspNetCore.App.Internal.Assets (script Blazor) | 10.0.14 | MIT | sì |
-| PDFsharp | 6.2.4 | MIT | sì |
+| PDFsharp | 6.5.0 | AGPL-3.0-only (doppia licenza con una commerciale; dalla 6.5 non più MIT) | sì: PrintServer è AGPL-3.0 e dichiara la licenza con `PdfSharpLicense.SetAgplLicense()` |
 | System.Security.Cryptography.Pkcs | 10.0.15 | MIT | sì |
 | LibreOffice (programma esterno, non distribuito) | - | MPL-2.0 | sì |
 | SQLitePCLRaw (core, provider, lib, bundle) | 2.1.13 | Apache-2.0 | sì |
