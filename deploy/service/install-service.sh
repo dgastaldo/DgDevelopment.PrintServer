@@ -37,7 +37,8 @@ LANGUAGE_CODE="$(default_language)"
 
 # text KEY: the format string of a message in the current language.
 text() {
-  case "${LANGUAGE_CODE}:$1" in
+  local key="$1"
+  case "${LANGUAGE_CODE}:${key}" in
     it:usage) echo 'uso: install-service.sh [--lang en|it] [--no-start]' ;;
     *:usage) echo 'usage: install-service.sh [--lang en|it] [--no-start]' ;;
     it:unknown_argument) echo 'argomento sconosciuto: %s' ;;
@@ -64,6 +65,7 @@ text() {
     *:service_loaded) echo 'service %s loaded' ;;
     it:unsupported_platform) echo 'piattaforma non supportata %s' ;;
     *:unsupported_platform) echo 'unsupported platform %s' ;;
+    *) echo "${key}" ;;
   esac
 }
 

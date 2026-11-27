@@ -29,6 +29,7 @@ default_language() {
     case "${value}" in
       it | it_* | it-* | it.*) echo it; return ;;
       en | en_* | en-* | en.*) echo en; return ;;
+      *) ;;
     esac
   done
   echo en
@@ -38,7 +39,8 @@ LANGUAGE_CODE="$(default_language)"
 
 # text KEY: the format string of a message in the current language.
 text() {
-  case "${LANGUAGE_CODE}:$1" in
+  local key="$1"
+  case "${LANGUAGE_CODE}:${key}" in
     it:unsupported_platform) echo 'piattaforma non supportata %s' ;;
     *:unsupported_platform) echo 'unsupported platform %s' ;;
     it:launchd_not_found) echo 'servizio launchd %s non trovato, riavvialo a mano' ;;
@@ -69,6 +71,7 @@ text() {
     *:updated) echo 'updated to %s' ;;
     it:health_failed_rollback) echo 'controllo di salute fallito dopo l'"'"'aggiornamento a %s, torno indietro' ;;
     *:health_failed_rollback) echo 'health check failed after updating to %s, rolling back' ;;
+    *) echo "${key}" ;;
   esac
 }
 

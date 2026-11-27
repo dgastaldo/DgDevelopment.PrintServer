@@ -10,7 +10,7 @@ internal static class TestText
     {
         var services = new ServiceCollection();
         services.AddLogging();
-        services.AddLocalization(options => options.ResourcesPath = "Resources");
+        services.AddLocalization(options => options.ResourcesPath = Strings.ResourcesPath);
         services.AddScoped<UiText>();
         return services.BuildServiceProvider().GetRequiredService<UiText>();
     }

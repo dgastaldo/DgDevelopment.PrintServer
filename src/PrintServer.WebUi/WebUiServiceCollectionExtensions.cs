@@ -44,7 +44,7 @@ public static class WebUiServiceCollectionExtensions
             return services;
         }
 
-        services.AddLocalization(localization => localization.ResourcesPath = "Resources");
+        services.AddLocalization(localization => localization.ResourcesPath = Strings.ResourcesPath);
         services.AddRazorComponents().AddInteractiveServerComponents();
         services.AddCascadingAuthenticationState();
         services.AddAuthorization(authorization => WebUiAuthorization.AddPolicies(authorization, options));
