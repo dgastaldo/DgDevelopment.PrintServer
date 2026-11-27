@@ -66,14 +66,17 @@ public sealed class FolderWatcherIntegrationTests : IAsyncLifetime
     [Fact]
     public async Task ADroppedFileIsPublishedOnceItIsComplete()
     {
-        var channel = await StartAsync();
+        // The pause between the two writes must stay far below the stability window even on a slow, busy
+        // runner: with 150 ms against 300 ms the pause sometimes overran the window and the file was
+        // published half written.
+        var channel = await StartAsync(options => options.StabilityWindow = TimeSpan.FromSeconds(3));
         var path = Path.Combine(_root, "a.pdf");
 
         await using (var stream = new FileStream(path, FileMode.Create, FileAccess.Write, FileShare.Read))
         {
             await stream.WriteAsync(new byte[5]);
             await stream.FlushAsync();
-            await Task.Delay(150);
+            await Task.Delay(100);
             await stream.WriteAsync(new byte[5]);
         }
 
