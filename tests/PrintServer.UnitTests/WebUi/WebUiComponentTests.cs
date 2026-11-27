@@ -28,7 +28,7 @@ public sealed class WebUiComponentTests
             var html = await env.RenderAsync<Dashboard>();
 
             Assert.Contains("<h1>Stato</h1>", html, StringComparison.Ordinal);
-            Assert.Contains("In attesa", html, StringComparison.Ordinal);
+            Assert.Contains("Pending", html, StringComparison.Ordinal);
             Assert.Contains("Office (predefinita)", html, StringComparison.Ordinal);
             Assert.Contains("Labels", html, StringComparison.Ordinal);
             Assert.Contains("Non disponibile", html, StringComparison.Ordinal);
@@ -140,7 +140,7 @@ public sealed class WebUiComponentTests
             var html = await env.RenderAsync<JobDetail>(new() { ["Id"] = failed.Id });
 
             Assert.Contains("broken.pdf", html, StringComparison.Ordinal);
-            Assert.Contains("In stallo", html, StringComparison.Ordinal);
+            Assert.Contains("Stalled", html, StringComparison.Ordinal);
             Assert.Contains("application/pdf", html, StringComparison.Ordinal);
             Assert.Contains(failed.Id.ToString(), html, StringComparison.Ordinal);
             Assert.Contains("Predefinite", html, StringComparison.Ordinal);

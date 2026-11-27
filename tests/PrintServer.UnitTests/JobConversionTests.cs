@@ -73,7 +73,7 @@ public sealed class JobConversionTests : IDisposable
         await RunAsync();
 
         Assert.Equal(JobState.Completed, (await _h.GetAsync(job.Id)).State);
-        Assert.True(InFolder("processati", "report.docx"));
+        Assert.True(InFolder("processed", "report.docx"));
         Assert.Empty(Directory.GetFiles(_h.Inbox, "*.pdf", SearchOption.AllDirectories));
         Assert.False(Directory.Exists(Path.GetDirectoryName(job.DocumentPath)));
     }
@@ -91,7 +91,7 @@ public sealed class JobConversionTests : IDisposable
         Assert.Equal("The file is password protected.", failed.LastError);
         Assert.Equal(0, failed.Attempts);
         Assert.Empty(_h.Backend.Requests);
-        Assert.True(InFolder("errori", "report.docx"));
+        Assert.True(InFolder("errors", "report.docx"));
     }
 
     [Theory]
@@ -148,7 +148,7 @@ public sealed class JobConversionTests : IDisposable
         await RunAsync();
 
         Assert.Empty(Directory.GetFiles(_h.Inbox, "*.pdf", SearchOption.AllDirectories));
-        Assert.True(InFolder("errori", "report.docx"));
+        Assert.True(InFolder("errors", "report.docx"));
     }
 
     [Fact]

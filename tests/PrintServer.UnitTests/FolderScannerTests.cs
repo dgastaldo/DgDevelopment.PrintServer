@@ -48,16 +48,16 @@ public sealed class FolderScannerTests
     [Fact]
     public void ProcessedAndErrorFoldersAreIgnoredIncludingTheirCase()
     {
-        _fileSystem.SetFile(InRoot("processati", "done.pdf"), 10, Stamp);
-        _fileSystem.SetFile(InRoot("ERRORI", "bad.pdf"), 10, Stamp);
+        _fileSystem.SetFile(InRoot("processed", "done.pdf"), 10, Stamp);
+        _fileSystem.SetFile(InRoot("ERRORS", "bad.pdf"), 10, Stamp);
 
         Assert.Empty(Create().Scan(_root));
     }
 
     [Theory]
     [InlineData("processing")]
-    [InlineData("stallo")]
-    [InlineData("duplicati")]
+    [InlineData("stalled")]
+    [InlineData("duplicates")]
     public void TheQueueFoldersAreIgnoredByDefault(string folder)
     {
         _fileSystem.SetFile(InRoot(folder, "a.pdf"), 10, Stamp);
@@ -69,12 +69,12 @@ public sealed class FolderScannerTests
     public void IgnoredFoldersCanBeConfigured()
     {
         _fileSystem.SetFile(InRoot("archive", "old.pdf"), 10, Stamp);
-        _fileSystem.SetFile(InRoot("processati", "done.pdf"), 10, Stamp);
+        _fileSystem.SetFile(InRoot("processed", "done.pdf"), 10, Stamp);
 
         var files = Create(options => options.IgnoredFolders = ["archive"]).Scan(_root);
 
         var file = Assert.Single(files);
-        Assert.Equal("processati", file.PrinterName);
+        Assert.Equal("processed", file.PrinterName);
     }
 
     [Fact]

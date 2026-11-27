@@ -40,16 +40,16 @@ Con un'installazione altrove (ad esempio la versione Snap o Flatpak) si imposta 
 
 ## Come funziona
 
-1. Il lavoro entra in coda `in_attesa`. Se il formato non è stampabile, il worker lo porta a `in_conversione` (una conversione alla volta, nell'ordine di arrivo) prima di qualsiasi stampa.
+1. Il lavoro entra in coda `pending`. Se il formato non è stampabile, il worker lo porta a `converting` (una conversione alla volta, nell'ordine di arrivo) prima di qualsiasi stampa.
 2. Il PDF si crea accanto all'originale in `processing/`, con il suo nome più `.pdf` (`relazione.docx.pdf`). Per ogni conversione LibreOffice usa un profilo temporaneo, cancellato alla fine, così due installazioni o un profilo rovinato non si disturbano.
-3. Finita la conversione il lavoro torna `in_attesa` e viene stampato il PDF, con il nome originale nel lavoro di stampa.
-4. A stampa conclusa va in `processati/` (o `errori/`, o `stallo/`) **solo il file originale**: il PDF viene cancellato.
+3. Finita la conversione il lavoro torna `pending` e viene stampato il PDF, con il nome originale nel lavoro di stampa.
+4. A stampa conclusa va in `processed/` (o `errors/`, o `stalled/`) **solo il file originale**: il PDF viene cancellato.
 
-Se un lavoro `in_conversione` è fermo per un riavvio, riparte da capo.
+Se un lavoro `converting` è fermo per un riavvio, riparte da capo.
 
 ## Quando la conversione fallisce
 
-Il lavoro passa subito a `fallito`, senza tentativi, e il file originale va in `errori/` con il motivo salvato. Riprovare non cambierebbe niente per un file corrotto o protetto da password. I casi:
+Il lavoro passa subito a `failed`, senza tentativi, e il file originale va in `errors/` con il motivo salvato. Riprovare non cambierebbe niente per un file corrotto o protetto da password. I casi:
 
 - LibreOffice non trovato: "LibreOffice was not found: install it or set Conversion:LibreOfficePath."
 - LibreOffice termina con un errore o non produce il PDF (file danneggiato, protetto da password, formato non riconosciuto).
@@ -63,6 +63,6 @@ Per riprovare dopo aver installato LibreOffice basta rimettere il file nella car
 
 - **Fedeltà:** è quella di LibreOffice. Documenti con font, macro o funzioni particolari di Office possono impaginarsi in modo un po' diverso da Word.
 - **Fogli di calcolo:** vengono stampati con le impostazioni di pagina del file; fogli molto larghi possono occupare più pagine.
-- **Immagini:** una pagina A4 per immagine, centrata e ridimensionata (orizzontale per le immagini più larghe che alte). Le opzioni di orientamento delle cartelle `verticale` e `orizzontale` si applicano alla stampa, non alla pagina creata.
+- **Immagini:** una pagina A4 per immagine, centrata e ridimensionata (orizzontale per le immagini più larghe che alte). Le opzioni di orientamento delle cartelle `portrait` e `landscape` si applicano alla stampa, non alla pagina creata.
 - **Prima conversione lenta:** ogni conversione di LibreOffice richiede qualche secondo, anche per un file piccolo.
 - **Servizio di sistema:** l'utente con cui gira il servizio deve poter eseguire LibreOffice e scrivere nella cartella osservata (vedi [servizio di sistema](service.html)).

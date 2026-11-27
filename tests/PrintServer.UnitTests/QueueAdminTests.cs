@@ -43,7 +43,7 @@ public sealed class QueueAdminTests : IDisposable
     public async Task AFailedJobCanBeRetriedAndPrintsAgain()
     {
         var failed = await FailedAsync();
-        Assert.True(InFolder("errori", "a.pdf"));
+        Assert.True(InFolder("errors", "a.pdf"));
 
         var result = await _admin.RetryAsync(failed.Id, CancellationToken.None);
 
@@ -56,7 +56,7 @@ public sealed class QueueAdminTests : IDisposable
         Assert.Equal(_h.Now, retried.CreatedAt);
         Assert.True(File.Exists(retried.DocumentPath));
         Assert.Contains(Path.Combine("processing", failed.Id.ToString("N")), retried.DocumentPath, StringComparison.Ordinal);
-        Assert.False(InFolder("errori", "a.pdf"));
+        Assert.False(InFolder("errors", "a.pdf"));
 
         await RunAsync();
         Assert.Equal(JobState.Printing, (await _h.GetAsync(failed.Id)).State);
@@ -176,7 +176,7 @@ public sealed class QueueAdminTests : IDisposable
         Assert.Equal(JobState.Cancelled, cancelled.State);
         Assert.Equal("Cancelled by the user.", cancelled.LastError);
         Assert.NotNull(cancelled.FinishedAt);
-        Assert.True(InFolder("annullati", "a.pdf"));
+        Assert.True(InFolder("cancelled", "a.pdf"));
         await RunAsync();
         Assert.Empty(_h.Backend.Requests);
     }
@@ -193,7 +193,7 @@ public sealed class QueueAdminTests : IDisposable
         Assert.Null(result.Message);
         Assert.Equal(["1"], _h.Backend.Cancelled);
         Assert.Equal(JobState.Cancelled, (await _h.GetAsync(job.Id)).State);
-        Assert.True(InFolder("annullati", "a.pdf"));
+        Assert.True(InFolder("cancelled", "a.pdf"));
         _h.Backend.Statuses["1"] = JobStatus.Completed;
         await RunAsync();
         Assert.Equal(JobState.Cancelled, (await _h.GetAsync(job.Id)).State);
@@ -317,7 +317,7 @@ public sealed class QueueAdminTests : IDisposable
 
         Assert.Equal(JobState.Cancelled, (await _h.GetAsync(job.Id)).State);
         Assert.Empty(_h.Backend.Requests);
-        Assert.True(InFolder("annullati", "report.docx"));
+        Assert.True(InFolder("cancelled", "report.docx"));
         Assert.Empty(Directory.GetFiles(_h.Inbox, "*.pdf", SearchOption.AllDirectories));
     }
 

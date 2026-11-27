@@ -84,6 +84,6 @@ public sealed class CoreQueueContractsTests
     [Fact]
     public void TheQueueFoldersAreTheSixDocumentedOnes()
     {
-        Assert.Equal(["processing", "processati", "errori", "stallo", "duplicati", "annullati"], QueueFolders.All);
+        Assert.Equal(["processing", "processed", "errors", "stalled", "duplicates", "cancelled"], QueueFolders.All);
     }
 }

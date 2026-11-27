@@ -124,7 +124,7 @@ namespace PrintServer.Queue.Migrations
                     b.HasIndex("OriginDirectory", "FileName", "FileCreatedAt", "FileHash")
                         .IsUnique()
                         .HasDatabaseName("ux_jobs_active_file")
-                        .HasFilter("state IN ('in_attesa', 'in_conversione', 'in_stampa')");
+                        .HasFilter("state IN ('pending', 'converting', 'printing')");
 
                     b.ToTable("jobs", (string)null);
                 });

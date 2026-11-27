@@ -72,7 +72,7 @@ public sealed class JobRecoveryTests : IDisposable
         Assert.Equal(1, report.Completed);
         var done = await _h.GetAsync(job.Id);
         Assert.Equal(JobState.Completed, done.State);
-        Assert.Equal(Path.Combine(_h.Folder("Office", "processati"), "a.pdf"), done.DocumentPath);
+        Assert.Equal(Path.Combine(_h.Folder("Office", "processed"), "a.pdf"), done.DocumentPath);
         Assert.True(File.Exists(done.DocumentPath));
     }
 
@@ -89,7 +89,7 @@ public sealed class JobRecoveryTests : IDisposable
         Assert.Equal(1, report.Failed);
         var failed = await _h.GetAsync(job.Id);
         Assert.Equal(JobState.Failed, failed.State);
-        Assert.Equal(Path.Combine(_h.Folder("Office", "errori"), "a.pdf"), failed.DocumentPath);
+        Assert.Equal(Path.Combine(_h.Folder("Office", "errors"), "a.pdf"), failed.DocumentPath);
     }
 
     [Theory]

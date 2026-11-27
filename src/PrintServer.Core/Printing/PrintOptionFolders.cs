@@ -2,15 +2,15 @@ namespace PrintServer.Core.Printing;
 
 public static class PrintOptionFolders
 {
-    public const string Portrait = "verticale";
+    public const string Portrait = "portrait";
 
-    public const string Landscape = "orizzontale";
+    public const string Landscape = "landscape";
 
-    public const string OneSided = "fronte";
+    public const string OneSided = "one-sided";
 
-    public const string TwoSidedLongEdge = "fronte-retro";
+    public const string TwoSidedLongEdge = "two-sided-long-edge";
 
-    public const string TwoSidedShortEdge = "fronte-retro-corto";
+    public const string TwoSidedShortEdge = "two-sided-short-edge";
 
     public static IReadOnlyList<string> All { get; } = [Portrait, Landscape, OneSided, TwoSidedLongEdge, TwoSidedShortEdge];
 
@@ -36,11 +36,11 @@ public static class PrintOptionFolders
 
         applied = folderName.ToUpperInvariant() switch
         {
-            "VERTICALE" => current with { Orientation = PageOrientation.Portrait },
-            "ORIZZONTALE" => current with { Orientation = PageOrientation.Landscape },
-            "FRONTE" => current with { Duplex = DuplexMode.OneSided },
-            "FRONTE-RETRO" => current with { Duplex = DuplexMode.TwoSidedLongEdge },
-            "FRONTE-RETRO-CORTO" => current with { Duplex = DuplexMode.TwoSidedShortEdge },
+            "PORTRAIT" => current with { Orientation = PageOrientation.Portrait },
+            "LANDSCAPE" => current with { Orientation = PageOrientation.Landscape },
+            "ONE-SIDED" => current with { Duplex = DuplexMode.OneSided },
+            "TWO-SIDED-LONG-EDGE" => current with { Duplex = DuplexMode.TwoSidedLongEdge },
+            "TWO-SIDED-SHORT-EDGE" => current with { Duplex = DuplexMode.TwoSidedShortEdge },
             _ => current,
         };
         return !ReferenceEquals(applied, current);

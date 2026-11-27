@@ -114,13 +114,13 @@ public sealed class QueueInfrastructureTests : IDisposable
     }
 
     [Theory]
-    [InlineData(JobState.Pending, "in_attesa")]
-    [InlineData(JobState.Converting, "in_conversione")]
-    [InlineData(JobState.Printing, "in_stampa")]
-    [InlineData(JobState.Completed, "completato")]
-    [InlineData(JobState.Failed, "fallito")]
-    [InlineData(JobState.Stalled, "in_stallo")]
-    [InlineData(JobState.Cancelled, "annullato")]
+    [InlineData(JobState.Pending, "pending")]
+    [InlineData(JobState.Converting, "converting")]
+    [InlineData(JobState.Printing, "printing")]
+    [InlineData(JobState.Completed, "completed")]
+    [InlineData(JobState.Failed, "failed")]
+    [InlineData(JobState.Stalled, "stalled")]
+    [InlineData(JobState.Cancelled, "cancelled")]
     public void EveryStateHasAReadableDatabaseName(JobState state, string name)
     {
         Assert.Equal(name, JobStateNames.ToDatabase(state));

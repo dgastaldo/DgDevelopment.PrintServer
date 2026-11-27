@@ -69,7 +69,7 @@ public sealed class QueueFilesAndServiceTests : IDisposable
         var third = await _h.IntakeAsync(_h.Drop("Office", "a.pdf", "three"));
 
         Assert.Equal(JobState.Failed, (await _h.GetAsync(second.JobId!.Value)).State);
-        var errors = Directory.GetFiles(_h.Folder("Office", "errori")).Select(path => Path.GetFileName(path)!).Order().ToArray();
+        var errors = Directory.GetFiles(_h.Folder("Office", "errors")).Select(path => Path.GetFileName(path)!).Order().ToArray();
         Assert.Equal(["a (1).pdf", "a.pdf"], errors);
         Assert.Equal(JobState.Pending, (await _h.GetAsync(third.JobId!.Value)).State);
     }

@@ -49,7 +49,7 @@ public sealed class QueueDbContext(DbContextOptions<QueueDbContext> options) : D
             job.HasIndex(j => new { j.OriginDirectory, j.FileName, j.FileCreatedAt, j.FileHash })
                 .HasDatabaseName("ux_jobs_active_file")
                 .IsUnique()
-                .HasFilter("state IN ('in_attesa', 'in_conversione', 'in_stampa')");
+                .HasFilter("state IN ('pending', 'converting', 'printing')");
             job.HasIndex(j => new { j.OriginDirectory, j.FileName }).HasDatabaseName("ix_jobs_origin_file");
             job.HasIndex(j => new { j.State, j.NextAttemptAt, j.CreatedAt }).HasDatabaseName("ix_jobs_state_next");
         });
