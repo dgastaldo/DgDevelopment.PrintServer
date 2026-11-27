@@ -1,6 +1,6 @@
 # Pagina web di stato
 
-Il server ha una pagina web (Blazor Server, in italiano) per vedere la coda e gestirla: stato dei lavori, stampanti con i loro problemi, dettaglio di ogni lavoro, e per chi ha il permesso riprovare, annullare e aggiungere file. Si aggiorna da sola ogni pochi secondi.
+Il server ha una pagina web (Blazor Server, in inglese o italiano) per vedere la coda e gestirla: stato dei lavori, stampanti con i loro problemi, dettaglio di ogni lavoro, e per chi ha il permesso riprovare, annullare e aggiungere file. Si aggiorna da sola ogni pochi secondi.
 
 | Pagina | Cosa mostra | Permesso |
 |---|---|---|
@@ -68,6 +68,12 @@ Non mettere un reverse proxy sulla stessa macchina davanti al server in questa m
 | `RefreshInterval` | 3 secondi | Ogni quanto la pagina si aggiorna. |
 
 Le aggiunte dalla pagina hanno un limite fisso di 25 MB per file (non configurabile); la pagina lo indica accanto al campo di caricamento. File più grandi vanno copiati direttamente nella cartella osservata.
+
+## Lingua
+
+La pagina è disponibile in **inglese** (predefinita) e **italiano**. La lingua si sceglie da sola in base a quella del browser (`Accept-Language`); i link **EN** e **IT** in alto a destra la fissano e la ricordano per un anno in un cookie (`.AspNetCore.Culture`). Le lingue sconosciute ricadono sull'inglese.
+
+I testi stanno in `src/PrintServer.WebUi/Resources/Strings.resx` (inglese) e `Strings.it.resx` (italiano). Le chiavi sono in inglese (`State.Pending`, `Action.Retry`, …), così anche un testo non ancora tradotto resta comprensibile. Per aggiungere una lingua: un nuovo `Strings.<codice>.resx` con le stesse chiavi (un test verifica che le chiavi coincidano) e il codice in `WebUiServiceCollectionExtensions.Languages`.
 
 ## HTTPS e indirizzo
 

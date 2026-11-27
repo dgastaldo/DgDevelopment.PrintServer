@@ -1,5 +1,6 @@
 @inherits ComponentBase
 @inject WebUiActions Actions
+@inject UiText T
 
 @if (_message is not null)
 {
@@ -7,14 +8,14 @@
 }
 @if (Jobs.Count == 0)
 {
-    <p class="note">Nessun lavoro.</p>
+    <p class="note">@T["Jobs.None"]</p>
 }
 else
 {
     <table class="jobs">
         <thead>
             <tr>
-                <th>File</th><th>Stampante</th><th>Opzioni</th><th>Stato</th><th>Tentativi</th><th>Creato</th><th>Errore</th>
+                <th>@T["Column.File"]</th><th>@T["Column.Printer"]</th><th>@T["Column.Options"]</th><th>@T["Column.State"]</th><th>@T["Column.Attempts"]</th><th>@T["Column.Created"]</th><th>@T["Column.Error"]</th>
                 <AuthorizeView Policy="@WebUiPermissions.ManagePolicy"><th></th></AuthorizeView>
             </tr>
         </thead>
@@ -23,21 +24,21 @@ else
             {
                 <tr>
                     <td><a href="/jobs/@job.Id">@job.FileName</a></td>
-                    <td>@Display.Printer(job.PrinterName)</td>
-                    <td>@Display.Options(job.Options)</td>
-                    <td><span class="badge @Display.StateClass(job.State)">@Display.StateLabel(job.State)</span></td>
+                    <td>@T.Printer(job.PrinterName)</td>
+                    <td>@T.Options(job.Options)</td>
+                    <td><span class="badge @Display.StateClass(job.State)">@T.StateLabel(job.State)</span></td>
                     <td>@job.Attempts</td>
-                    <td>@Display.When(job.CreatedAt)</td>
+                    <td>@UiText.When(job.CreatedAt)</td>
                     <td class="err">@job.LastError</td>
                     <AuthorizeView Policy="@WebUiPermissions.ManagePolicy">
                         <td class="actions">
                             @if (Display.CanRetry(job.State))
                             {
-                                <button type="button" @onclick="() => RetryAsync(job.Id)">Riprova</button>
+                                <button type="button" @onclick="() => RetryAsync(job.Id)">@T["Action.Retry"]</button>
                             }
                             @if (Display.CanCancel(job.State))
                             {
-                                <button type="button" class="danger" @onclick="() => CancelAsync(job.Id)">Annulla</button>
+                                <button type="button" class="danger" @onclick="() => CancelAsync(job.Id)">@T["Action.Cancel"]</button>
                             }
                         </td>
                     </AuthorizeView>
@@ -57,9 +58,9 @@ else
     [Parameter]
     public EventCallback OnChanged { get; set; }
 
-    private Task RetryAsync(Guid id) => RunAsync(Actions.RetryAsync(id, CancellationToken.None), "Lavoro rimesso in coda.");
+    private Task RetryAsync(Guid id) => RunAsync(Actions.RetryAsync(id, CancellationToken.None), T["Action.Requeued"]);
 
-    private Task CancelAsync(Guid id) => RunAsync(Actions.CancelAsync(id, CancellationToken.None), "Lavoro annullato.");
+    private Task CancelAsync(Guid id) => RunAsync(Actions.CancelAsync(id, CancellationToken.None), T["Action.Cancelled"]);
 
     private async Task RunAsync(Task<QueueActionResult> action, string success)
     {

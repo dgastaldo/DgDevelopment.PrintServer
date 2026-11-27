@@ -4,36 +4,36 @@
 @inject WebUiActions Actions
 
 <main class="page">
-    <h1>Aggiungi file</h1>
+    <h1>@T["Add.Title"]</h1>
     @if (!View.CanSubmit)
     {
-        <p class="banner">La coda non è attiva: imposta <code>Watcher:Path</code> nella configurazione.</p>
+        <p class="banner">@T["Queue.Inactive"]</p>
     }
     else
     {
         <form class="filters" @onsubmit="() => { }">
-            <label>Stampante
+            <label>@T["Add.Printer"]
                 <select @bind="_printer">
-                    <option value="">Predefinita</option>
+                    <option value="">@T["Add.DefaultPrinter"]</option>
                     @foreach (var name in _printers.Printers.Select(printer => printer.Name))
                     {
                         <option value="@name">@name</option>
                     }
                 </select>
             </label>
-            <label>Orientamento
+            <label>@T["Add.Orientation"]
                 <select @bind="_orientation">
-                    <option value="@PageOrientation.Default">Predefinito</option>
-                    <option value="@PageOrientation.Portrait">Verticale</option>
-                    <option value="@PageOrientation.Landscape">Orizzontale</option>
+                    <option value="@PageOrientation.Default">@T["Add.Default"]</option>
+                    <option value="@PageOrientation.Portrait">@T["Add.Portrait"]</option>
+                    <option value="@PageOrientation.Landscape">@T["Add.Landscape"]</option>
                 </select>
             </label>
-            <label>Fronte/retro
+            <label>@T["Add.Duplex"]
                 <select @bind="_duplex">
-                    <option value="@DuplexMode.Default">Predefinito</option>
-                    <option value="@DuplexMode.OneSided">Solo fronte</option>
-                    <option value="@DuplexMode.TwoSidedLongEdge">Fronte e retro (lato lungo)</option>
-                    <option value="@DuplexMode.TwoSidedShortEdge">Fronte e retro (lato corto)</option>
+                    <option value="@DuplexMode.Default">@T["Add.Default"]</option>
+                    <option value="@DuplexMode.OneSided">@T["Add.OneSided"]</option>
+                    <option value="@DuplexMode.TwoSidedLongEdge">@T["Add.TwoSidedLongEdge"]</option>
+                    <option value="@DuplexMode.TwoSidedShortEdge">@T["Add.TwoSidedShortEdge"]</option>
                 </select>
             </label>
         </form>
@@ -44,7 +44,7 @@
         <p>
             <InputFile OnChange="UploadAsync" multiple accept="@Accept" />
         </p>
-        <p class="note">Tipi accettati: @string.Join(", ", View.AcceptedExtensions). Dimensione massima per file: @Display.Size(WebUiOptions.UploadSizeLimit) (limite fisso). Per file più grandi copiali direttamente nella cartella osservata.</p>
+        <p class="note">@T.Format("Add.Note", string.Join(", ", View.AcceptedExtensions), UiText.Size(WebUiOptions.UploadSizeLimit))</p>
         @foreach (var line in _results)
         {
             <p class="banner @(line.Failed ? "bad" : "")">@line.Text</p>
@@ -74,12 +74,12 @@
                 await using var stream = file.OpenReadStream(WebUiOptions.UploadSizeLimit);
                 var result = await Actions.AddAsync(file.Name, stream, string.IsNullOrEmpty(_printer) ? null : _printer, options, Token);
                 _results.Add(result.Succeeded
-                    ? ($"{file.Name}: aggiunto, sarà accodato tra pochi secondi.", false)
-                    : ($"{file.Name}: {result.Error}", true));
+                    ? (T.Format("Add.Added", file.Name), false)
+                    : (T.Format("Add.Failed", file.Name, result.Error ?? string.Empty), true));
             }
             catch (IOException ex)
             {
-                _results.Add(($"{file.Name}: {ex.Message}", true));
+                _results.Add((T.Format("Add.Failed", file.Name, ex.Message), true));
             }
         }
     }

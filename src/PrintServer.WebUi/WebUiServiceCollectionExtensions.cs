@@ -1,8 +1,10 @@
+using System.Globalization;
 using System.Security.Claims;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.OpenIdConnect;
 using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Localization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.Configuration;
@@ -18,6 +20,11 @@ public static class WebUiServiceCollectionExtensions
     public const string LoginPath = "/login";
 
     public const string LogoutPath = "/logout";
+
+    public const string LanguagePath = "/language";
+
+    /// <summary>Languages the page is available in; the first one is the default.</summary>
+    public static IReadOnlyList<string> Languages { get; } = ["en", "it"];
 
     public static IServiceCollection AddWebUi(this IServiceCollection services, IConfiguration configuration)
     {
@@ -37,9 +44,11 @@ public static class WebUiServiceCollectionExtensions
             return services;
         }
 
+        services.AddLocalization(localization => localization.ResourcesPath = "Resources");
         services.AddRazorComponents().AddInteractiveServerComponents();
         services.AddCascadingAuthenticationState();
         services.AddAuthorization(authorization => WebUiAuthorization.AddPolicies(authorization, options));
+        services.AddScoped<UiText>();
         services.AddScoped<QueueView>();
         services.AddScoped<WebUiActions>();
 
@@ -85,6 +94,10 @@ public static class WebUiServiceCollectionExtensions
             return app;
         }
 
+        app.UseRequestLocalization(localization => localization
+            .SetDefaultCulture(Languages[0])
+            .AddSupportedCultures([.. Languages])
+            .AddSupportedUICultures([.. Languages]));
         app.UseAuthentication();
         app.UseAuthorization();
         app.UseAntiforgery();
@@ -98,6 +111,20 @@ public static class WebUiServiceCollectionExtensions
                 new AuthenticationProperties { RedirectUri = "/" },
                 [CookieAuthenticationDefaults.AuthenticationScheme, OpenIdConnectDefaults.AuthenticationScheme]));
         }
+
+        app.MapGet(LanguagePath, (HttpContext context, string? culture, string? returnUrl) =>
+        {
+            var language = Languages.FirstOrDefault(candidate => string.Equals(candidate, culture, StringComparison.OrdinalIgnoreCase));
+            if (language is not null)
+            {
+                context.Response.Cookies.Append(
+                    CookieRequestCultureProvider.DefaultCookieName,
+                    CookieRequestCultureProvider.MakeCookieValue(new RequestCulture(language)),
+                    new CookieOptions { Expires = DateTimeOffset.UtcNow.AddYears(1), IsEssential = true, SameSite = SameSiteMode.Lax, HttpOnly = true });
+            }
+
+            return Results.LocalRedirect(SafeReturnUrl(returnUrl));
+        }).AllowAnonymous();
 
         app.MapStaticAssets();
         app.MapRazorComponents<Components.App>()

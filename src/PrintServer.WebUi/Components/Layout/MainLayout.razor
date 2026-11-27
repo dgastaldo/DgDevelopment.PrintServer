@@ -1,13 +1,14 @@
 @inherits LayoutComponentBase
 @inject IOptions<WebUiOptions> Settings
+@inject UiText T
 
 <header class="top">
     <a class="brand" href="/">PrintServer</a>
     <nav>
-        <NavLink href="/" Match="NavLinkMatch.All">Stato</NavLink>
-        <NavLink href="/jobs">Lavori</NavLink>
+        <NavLink href="/" Match="NavLinkMatch.All">@T["Nav.Status"]</NavLink>
+        <NavLink href="/jobs">@T["Nav.Jobs"]</NavLink>
         <AuthorizeView Policy="@WebUiPermissions.AddPolicy">
-            <NavLink href="/add">Aggiungi</NavLink>
+            <NavLink href="/add">@T["Nav.Add"]</NavLink>
         </AuthorizeView>
     </nav>
     <div class="who">
@@ -16,18 +17,27 @@
                 <span>@context.User.Identity?.Name</span>
                 @if (Settings.Value.IsOidcConfigured)
                 {
-                    <a href="@WebUiServiceCollectionExtensions.LogoutPath" @attributes="@NoEnhance">Esci</a>
+                    <a href="@WebUiServiceCollectionExtensions.LogoutPath" @attributes="@NoEnhance">@T["Nav.SignOut"]</a>
                 }
                 else
                 {
-                    <span class="note">solo lettura, da questa macchina</span>
+                    <span class="note">@T["Nav.ReadOnly"]</span>
                 }
             </Authorized>
         </AuthorizeView>
+        <span class="lang" title="@T["Nav.Language"]">
+            <a href="@WebUiServiceCollectionExtensions.LanguagePath?culture=en&returnUrl=@ReturnUrl" @attributes="@NoEnhance" lang="en">EN</a>
+            <a href="@WebUiServiceCollectionExtensions.LanguagePath?culture=it&returnUrl=@ReturnUrl" @attributes="@NoEnhance" lang="it">IT</a>
+        </span>
     </div>
 </header>
 @Body
 
 @code {
+    [Inject]
+    private NavigationManager Navigation { get; set; } = default!;
+
+    private string ReturnUrl => Uri.EscapeDataString("/" + Navigation.ToBaseRelativePath(Navigation.Uri));
+
     private static readonly Dictionary<string, object> NoEnhance = new() { ["data-enhance-nav"] = "false" };
 }

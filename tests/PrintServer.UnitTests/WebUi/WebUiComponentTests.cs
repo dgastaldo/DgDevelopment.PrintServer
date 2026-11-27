@@ -27,16 +27,16 @@ public sealed class WebUiComponentTests
 
             var html = await env.RenderAsync<Dashboard>();
 
-            Assert.Contains("<h1>Stato</h1>", html, StringComparison.Ordinal);
+            Assert.Contains("<h1>Status</h1>", html, StringComparison.Ordinal);
             Assert.Contains("Pending", html, StringComparison.Ordinal);
-            Assert.Contains("Office (predefinita)", html, StringComparison.Ordinal);
+            Assert.Contains("Office (default)", html, StringComparison.Ordinal);
             Assert.Contains("Labels", html, StringComparison.Ordinal);
-            Assert.Contains("Non disponibile", html, StringComparison.Ordinal);
-            Assert.Contains("Carta esaurita, Toner esaurito", html, StringComparison.Ordinal);
+            Assert.Contains("Unavailable", html, StringComparison.Ordinal);
+            Assert.Contains("Out of paper, Out of toner", html, StringComparison.Ordinal);
             Assert.Contains("broken.pdf", html, StringComparison.Ordinal);
             Assert.Contains("waiting.pdf", html, StringComparison.Ordinal);
             Assert.Contains("href=\"/jobs?state=Failed\"", html, StringComparison.Ordinal);
-            Assert.DoesNotContain("Riprova", html, StringComparison.Ordinal);
+            Assert.DoesNotContain("Retry", html, StringComparison.Ordinal);
         }
     }
 
@@ -48,9 +48,9 @@ public sealed class WebUiComponentTests
 
         var html = await env.RenderAsync<Dashboard>();
 
-        Assert.Contains("La coda non è attiva", html, StringComparison.Ordinal);
+        Assert.Contains("The queue is not active", html, StringComparison.Ordinal);
         Assert.Contains("cups is down", html, StringComparison.Ordinal);
-        Assert.Contains("Nessun lavoro", html, StringComparison.Ordinal);
+        Assert.Contains("No jobs", html, StringComparison.Ordinal);
     }
 
     [Fact]
@@ -61,7 +61,7 @@ public sealed class WebUiComponentTests
 
         var html = await env.RenderAsync<Dashboard>();
 
-        Assert.Contains("Nessuna stampante", html, StringComparison.Ordinal);
+        Assert.Contains("No printers", html, StringComparison.Ordinal);
     }
 
     [Fact]
@@ -73,7 +73,7 @@ public sealed class WebUiComponentTests
 
         var html = await env.RenderAsync<Dashboard>();
 
-        Assert.Contains("Impossibile leggere la coda", html, StringComparison.Ordinal);
+        Assert.Contains("Cannot read the queue", html, StringComparison.Ordinal);
     }
 
     [Fact]
@@ -84,11 +84,11 @@ public sealed class WebUiComponentTests
         {
             var html = await env.RenderAsync<Jobs>();
 
-            Assert.Contains("Riprova", html, StringComparison.Ordinal);
-            Assert.Contains("Annulla", html, StringComparison.Ordinal);
+            Assert.Contains("Retry", html, StringComparison.Ordinal);
+            Assert.Contains("Cancel", html, StringComparison.Ordinal);
             Assert.Contains($"href=\"/jobs/{failed.Id}\"", html, StringComparison.Ordinal);
             Assert.Contains($"href=\"/jobs/{pending.Id}\"", html, StringComparison.Ordinal);
-            Assert.Contains("1-2 di 2", html, StringComparison.Ordinal);
+            Assert.Contains("1-2 of 2", html, StringComparison.Ordinal);
         }
     }
 
@@ -100,8 +100,8 @@ public sealed class WebUiComponentTests
         {
             var html = await env.RenderAsync<Jobs>();
 
-            Assert.DoesNotContain("Riprova", html, StringComparison.Ordinal);
-            Assert.DoesNotContain(">Annulla<", html, StringComparison.Ordinal);
+            Assert.DoesNotContain("Retry", html, StringComparison.Ordinal);
+            Assert.DoesNotContain(">Cancel<", html, StringComparison.Ordinal);
             Assert.Contains("broken.pdf", html, StringComparison.Ordinal);
         }
     }
@@ -126,7 +126,7 @@ public sealed class WebUiComponentTests
 
         var html = await env.RenderAsync<Jobs>();
 
-        Assert.Contains("Nessun lavoro", html, StringComparison.Ordinal);
+        Assert.Contains("No jobs", html, StringComparison.Ordinal);
     }
 
     [Fact]
@@ -143,9 +143,9 @@ public sealed class WebUiComponentTests
             Assert.Contains("Stalled", html, StringComparison.Ordinal);
             Assert.Contains("application/pdf", html, StringComparison.Ordinal);
             Assert.Contains(failed.Id.ToString(), html, StringComparison.Ordinal);
-            Assert.Contains("Predefinite", html, StringComparison.Ordinal);
-            Assert.Contains("Riprova", html, StringComparison.Ordinal);
-            Assert.DoesNotContain(">Annulla<", html, StringComparison.Ordinal);
+            Assert.Contains("Defaults", html, StringComparison.Ordinal);
+            Assert.Contains("Retry", html, StringComparison.Ordinal);
+            Assert.DoesNotContain(">Cancel<", html, StringComparison.Ordinal);
         }
     }
 
@@ -157,8 +157,8 @@ public sealed class WebUiComponentTests
         {
             var html = await env.RenderAsync<JobDetail>(new() { ["Id"] = pending.Id });
 
-            Assert.Contains(">Annulla<", html, StringComparison.Ordinal);
-            Assert.DoesNotContain("Riprova", html, StringComparison.Ordinal);
+            Assert.Contains(">Cancel<", html, StringComparison.Ordinal);
+            Assert.DoesNotContain("Retry", html, StringComparison.Ordinal);
             Assert.DoesNotContain("banner bad", html, StringComparison.Ordinal);
         }
     }
@@ -170,7 +170,7 @@ public sealed class WebUiComponentTests
 
         var html = await env.RenderAsync<JobDetail>(new() { ["Id"] = Guid.NewGuid() });
 
-        Assert.Contains("Lavoro non trovato", html, StringComparison.Ordinal);
+        Assert.Contains("Job not found", html, StringComparison.Ordinal);
     }
 
     [Fact]
@@ -180,9 +180,9 @@ public sealed class WebUiComponentTests
 
         var html = await env.RenderAsync<Add>();
 
-        Assert.Contains("Aggiungi file", html, StringComparison.Ordinal);
+        Assert.Contains("Add files", html, StringComparison.Ordinal);
         Assert.Contains("<option value=\"Office\">", html, StringComparison.Ordinal);
-        Assert.Contains("Fronte e retro (lato corto)", html, StringComparison.Ordinal);
+        Assert.Contains("Two-sided (short edge)", html, StringComparison.Ordinal);
         Assert.Contains("type=\"file\"", html, StringComparison.Ordinal);
         Assert.Contains(".docx", html, StringComparison.Ordinal);
         Assert.Contains("25 MB", html, StringComparison.Ordinal);
@@ -195,7 +195,7 @@ public sealed class WebUiComponentTests
 
         var html = await env.RenderAsync<Add>();
 
-        Assert.Contains("La coda non è attiva", html, StringComparison.Ordinal);
+        Assert.Contains("The queue is not active", html, StringComparison.Ordinal);
         Assert.DoesNotContain("type=\"file\"", html, StringComparison.Ordinal);
     }
 
@@ -212,7 +212,38 @@ public sealed class WebUiComponentTests
         Assert.DoesNotContain("href=\"/add\"", plain, StringComparison.Ordinal);
         Assert.Contains("href=\"/add\"", full, StringComparison.Ordinal);
         Assert.Contains("Mario Rossi", full, StringComparison.Ordinal);
-        Assert.Contains("solo lettura", full, StringComparison.Ordinal);
+        Assert.Contains("read-only", full, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public async Task ThePagesAreAvailableInItalian()
+    {
+        using var scope = new CultureScope("it");
+        using var env = new WebUiEnvironment(true, WebUiEnvironment.Add);
+        env.Queue.Backend.Printers.Add(new PrinterInfo("Office", IsDefault: true, PrinterAvailability.Ready));
+
+        var dashboard = await env.RenderAsync<Dashboard>();
+        var layout = await env.RenderAsync<MainLayout>(new() { ["Body"] = (Microsoft.AspNetCore.Components.RenderFragment)(_ => { }) });
+        var add = await env.RenderAsync<Add>();
+
+        Assert.Contains("<h1>Stato</h1>", dashboard, StringComparison.Ordinal);
+        Assert.Contains("Office (predefinita)", dashboard, StringComparison.Ordinal);
+        Assert.Contains("Pronta", dashboard, StringComparison.Ordinal);
+        Assert.Contains("Lavori", layout, StringComparison.Ordinal);
+        Assert.Contains("solo lettura", layout, StringComparison.Ordinal);
+        Assert.Contains("Aggiungi file", add, StringComparison.Ordinal);
+        Assert.Contains("Fronte e retro (lato corto)", add, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public async Task TheLayoutOffersBothLanguagesAndComesBackToTheSamePage()
+    {
+        using var env = new WebUiEnvironment(true, WebUiEnvironment.View);
+
+        var html = await env.RenderAsync<MainLayout>(new() { ["Body"] = (Microsoft.AspNetCore.Components.RenderFragment)(_ => { }) });
+
+        Assert.Contains("href=\"/language?culture=en&amp;returnUrl=%2F", html, StringComparison.Ordinal);
+        Assert.Contains("href=\"/language?culture=it&amp;returnUrl=%2F", html, StringComparison.Ordinal);
     }
 
     [Fact]
@@ -225,7 +256,7 @@ public sealed class WebUiComponentTests
         var html = await env.RenderAsync<MainLayout>(new() { ["Body"] = (Microsoft.AspNetCore.Components.RenderFragment)(_ => { }) });
 
         Assert.Contains("href=\"/logout\"", html, StringComparison.Ordinal);
-        Assert.DoesNotContain("solo lettura", html, StringComparison.Ordinal);
+        Assert.DoesNotContain("read-only", html, StringComparison.Ordinal);
     }
 
     [Fact]
@@ -258,7 +289,7 @@ public sealed class WebUiComponentTests
         CountingRefreshingComponent.FailNext = true;
 
         var component = await renderer.RenderAsync();
-        Assert.StartsWith("Impossibile leggere la coda", component.Error, StringComparison.Ordinal);
+        Assert.StartsWith("Cannot read the queue", component.Error, StringComparison.Ordinal);
 
         CountingRefreshingComponent.FailNext = false;
         await component.ReloadNow();

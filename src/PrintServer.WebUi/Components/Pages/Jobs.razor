@@ -3,33 +3,33 @@
 @inject NavigationManager Navigation
 
 <main class="page">
-    <h1>Lavori</h1>
+    <h1>@T["Jobs.Title"]</h1>
     @if (LoadError is not null)
     {
         <p class="banner bad">@LoadError</p>
     }
     <form class="filters" @onsubmit="ApplyAsync">
-        <label>Stato
+        <label>@T["Jobs.FilterState"]
             <select @bind="_state">
-                <option value="">Tutti</option>
+                <option value="">@T["Jobs.FilterAll"]</option>
                 @foreach (var state in Display.AllStates)
                 {
-                    <option value="@state">@Display.StateLabel(state)</option>
+                    <option value="@state">@T.StateLabel(state)</option>
                 }
             </select>
         </label>
-        <label>Nome file
-            <input type="search" @bind="_search" placeholder="cerca..." />
+        <label>@T["Jobs.FilterFileName"]
+            <input type="search" @bind="_search" placeholder="@T["Jobs.SearchPlaceholder"]" />
         </label>
-        <button type="submit">Filtra</button>
+        <button type="submit">@T["Jobs.Filter"]</button>
     </form>
 
     <JobTable Jobs="_page.Items" OnChanged="ReloadAsync" />
 
     <div class="pager">
-        <button type="button" disabled="@(_skip == 0)" @onclick="PreviousAsync">Precedenti</button>
+        <button type="button" disabled="@(_skip == 0)" @onclick="PreviousAsync">@T["Jobs.Previous"]</button>
         <span>@Range()</span>
-        <button type="button" disabled="@(_skip + PageSize >= _page.Total)" @onclick="NextAsync">Successivi</button>
+        <button type="button" disabled="@(_skip + PageSize >= _page.Total)" @onclick="NextAsync">@T["Jobs.Next"]</button>
     </div>
 </main>
 
@@ -62,8 +62,8 @@
         string.IsNullOrWhiteSpace(_search) ? null : _search);
 
     private string Range() => _page.Total == 0
-        ? "Nessun lavoro"
-        : $"{_skip + 1}-{Math.Min(_skip + PageSize, _page.Total)} di {_page.Total}";
+        ? T["Jobs.Empty"]
+        : T.Format("Jobs.Range", _skip + 1, Math.Min(_skip + PageSize, _page.Total), _page.Total);
 
     private async Task ApplyAsync()
     {

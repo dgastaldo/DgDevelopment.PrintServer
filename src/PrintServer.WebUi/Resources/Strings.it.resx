@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <data name="Nav.Status" xml:space="preserve"><value>Stato</value></data>
+  <data name="Nav.Jobs" xml:space="preserve"><value>Lavori</value></data>
+  <data name="Nav.Add" xml:space="preserve"><value>Aggiungi</value></data>
+  <data name="Nav.SignOut" xml:space="preserve"><value>Esci</value></data>
+  <data name="Nav.ReadOnly" xml:space="preserve"><value>solo lettura, da questa macchina</value></data>
+  <data name="Nav.Language" xml:space="preserve"><value>Lingua</value></data>
+  <data name="Queue.Inactive" xml:space="preserve"><value>La coda non è attiva: imposta Watcher:Path nella configurazione.</value></data>
+  <data name="Dashboard.Title" xml:space="preserve"><value>Stato</value></data>
+  <data name="Dashboard.Printers" xml:space="preserve"><value>Stampanti</value></data>
+  <data name="Dashboard.NoPrinters" xml:space="preserve"><value>Nessuna stampante.</value></data>
+  <data name="Dashboard.LatestJobs" xml:space="preserve"><value>Ultimi lavori</value></data>
+  <data name="Dashboard.DefaultMark" xml:space="preserve"><value>(predefinita)</value></data>
+  <data name="Column.Name" xml:space="preserve"><value>Nome</value></data>
+  <data name="Column.Status" xml:space="preserve"><value>Stato</value></data>
+  <data name="Column.Problems" xml:space="preserve"><value>Problemi</value></data>
+  <data name="Column.File" xml:space="preserve"><value>File</value></data>
+  <data name="Column.Printer" xml:space="preserve"><value>Stampante</value></data>
+  <data name="Column.Options" xml:space="preserve"><value>Opzioni</value></data>
+  <data name="Column.State" xml:space="preserve"><value>Stato</value></data>
+  <data name="Column.Attempts" xml:space="preserve"><value>Tentativi</value></data>
+  <data name="Column.Created" xml:space="preserve"><value>Creato</value></data>
+  <data name="Column.Error" xml:space="preserve"><value>Errore</value></data>
+  <data name="Column.Format" xml:space="preserve"><value>Formato</value></data>
+  <data name="Column.Size" xml:space="preserve"><value>Dimensione</value></data>
+  <data name="Column.Started" xml:space="preserve"><value>Iniziato</value></data>
+  <data name="Column.Finished" xml:space="preserve"><value>Terminato</value></data>
+  <data name="Column.NextAttempt" xml:space="preserve"><value>Prossimo tentativo</value></data>
+  <data name="Column.Folder" xml:space="preserve"><value>Cartella</value></data>
+  <data name="Column.DocumentPath" xml:space="preserve"><value>Percorso del file</value></data>
+  <data name="Column.Id" xml:space="preserve"><value>Identificativo</value></data>
+  <data name="Availability.Ready" xml:space="preserve"><value>Pronta</value></data>
+  <data name="Availability.Busy" xml:space="preserve"><value>Occupata</value></data>
+  <data name="Availability.Unavailable" xml:space="preserve"><value>Non disponibile</value></data>
+  <data name="Issue.PaperOut" xml:space="preserve"><value>Carta esaurita</value></data>
+  <data name="Issue.TonerOut" xml:space="preserve"><value>Toner esaurito</value></data>
+  <data name="Issue.PaperJam" xml:space="preserve"><value>Carta inceppata</value></data>
+  <data name="Issue.DoorOpen" xml:space="preserve"><value>Sportello aperto</value></data>
+  <data name="Issue.Error" xml:space="preserve"><value>Errore</value></data>
+  <data name="State.Pending" xml:space="preserve"><value>In attesa</value></data>
+  <data name="State.Converting" xml:space="preserve"><value>In conversione</value></data>
+  <data name="State.Printing" xml:space="preserve"><value>In stampa</value></data>
+  <data name="State.Completed" xml:space="preserve"><value>Completato</value></data>
+  <data name="State.Failed" xml:space="preserve"><value>Fallito</value></data>
+  <data name="State.Stalled" xml:space="preserve"><value>In stallo</value></data>
+  <data name="State.Cancelled" xml:space="preserve"><value>Annullato</value></data>
+  <data name="Jobs.Title" xml:space="preserve"><value>Lavori</value></data>
+  <data name="Jobs.None" xml:space="preserve"><value>Nessun lavoro.</value></data>
+  <data name="Jobs.FilterState" xml:space="preserve"><value>Stato</value></data>
+  <data name="Jobs.FilterAll" xml:space="preserve"><value>Tutti</value></data>
+  <data name="Jobs.FilterFileName" xml:space="preserve"><value>Nome file</value></data>
+  <data name="Jobs.SearchPlaceholder" xml:space="preserve"><value>cerca...</value></data>
+  <data name="Jobs.Filter" xml:space="preserve"><value>Filtra</value></data>
+  <data name="Jobs.Previous" xml:space="preserve"><value>Precedenti</value></data>
+  <data name="Jobs.Next" xml:space="preserve"><value>Successivi</value></data>
+  <data name="Jobs.Range" xml:space="preserve"><value>{0}-{1} di {2}</value></data>
+  <data name="Jobs.Empty" xml:space="preserve"><value>Nessun lavoro</value></data>
+  <data name="Action.Retry" xml:space="preserve"><value>Riprova</value></data>
+  <data name="Action.Cancel" xml:space="preserve"><value>Annulla</value></data>
+  <data name="Action.Requeued" xml:space="preserve"><value>Lavoro rimesso in coda.</value></data>
+  <data name="Action.Cancelled" xml:space="preserve"><value>Lavoro annullato.</value></data>
+  <data name="Detail.Back" xml:space="preserve"><value>Tutti i lavori</value></data>
+  <data name="Detail.NotFound" xml:space="preserve"><value>Lavoro non trovato</value></data>
+  <data name="Add.Title" xml:space="preserve"><value>Aggiungi file</value></data>
+  <data name="Add.Printer" xml:space="preserve"><value>Stampante</value></data>
+  <data name="Add.Orientation" xml:space="preserve"><value>Orientamento</value></data>
+  <data name="Add.Duplex" xml:space="preserve"><value>Fronte/retro</value></data>
+  <data name="Add.Default" xml:space="preserve"><value>Predefinito</value></data>
+  <data name="Add.DefaultPrinter" xml:space="preserve"><value>Predefinita</value></data>
+  <data name="Add.Portrait" xml:space="preserve"><value>Verticale</value></data>
+  <data name="Add.Landscape" xml:space="preserve"><value>Orizzontale</value></data>
+  <data name="Add.OneSided" xml:space="preserve"><value>Solo fronte</value></data>
+  <data name="Add.TwoSidedLongEdge" xml:space="preserve"><value>Fronte e retro (lato lungo)</value></data>
+  <data name="Add.TwoSidedShortEdge" xml:space="preserve"><value>Fronte e retro (lato corto)</value></data>
+  <data name="Add.Note" xml:space="preserve"><value>Tipi accettati: {0}. Dimensione massima per file: {1} (limite fisso). Per file più grandi copiali direttamente nella cartella osservata.</value></data>
+  <data name="Add.Added" xml:space="preserve"><value>{0}: aggiunto, sarà accodato tra pochi secondi.</value></data>
+  <data name="Add.Failed" xml:space="preserve"><value>{0}: {1}</value></data>
+  <data name="Options.Defaults" xml:space="preserve"><value>Predefinite</value></data>
+  <data name="Options.Separator" xml:space="preserve"><value>, </value></data>
+  <data name="Error.Denied" xml:space="preserve"><value>Non hai il permesso per questa operazione.</value></data>
+  <data name="Error.QueueOff" xml:space="preserve"><value>La coda non è attiva: manca la cartella osservata (Watcher:Path).</value></data>
+  <data name="Error.NoBackend" xml:space="preserve"><value>Nessun backend di stampa configurato.</value></data>
+  <data name="Error.PrintersUnreadable" xml:space="preserve"><value>Impossibile leggere le stampanti: {0}</value></data>
+  <data name="Error.QueueUnreadable" xml:space="preserve"><value>Impossibile leggere la coda: {0}</value></data>
+</root>

@@ -10,7 +10,7 @@ internal static class Styles
         a { color:var(--accent); text-decoration:none; } a:hover { text-decoration:underline; }
         .top { display:flex; flex-wrap:wrap; align-items:center; gap:1rem; padding:.6rem 1rem; border-bottom:1px solid var(--line); background:var(--card); }
         .brand { font-weight:700; color:var(--fg); } .top nav { display:flex; gap:1rem; flex:1; } .top nav a.active { font-weight:700; text-decoration:underline; }
-        .who { display:flex; gap:.75rem; align-items:center; color:var(--muted); }
+        .lang a { margin-left:.35rem; font-size:.8rem; } .who { display:flex; gap:.75rem; align-items:center; color:var(--muted); }
         .page { max-width:1200px; margin:0 auto; padding:1rem; }
         h1 { font-size:1.5rem; margin:.5rem 0 1rem; } h2 { font-size:1.15rem; margin:1.5rem 0 .5rem; }
         .cards { display:grid; grid-template-columns:repeat(auto-fit,minmax(130px,1fr)); gap:.75rem; }
