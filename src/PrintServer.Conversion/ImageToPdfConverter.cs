@@ -9,6 +9,13 @@ public sealed class ImageToPdfConverter : IDocumentConverter
 {
     private const double Margin = 18;
 
+    static ImageToPdfConverter()
+    {
+        // PDFsharp 6.5 is dual-licensed (AGPL-3.0 or commercial) and refuses to work until one is declared.
+        // PrintServer is itself AGPL-3.0, so it uses PDFsharp under the AGPL.
+        PdfSharpLicense.SetAgplLicense();
+    }
+
     public bool CanConvert(string sourceFormat) => DocumentFormats.IsImage(sourceFormat);
 
     public Task<ConversionResult> ConvertToPdfAsync(string sourcePath, string sourceFormat, string outputPath, CancellationToken ct)
