@@ -36,7 +36,7 @@ Lo script crea l'utente di sistema `printserver`, la configurazione, l'unit `/et
 
 **Permessi.** Il servizio gira come `printserver`, non come root: la cartella osservata deve essere leggibile e scrivibile da quell'utente (il server crea al suo interno `processing/`, `processed/` e le altre), ad esempio `sudo install -d -o printserver /var/printserver/inbox`. Per stampare con CUPS l'utente deve poter usare le stampanti.
 
-Opzioni dello script, come variabili d'ambiente: `INSTALL_DIR` (default `/opt/printserver`), `SERVICE_NAME`, `SERVICE_USER`, `CONFIG_DIR`, `UNIT_DIR`; con `--no-start` installa senza avviare.
+Lo script parla inglese o italiano: sceglie dalla lingua del sistema (`LANG`), oppure `--lang en|it` o la variabile `PRINTSERVER_LANG` la impongono. Opzioni dello script, come variabili d'ambiente: `INSTALL_DIR` (default `/opt/printserver`), `SERVICE_NAME`, `SERVICE_USER`, `CONFIG_DIR`, `UNIT_DIR`; con `--no-start` installa senza avviare.
 
 ```bash
 systemctl status printserver
@@ -63,11 +63,11 @@ Da PowerShell come amministratore:
 .\deploy\service\install-service.ps1
 ```
 
-Crea il servizio `PrintServer` con avvio automatico, che punta a `C:\ProgramData\PrintServer\current\PrintServer.Host.exe`, e imposta il riavvio automatico dopo un errore (la prima e la seconda volta dopo 5 secondi, la terza dopo 30). Gira come `LocalSystem`, che vede le stampanti installate sul computer; per un altro utente usa `-Credential`. Opzioni: `-InstallDir`, `-ServiceName`, `-NoStart`. Il log va nel registro eventi di Windows.
+Crea il servizio `PrintServer` con avvio automatico, che punta a `C:\ProgramData\PrintServer\current\PrintServer.Host.exe`, e imposta il riavvio automatico dopo un errore (la prima e la seconda volta dopo 5 secondi, la terza dopo 30). Gira come `LocalSystem`, che vede le stampanti installate sul computer; per un altro utente usa `-Credential`. Opzioni: `-InstallDir`, `-ServiceName`, `-NoStart`, `-Language en|it` (altrimenti `PRINTSERVER_LANG`, poi la lingua di Windows). Il log va nel registro eventi di Windows.
 
 ## Aggiornamenti e rimozione
 
-Gli script di aggiornamento in `deploy/personal` riavviano il servizio (`SERVICE_NAME` / `-ServiceName` con lo stesso nome usato qui) e, con `HEALTH_URL`, tornano alla versione precedente se non risponde. L'indirizzo di salute è `/health`.
+Gli script di aggiornamento in `deploy/personal` (anch'essi in inglese o italiano, secondo `PRINTSERVER_LANG` o la lingua del sistema) riavviano il servizio (`SERVICE_NAME` / `-ServiceName` con lo stesso nome usato qui) e, con `HEALTH_URL`, tornano alla versione precedente se non risponde. L'indirizzo di salute è `/health`.
 
 Per rimuovere il servizio: `sudo systemctl disable --now printserver` e cancellare l'unit; `sudo launchctl bootout system/com.printserver` e cancellare il plist; `Stop-Service PrintServer; sc.exe delete PrintServer`. I dati (coda, configurazione) non vengono toccati.
 
