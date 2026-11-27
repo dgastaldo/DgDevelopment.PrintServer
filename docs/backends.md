@@ -1,3 +1,5 @@
+**Italiano** · [English](en/backends.html)
+
 # Backend di stampa
 
 Il backend si sceglie in `appsettings.json` con `Printing:Backend`.

@@ -1,3 +1,5 @@
+**Italiano** · [English](en/queue.html)
+
 # Coda dei lavori
 
 Ogni file rilevato dal watcher diventa un lavoro in una coda persistente (SQLite, EF Core). La coda si accende da sola insieme al watcher: se `Watcher:Path` non è impostato non esiste.

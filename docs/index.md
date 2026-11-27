@@ -1,3 +1,5 @@
+**Italiano** · [English](en/index.html)
+
 # PrintServer
 
 Mini print server multipiattaforma (Windows, macOS, Linux): osserva una cartella, mette i file in una coda persistente e li invia alla stampante.
