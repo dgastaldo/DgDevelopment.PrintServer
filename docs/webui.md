@@ -1,3 +1,5 @@
+**Italiano** · [English](en/webui.html)
+
 # Pagina web di stato
 
 Il server ha una pagina web (Blazor Server, in inglese o italiano) per vedere la coda e gestirla: stato dei lavori, stampanti con i loro problemi, dettaglio di ogni lavoro, e per chi ha il permesso riprovare, annullare e aggiungere file. Si aggiorna da sola ogni pochi secondi.

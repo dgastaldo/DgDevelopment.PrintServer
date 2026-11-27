@@ -1,3 +1,5 @@
+**Italiano** · [English](en/watcher.html)
+
 # Cartella osservata
 
 Il server può osservare una cartella e rilevare i file da stampare. È spento finché non imposti `Watcher:Path`.

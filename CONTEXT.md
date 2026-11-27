@@ -96,6 +96,7 @@ Ogni voce è un ramo `feature/*` → `develop`:
 - [x] `document-conversion` — documenti e immagini convertiti in PDF prima della stampa
 - [x] `status-web-ui` — pagina di stato Blazor Server, accesso con DgDevelopment.Identity, riprova/annulla/aggiungi
 - [x] `service-hosting` — Windows Service / systemd / launchd
+- [x] `i18n` — pagina web, script di installazione e aggiornamento, documentazione (`docs/en/`) in inglese e italiano; chiavi e nomi in inglese
 - [ ] `cli`
 - [ ] `publish-and-installers`
 

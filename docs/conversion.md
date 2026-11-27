@@ -1,3 +1,5 @@
+**Italiano** · [English](en/conversion.html)
+
 # Conversione dei documenti
 
 Il server stampa PDF e PostScript così come sono. Gli altri formati vengono prima convertiti in PDF, poi stampati come qualsiasi altro lavoro.

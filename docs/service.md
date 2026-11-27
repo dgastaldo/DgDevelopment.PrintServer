@@ -1,3 +1,5 @@
+**Italiano** · [English](en/service.html)
+
 # Servizio di sistema
 
 Il server può girare come servizio, avviato col sistema e riavviato se si ferma: Windows Service, systemd su Linux, launchd su macOS. Lanciato da terminale funziona come prima.
