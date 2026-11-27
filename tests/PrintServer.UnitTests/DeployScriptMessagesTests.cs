@@ -40,7 +40,7 @@ public sealed partial class DeployScriptMessagesTests
 
         Assert.NotEmpty(english);
         Assert.Equal(english.Keys.Order(), italian.Keys.Order());
-        Assert.All(english, pair => Assert.Equal(Placeholders(pair.Value), Placeholders(italian[pair.Key])));
+        Assert.All(english, pair => Assert.Equal(UnitTests.Placeholders.Of(pair.Value), UnitTests.Placeholders.Of(italian[pair.Key])));
         Assert.DoesNotContain(english, pair => pair.Value == italian[pair.Key] && pair.Value.Length > 12);
     }
 
@@ -60,7 +60,7 @@ public sealed partial class DeployScriptMessagesTests
 
         Assert.NotEmpty(english);
         Assert.Equal(english.Keys.Order(), italian.Keys.Order());
-        Assert.All(english, pair => Assert.Equal(Placeholders(pair.Value), Placeholders(italian[pair.Key])));
+        Assert.All(english, pair => Assert.Equal(UnitTests.Placeholders.Of(pair.Value), UnitTests.Placeholders.Of(italian[pair.Key])));
     }
 
     [Fact]
@@ -123,9 +123,6 @@ public sealed partial class DeployScriptMessagesTests
         Assert.Equal(exitCode, code);
         Assert.Contains(expected, output, StringComparison.Ordinal);
     }
-
-    private static string Placeholders(string text) =>
-        string.Join(",", Regex.Matches(text, @"%s|\{\d+\}").Select(match => match.Value));
 
     private static async Task<(int Code, string Output)> RunAsync(string script, string arguments, string locale, params (string Key, string Value)[] variables)
     {
